@@ -1,13 +1,12 @@
 import React from 'react';
-import './EmployeeNavBar.css'; // Ensure you create a CSS file for styles
+import './LeftNavbarEmployee.css'; // Ensure you create a CSS file for styles
 import { Link } from 'react-router-dom';
 
-const EmployeeNavBar = () => {
+const LeftNavbarEmployee = () => {
   return (
     <div className="employee-nav">
       {/* Header Section */}
       <div className="employee-header">
-        <h2 className="logo">SHIFTSMART</h2>
         <div className="user-info">
           <p>Username</p>
           <p>abc@gmail.com</p>
@@ -28,4 +27,4 @@ const EmployeeNavBar = () => {
   );
 };
 
-export default EmployeeNavBar;
+export default LeftNavbarEmployee;
