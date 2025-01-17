@@ -2,6 +2,8 @@ import React from 'react';
 import TopNavBar from './components/NavBar/TopNavBar';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LeftNavbarEmployee from './components/NavBar/LeftNavbarEmployee';
+import LeftNavbarHR from './components/NavBar/LeftNavbarHr';
+import LeftNavbarPayroll from './components/NavBar/LeftNavbarPayroll';
 // import 
 
 const App = () => {
@@ -9,7 +11,9 @@ const App = () => {
     <Router>
       <div className="app">
         <TopNavBar />
-        <LeftNavbarEmployee/>
+        <LeftNavbarPayroll/>
+        {/* <LeftNavbarEmployee/> */}
+        {/* <LeftNavbarHR/> */}
         <Routes>
           {/* <Route path="/" element={<LoginPage />} /> */}
         </Routes>
