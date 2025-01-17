@@ -11,9 +11,14 @@ const App = () => {
     <Router>
       <div className="app">
         <TopNavBar />
+<<<<<<< Updated upstream
         <LeftNavbarPayroll/>
         {/* <LeftNavbarEmployee/> */}
         {/* <LeftNavbarHR/> */}
+=======
+        {/* <LeftNavbarEmployee/>
+        <LeftNavbarHr/> */}
+>>>>>>> Stashed changes
         <Routes>
           {/* <Route path="/" element={<LoginPage />} /> */}
         </Routes>
