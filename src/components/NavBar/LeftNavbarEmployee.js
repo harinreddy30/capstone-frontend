@@ -1,5 +1,5 @@
 import React from 'react';
-import './LeftNavbarEmployee.css'; // Ensure you create a CSS file for styles
+import './styles/LeftNavbarEmployee.css'; // Ensure you create a CSS file for styles
 import { Link } from 'react-router-dom';
 
 const LeftNavbarEmployee = () => {
@@ -17,8 +17,8 @@ const LeftNavbarEmployee = () => {
       <ul className="nav-links">
         <li><Link to="/home">Home</Link></li>
         <li><Link to="/job-scheduling">Job Scheduling</Link></li>
-        <li><Link to="/incident-reports">Incident Reports</Link></li>
-        <li><Link to="/swap-shift">Swap Shift</Link></li>
+        <li><Link to="./empTabs/IncidentReports.js">Incident Reports</Link></li>
+        <li><Link to="./emp">Swap Shift</Link></li>
         <li><Link to="/time-off">Time Off</Link></li>
         <li><Link to="/input-availability">Input Availability</Link></li>
         <li><Link to="/pay-stubs">Pay Stubs</Link></li>
