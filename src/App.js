@@ -2,9 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './AuthContext';
 import ProtectedRoute from './ProtectedRoute';
-import PayrollManagement from './payroll_components/PayrollManagement';
-import EmployeeList from './payroll_components/EmployeeList';
-import PayrollGenerator from './payroll_components/PayrollGenerator';
+import PayrollManagement from './pages/Payroll/PayrollManagement';
+import EmployeeList from './pages/Payroll/EmployeeList';
+import PayrollGenerator from './pages/Payroll/PayrollGenerator';
 
 function App() {
   return (
