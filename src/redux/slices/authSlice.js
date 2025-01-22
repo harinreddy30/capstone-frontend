@@ -8,6 +8,7 @@ const initialState = {
 
 // Slice consists of name, initial state, and reducers
 const authSlice = createSlice({
+
     name : 'auth', // Name of this slice of state.
     initialState,
     reducers: {
@@ -15,8 +16,8 @@ const authSlice = createSlice({
             state.loading = true; // When the starts, set loading to true
             state.error = null; // Clear previous error
         },
-        loginSuccess: (state, action) => {
-            state.user = action.payload; // Store the user object returned from the backend.
+        loginSuccess: (state, action) => { // action is dispatched when the login is successful
+            state.user = action.payload; // Store/ Save the user object returned from the backend.
             state.loading = false; // Set loading to false when login is successful.
         },
         loginFailure: (state, action) => {
@@ -30,3 +31,8 @@ const authSlice = createSlice({
 });
 
 // Export the actions so that we can dispatch them from components.
+export const { loginStart, loginSuccess, loginFailure, logout } = authSlice.actions;
+
+// Export the reducer to be used in the store.
+export default authSlice.reducer;
+
