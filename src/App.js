@@ -3,14 +3,16 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PayrollManagement from './pages/Payroll/PayrollManagement';
 import EmployeeList from './pages/Payroll/EmployeeList';
 import PayrollGenerator from './pages/Payroll/PayrollGenerator';
+import Login from './pages/Auth/Login';
 
 function App() {
   return (
       <Router>
         <Routes>
+          <Route path='/login' element={<Login />} /> 
           {/* Other Public and Protected Routes */}
           {/* Payroll Module */}
-          <Route
+          {/* <Route
             path="/payroll/management"
             element={
                 <PayrollManagement />
@@ -27,7 +29,7 @@ function App() {
             element={
                 <PayrollGenerator />
             }
-          />
+          /> */}
         </Routes>
       </Router>
   );

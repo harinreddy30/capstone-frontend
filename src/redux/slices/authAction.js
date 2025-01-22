@@ -1,16 +1,32 @@
-import { loginStart, loginSuccess, loginFailure } from '../slices/authSlice';
-import axios from 'axios';
+import { loginStart, loginSuccess, loginFailure } from './authSlice';
+import apiClient from '../../api/apiClient';
+
+// AuthAction handle asynchoronous login logic and make the API call to the backend
 
 export const loginUser = ({ email, password }) => async (dispatch) => {
     dispatch(loginStart());
+    // Validate input fields
+    if (!email || !password) {
+        dispatch(loginFailure('Email and password are required.'));
+        return null;
+    }
+
     try {
-        const response = await axios.post('/api/v1/login', {email, password});
-        dispatch(loginSuccess(response.data));
-        return response.data; // Return data to handle role-based redirection
+        const response = await apiClient.post('/login', {email, password});
+        console.log('Response:', response); // Log the full response for debugging
+
+        if (response?.data) {
+            dispatch(loginSuccess(response.data)); // Update Redux state
+            return response.data; // Return data to handle role-based redirection
+        } else {
+            throw new Error('Response data is undefined');
+        }
 
     } catch (error) {
-        dispatch(loginFailure(error.response.data.message || 'Login Failed'));
-        return null
+        console.error('Error:', error); // Log the error for debugging
+        const errorMessage = error.response?.data?.message || 'Login Failed'; // Extract error message
+        dispatch(loginFailure(errorMessage)); // Update Redux state
+        return null; // Return null to indicate failure
     }
 
 }

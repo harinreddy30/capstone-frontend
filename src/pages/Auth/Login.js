@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-// import { loginUser } from '../redux/actions/authActions';
+import { loginUser } from '../../redux/slices/authAction';
 
 const Login = () => {
 
     // Local state for managing form input
     const [email, setEmail] = useState(''); // Initialize email state with empty string
     const [password, setPassword] = useState(''); // State to store password
+
+
 
     // Redux hooks
     const dispatch = useDispatch(); // useDispatch allows us to dispatch actions
@@ -19,9 +21,17 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault(); // Prevent the form from submitting
         const success = await dispatch(loginUser({ email, password })) // Dispatch the Login action with email and password
-
+        if (!success) {
+            console.error('Login failed: No data received');
+            return;
+        }        
+        
         if (success) {
-            const userRole = success.role; // Assuming role is returned from the backend
+            const userRole = success.user.role; // Assuming role is returned from the backend
+            if (!userRole) {
+                console.error('Error: Role is missing in the response');
+                return;
+            }
 
             // Based on the user role, navigate to proper dashboard
             switch (userRole) {

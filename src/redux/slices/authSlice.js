@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     user: null, // Initially, no user is logged in.
+    token: null, // Stores JWT token
     loading: false, // Indicates if the login request is in progress.
     error: null, // Holds any error messages.
 }
@@ -19,6 +20,7 @@ const authSlice = createSlice({
         loginSuccess: (state, action) => { // action is dispatched when the login is successful
             state.user = action.payload; // Store/ Save the user object returned from the backend.
             state.loading = false; // Set loading to false when login is successful.
+            state.token = action.payload.token;
         },
         loginFailure: (state, action) => {
             state.loading = false; // Set loading to false when login fails.

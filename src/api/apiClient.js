@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Create an Axios Connection
 const apiClient = axios.create({
-    baseURL: 'https://capstone-backend-shiftsmart.vercel.app/', // Backend URL
+    baseURL: 'https://capstone-backend-shiftsmart.vercel.app/api/v1', // Backend URL
     headers: {
         'Content-Type': 'application/json',
     },
