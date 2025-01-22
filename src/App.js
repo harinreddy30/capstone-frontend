@@ -14,26 +14,22 @@ import AdminDashboard from './Dashboard/AdminDashboard/AdminDashboard'
 // Implement RBAC to implement authentication and authorization
 const ProtectedRoute = ({ children, authorizedRoles }) => {
 
+  // UsSelector takes the current state for updation
   const { token , user } = useSelector((state) => state.auth) // auth is the name of the Slice that contains token and user
-  console.log(user)
-  console.log(token)
-
 
   if(!token){
     return <Navigate to='/login'/>
   }
 
   if(authorizedRoles && !authorizedRoles.includes(user.role)){
-    return <Navigate to='/' /> // Redirect if the user doesnt have any roles
+    console.log(`Redirecting to home because user role "${user.role}" is unauthorized.`);
+      return <Navigate to='/' /> // Redirect if the user doesnt have any roles
   }
 
   return children;
 
 }
 
-// const App = () => {
-
-// }
 function App() {
 
     // UseEffect is used to remove the token from localStorage, if the token is missing
@@ -57,12 +53,12 @@ function App() {
           {/* Employee Protected Routes */}
           <Route 
             path="/employee/dashboard" 
-            element = {
-              <ProtectedRoute authorizedRoles={["Employee"]}>
-                <EmployeeDashboard />
-              </ProtectedRoute>
+            element={
+                <ProtectedRoute authorizedRoles={["Employee"]}>
+                    <EmployeeDashboard />
+                </ProtectedRoute>
             } 
-          />
+          />    
 
           {/* HR Protected Routes */}
           <Route 
@@ -104,7 +100,8 @@ function App() {
             } 
           />
 
-          {/* Redirect unknown routes */}
+          {/* R
+          edirect unknown routes */}
           <Route path="*" element={<Navigate to="/login" />} />
           
         </Routes>

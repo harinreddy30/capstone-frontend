@@ -5,6 +5,7 @@ import apiClient from '../../api/apiClient';
 
 export const loginUser = ({ email, password }) => async (dispatch) => {
     dispatch(loginStart());
+        
     // Validate input fields
     if (!email || !password) {
         dispatch(loginFailure('Email and password are required.'));
@@ -13,10 +14,9 @@ export const loginUser = ({ email, password }) => async (dispatch) => {
 
     try {
         const response = await apiClient.post('/login', {email, password});
-        console.log('Response:', response); // Log the full response for debugging
 
         if (response?.data) {
-            dispatch(loginSuccess(response.data)); // Update Redux state
+            dispatch(loginSuccess({ user: response.data.user, token: response.data.token })); // Update Redux state
             return response.data; // Return data to handle role-based redirection
         } else {
             throw new Error('Response data is undefined');

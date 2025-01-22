@@ -18,7 +18,7 @@ const authSlice = createSlice({
             state.error = null; // Clear previous error
         },
         loginSuccess: (state, action) => { // action is dispatched when the login is successful
-            state.user = action.payload; // Store/ Save the user object returned from the backend.
+            state.user = action.payload.user; // Store/ Save the user object returned from the backend.
             state.loading = false; // Set loading to false when login is successful.
             state.token = action.payload.token;
         },

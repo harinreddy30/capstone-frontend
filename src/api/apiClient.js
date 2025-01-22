@@ -1,8 +1,10 @@
 import axios from "axios";
 
+const BACKEND_URI = process.env.REACT_APP_BACKEND_URI
+
 // Create an Axios Connection
 const apiClient = axios.create({
-    baseURL: 'https://capstone-backend-shiftsmart.vercel.app/api/v1', // Backend URL
+    baseURL: BACKEND_URI, // Backend URL
     headers: {
         'Content-Type': 'application/json',
     },
@@ -14,6 +16,9 @@ apiClient.interceptors.request.use((config) => {
         config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
+}, (error) => {
+    // Handle request error
+    return Promise.reject(error);
 });
 
 export default apiClient;

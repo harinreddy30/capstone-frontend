@@ -9,8 +9,6 @@ const Login = () => {
     const [email, setEmail] = useState(''); // Initialize email state with empty string
     const [password, setPassword] = useState(''); // State to store password
 
-
-
     // Redux hooks
     const dispatch = useDispatch(); // useDispatch allows us to dispatch actions
     const navigate = useNavigate(); // useNavigate allows us to navigate to the different routes
@@ -19,8 +17,10 @@ const Login = () => {
 
     // This will triggered upon called
     const handleSubmit = async (e) => {
+
         e.preventDefault(); // Prevent the form from submitting
         const success = await dispatch(loginUser({ email, password })) // Dispatch the Login action with email and password
+        
         if (!success) {
             console.error('Login failed: No data received');
             return;
@@ -28,8 +28,10 @@ const Login = () => {
         
         if (success) {
             const userRole = success.user.role; // Assuming role is returned from the backend
+
             if (!userRole) {
                 console.error('Error: Role is missing in the response');
+                navigate('/'); // Redirect to a safe fallback route
                 return;
             }
 
@@ -54,7 +56,7 @@ const Login = () => {
                     navigate('/');
             }
         }
-
+        
     };
 
     return (
