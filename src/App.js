@@ -13,7 +13,11 @@ import AdminDashboard from './Dashboard/AdminDashboard/AdminDashboard'
 // A private route wrapper to protect routes based on authentication
 // Implement RBAC to implement authentication and authorization
 const ProtectedRoute = ({ children, authorizedRoles }) => {
+
   const { token , user } = useSelector((state) => state.auth) // auth is the name of the Slice that contains token and user
+  console.log(user)
+  console.log(token)
+
 
   if(!token){
     return <Navigate to='/login'/>
@@ -27,18 +31,21 @@ const ProtectedRoute = ({ children, authorizedRoles }) => {
 
 }
 
-// UseEffect is used to remove the token from localStorage, if the token is missing
-const App = () => {
-  const { token } = useSelector((state) => state.auth);
+// const App = () => {
 
-  // Automaticaly logout if the token is missing
-  useEffect(() => {
-    if(!token){
-      localStorage.removeItem("token");
-    }
-  }, [token]);
-}
+// }
 function App() {
+
+    // UseEffect is used to remove the token from localStorage, if the token is missing
+    const { token } = useSelector((state) => state.auth);
+
+    // Automaticaly logout if the token is missing
+    useEffect(() => {
+      if(!token){
+        localStorage.removeItem("token");
+      }
+    }, [token]);
+
   return (
       <Router>
         <Routes>
