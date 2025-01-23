@@ -16,6 +16,8 @@ const ProtectedRoute = ({ children, authorizedRoles }) => {
 
   // UsSelector takes the current state for updation
   const { token , user } = useSelector((state) => state.auth) // auth is the name of the Slice that contains token and user
+  console.log("Token in ProtectedRoute:", token);
+  console.log("User in ProtectedRoute:", user);
 
   if(!token){
     return <Navigate to='/login'/>
@@ -52,7 +54,7 @@ function App() {
 
           {/* Employee Protected Routes */}
           <Route 
-            path="/employee/dashboard" 
+            path="/employee/*" 
             element={
                 <ProtectedRoute authorizedRoles={["Employee"]}>
                     <EmployeeDashboard />
@@ -62,7 +64,7 @@ function App() {
 
           {/* HR Protected Routes */}
           <Route 
-            path="/HR/dashboard" 
+            path="/HR/*" 
             element = {
               <ProtectedRoute authorizedRoles={["HR"]}>
                 <HRDashboard />
@@ -72,7 +74,7 @@ function App() {
 
           {/* Manager Protected Routes */}
           <Route 
-            path="/Manager/dashboard" 
+            path="/Manager/*" 
             element = {
               <ProtectedRoute authorizedRoles={["Manager"]}>
                 <ManagerDashboard />
@@ -82,7 +84,7 @@ function App() {
 
           {/* Payroll Protected Routes */}
           <Route 
-            path="/Payroll/dashboard" 
+            path="/Payroll/*" 
             element = {
               <ProtectedRoute authorizedRoles={["PayrollManager"]}>
                 <PayrollDashboard />
@@ -92,7 +94,7 @@ function App() {
 
           {/* Admin Protected Routes */}
           <Route 
-            path="/Admin/dashboard" 
+            path="/Admin/*" 
             element = {
               <ProtectedRoute authorizedRoles={["Admin"]}>
                 <AdminDashboard />

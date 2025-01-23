@@ -22,7 +22,7 @@ const SideBar = () => {
     { path: 'swap-shift', label: 'Swap Shift' },
     { path: 'time-off', label: 'Time Off' },
     { path: 'input-availability', label: 'Input Availability' },
-    { path: 'pay-stubs', label: 'Pay Stubs' },    
+    { path: 'pay-stub', label: 'Pay Stubs' },    
   ];
 
   return(

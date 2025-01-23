@@ -16,7 +16,13 @@ export const loginUser = ({ email, password }) => async (dispatch) => {
         const response = await apiClient.post('/login', {email, password});
 
         if (response?.data) {
-            dispatch(loginSuccess({ user: response.data.user, token: response.data.token })); // Update Redux state
+            const token = response.data.token
+            
+            dispatch(loginSuccess({ user: response.data.user, token })); // Update Redux state
+
+            // Save token to localStorage for persistence across reloads
+            localStorage.setItem("token", token);
+
             return response.data; // Return data to handle role-based redirection
         } else {
             throw new Error('Response data is undefined');

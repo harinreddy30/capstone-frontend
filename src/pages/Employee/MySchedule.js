@@ -1,7 +1,9 @@
 import React from 'react'
 
-export const MySchedule = () => {
+const MySchedule = () => {
   return (
     <div>MySchedule</div>
   )
 }
+
+export default MySchedule
