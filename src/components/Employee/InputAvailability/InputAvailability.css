@@ -1,0 +1,57 @@
+/* InputAvailability.css */
+.input-availability-container {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+  }
+  
+  h1 {
+    text-align: center;
+    color: #333;
+  }
+  
+  .day-section {
+    margin-bottom: 20px;
+  }
+  
+  .interval-input {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .interval-input input {
+    margin-right: 10px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .add-interval-button, .remove-button, .submit-button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #007BFF;
+    color: white;
+  }
+  
+  .remove-button {
+    background-color: #DC3545;
+    margin-left: 10px;
+  }
+  
+  .add-interval-button {
+    margin-top: 10px;
+  }
+  
+  .submit-button {
+    display: block;
+    margin: 20px auto;
+    background-color: #28A745;
+  }
+  
