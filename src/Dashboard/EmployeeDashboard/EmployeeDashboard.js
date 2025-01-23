@@ -3,13 +3,48 @@ import { Routes, Route, Link } from 'react-router-dom';
 import TopNavBar from '../../components/NavBar/TopNavBar';
 import '../Dashboard.css'; 
 
-// Import your components for each section
-// import JobScheduling from '../../components/Employee/JobScheduling';
-// import IncidentReports from '../../components/Employee/IncidentReports';
-// import SwapShift from '../../components/Employee/SwapShift';
-// import TimeOff from '../../components/Employee/TimeOff';
-// import InputAvailability from '../../components/Employee/InputAvailability/InputAvailability';
-// import PayStubs from '../../components/Employee/PayStubs';
+// Lazy load components 
+// This improves performance by loading components only when needed
+
+const MySchedule = React.lazy(() => import('../../pages/Employee/MySchedule'));
+const IncidentReports = React.lazy(() => import('../../pages/Employee/IncidentReport'));
+const SwapShift = React.lazy(() => import('../../pages/Employee/SwapShift'));
+const TimeOff = React.lazy(() => import('../../pages/Employee/TimeOff'));
+const InputAvailability = React.lazy(() => import('../../pages/Employee/InputAvailability'));
+const PayStubs = React.lazy(() => import('../../pages/Employee/PayStub'));
+
+// Sidebar Components generate naviagation links dynamically
+// Easier to add any links
+const SideBar = () => {
+  const navLinks = [
+    { path: 'job-scheduling', label: 'My Schedule' },
+    { path: 'incident-reports', label: 'Incident Reports' },
+    { path: 'swap-shift', label: 'Swap Shift' },
+    { path: 'time-off', label: 'Time Off' },
+    { path: 'input-availability', label: 'Input Availability' },
+    { path: 'pay-stubs', label: 'Pay Stubs' },    
+  ];
+
+  return(
+
+    <div className="left-nav">
+      <div className="header">
+        <div className="user-info">
+          <p>Employee Username</p>
+          <p>Employee@gmail.com</p>
+        </div>
+      </div>
+      <ul className="nav-links">
+        {navLinks.map((link) => (
+          <li key={link.path}>
+            <Link to={`/employee/${link.path}`}>{link.label}</Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
+}
 
 const EmployeeDashboard = () => {
   return (
@@ -18,36 +53,25 @@ const EmployeeDashboard = () => {
       <TopNavBar />
 
       <div className="dashboard-body">
-        {/* Left Navigation */}
-        <div className="left-nav">
-          <div className="header">
-            <div className="user-info">
-              <p>Employee Username</p>
-              <p>Employee@gmail.com</p>
-            </div>
-          </div>
-
-          <ul className="nav-links">
-            <li><Link to="/employee/job-scheduling">Job Scheduling</Link></li>
-            <li><Link to="/employee/incident-reports">Incident Reports</Link></li>
-            <li><Link to="/employee/swap-shift">Swap Shift</Link></li>
-            <li><Link to="/employee/time-off">Time Off</Link></li>
-            <li><Link to="/employee/input-availability">Input Availability</Link></li>
-            <li><Link to="/employee/pay-stubs">Pay Stubs</Link></li>
-          </ul>
-        </div>
+        {/* Sidebar Navigation */}
+        <SideBar />
 
         {/* Main Content Area */}
         <div className="main-content">
-          <Routes>
-            {/* <Route path="job-scheduling" element={<JobScheduling />} />
-            <Route path="incident-reports" element={<IncidentReports />} />
-            <Route path="swap-shift" element={<SwapShift />} />
-            <Route path="time-off" element={<TimeOff />} /> */}
-            {/* <Route path="input-availability" element={<InputAvailability />} /> */}
-            {/* <Route path="pay-stubs" element={<PayStubs />} /> */}
-          </Routes>
+
+          {/*Suspense provide a fallback, while lazy-loaded components are fetched*/}
+          <React.Suspense fallback={<p>Loading...</p>}>
+            <Routes>
+              <Route path="job-scheduling" element={<MySchedule />} />
+              <Route path="incident-reports" element={<IncidentReports />} />
+              <Route path="swap-shift" element={<SwapShift />} />
+              <Route path="time-off" element={<TimeOff />} />
+              <Route path="input-availability" element={<InputAvailability />} />
+              <Route path="pay-stub" element={<PayStubs />} />
+            </Routes>
+          </React.Suspense>
         </div>
+
       </div>
     </div>
   );
