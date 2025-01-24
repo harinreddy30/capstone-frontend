@@ -60,39 +60,46 @@ const Login = () => {
     };
 
     return (
-        <div className="login-container">
-            <form className="login-form" onSubmit={handleSubmit}>
-                <h2>Login</h2>
-                {error && <p className="error-message">{error}</p>}
+        <div className="login-container min-h-screen flex items-center justify-center bg-gray-100">
+            <form className="login-form bg-white p-8 rounded-lg shadow-lg w-full max-w-md" onSubmit={handleSubmit}>
+                <h2 className="text-2xl font-semibold mb-6 text-center">Login</h2>
 
-                <div className="form-group">
-                    <label htmlFor="email">Email:</label>
+                {error && <p className="error-message text-red-500 text-center mb-4">{error}</p>}
+
+                <div className="form-group mb-4">
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email:</label>
                     <input
                         type="email"
                         id="email"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)} // Update email state when the input changes
+                        onChange={(e) => setEmail(e.target.value)}
                         required
+                        className="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />
                 </div>
 
-                <div className="form-group">
-                    <label htmlFor="password">Password:</label>
+                <div className="form-group mb-6">
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password:</label>
                     <input
                         type="password"
                         id="password"
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)} // Update password state when the input changes
+                        onChange={(e) => setPassword(e.target.value)}
                         required
+                        className="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />
                 </div>
 
-                {/* Button to submit the form, disabled when loading */}
-                <button type="submit" className="login-button" disabled={loading}>
-                    {loading ? 'Logging in...' : 'Login'} {/* Show loading text when logging in */}
+                <button
+                    type="submit"
+                    className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    disabled={loading}
+                >
+                    {loading ? 'Logging in...' : 'Login'}
                 </button>
-            </form>
+            </form> 
         </div>
+
     )
 
 }
