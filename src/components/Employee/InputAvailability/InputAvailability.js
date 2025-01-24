@@ -1,85 +1,102 @@
-// import React from 'react';
-// import './InputAvailability.css'; 
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-// const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const Availability = () => {
+  const [availability, setAvailability] = useState({});
+  const [loading, setLoading] = useState(false);
 
-// const InputAvailability = () => {
-//   const [availability, setAvailability] = useState(
-//     daysOfWeek.reduce((acc, day) => {
-//       acc[day] = [];
-//       return acc;
-//     }, {})
-//   );
+  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-//   const handleAddInterval = (day) => {
-//     setAvailability((prevAvailability) => ({
-//       ...prevAvailability,
-//       [day]: [...prevAvailability[day], { start: '', end: '' }],
-//     }));
-//   };
+  useEffect(() => {
+    fetchAvailability();
+  }, []);
 
-//   const handleIntervalChange = (day, index, field, value) => {
-//     setAvailability((prevAvailability) => {
-//       const updatedIntervals = [...prevAvailability[day]];
-//       updatedIntervals[index][field] = value;
-//       return {
-//         ...prevAvailability,
-//         [day]: updatedIntervals,
-//       };
-//     });
-//   };
+  const fetchAvailability = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('/api/availability');
+      setAvailability(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching availability:', error);
+      setLoading(false);
+    }
+  };
 
-//   const handleRemoveInterval = (day, index) => {
-//     setAvailability((prevAvailability) => {
-//       const updatedIntervals = prevAvailability[day].filter((_, i) => i !== index);
-//       return {
-//         ...prevAvailability,
-//         [day]: updatedIntervals,
-//       };
-//     });
-//   };
+  const handleTimeChange = (day, type, value) => {
+    setAvailability((prev) => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [type]: value,
+      },
+    }));
+  };
 
-//   const handleSubmit = () => {
-//     console.log('User availability:', availability);
-//     alert('Availability saved! Check console for details.');
-//   };
+  const saveAvailability = async () => {
+    try {
+      await axios.post('/api/availability', { availability });
+      alert('Availability saved successfully!');
+    } catch (error) {
+      console.error('Error saving availability:', error);
+      alert('Failed to save availability.');
+    }
+  };
 
-//   return (
-//     <div className="input-availability-container">
-//       <h1>Set Your Availability</h1>
-//       {daysOfWeek.map((day) => (
-//         <div key={day} className="day-section">
-//           <h2>{day}</h2>
-//           {availability[day].map((interval, index) => (
-//             <div key={index} className="interval-input">
-//               <input
-//                 type="time"
-//                 value={interval.start}
-//                 onChange={(e) => handleIntervalChange(day, index, 'start', e.target.value)}
-//                 placeholder="Start time"
-//               />
-//               <input
-//                 type="time"
-//                 value={interval.end}
-//                 onChange={(e) => handleIntervalChange(day, index, 'end', e.target.value)}
-//                 placeholder="End time"
-//               />
-//               <button
-//                 className="remove-button"
-//                 onClick={() => handleRemoveInterval(day, index)}
-//               >
-//                 Remove
-//               </button>
-//             </div>
-//           ))}
-//           <button className="add-interval-button" onClick={() => handleAddInterval(day)}>
-//             Add Interval
-//           </button>
-//         </div>
-//       ))}
-//       <button className="submit-button" onClick={handleSubmit}>Save Availability</button>
-//     </div>
-//   );
-// };
+  const deleteAvailability = async () => {
+    try {
+      await axios.delete('/api/availability');
+      setAvailability({});
+      alert('Availability deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting availability:', error);
+      alert('Failed to delete availability.');
+    }
+  };
 
-// export default InputAvailability;
+  if (loading) return <p>Loading...</p>;
+
+  return (
+    <div>
+      <h2>Set Your Availability</h2>
+      <table border="1" style={{ width: '100%', textAlign: 'center' }}>
+        <thead>
+          <tr>
+            <th>Day</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {daysOfWeek.map((day) => (
+            <tr key={day}>
+              <td>{day}</td>
+              <td>
+                <input
+                  type="time"
+                  value={availability[day]?.start || ''}
+                  onChange={(e) => handleTimeChange(day, 'start', e.target.value)}
+                />
+              </td>
+              <td>
+                <input
+                  type="time"
+                  value={availability[day]?.end || ''}
+                  onChange={(e) => handleTimeChange(day, 'end', e.target.value)}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div style={{ marginTop: '20px' }}>
+        <button onClick={saveAvailability} style={{ marginRight: '10px' }}>
+          Save
+        </button>
+        <button onClick={deleteAvailability}>Delete</button>
+      </div>
+    </div>
+  );
+};
+
+export default Availability;

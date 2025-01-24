@@ -1,9 +1,124 @@
-import React from 'react'
+import React, { useState } from 'react';
+import './InputAvailability.css';
 
-const InputAvailability = () => {
+const Availability = () => {
+  const [availability, setAvailability] = useState({});
+  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  const handleTimeChange = (day, index, type, value) => {
+    setAvailability((prev) => {
+      const daySlots = prev[day] || [];
+      daySlots[index] = {
+        ...daySlots[index],
+        [type]: value,
+      };
+      return { ...prev, [day]: daySlots };
+    });
+  };
+
+  const addTimeSlot = (day) => {
+    setAvailability((prev) => ({
+      ...prev,
+      [day]: [...(prev[day] || []), { start: '', end: '' }],
+    }));
+  };
+
+  const removeTimeSlot = (day, index) => {
+    setAvailability((prev) => {
+      const daySlots = [...(prev[day] || [])];
+      if (daySlots.length > 1) {
+        daySlots.splice(index, 1);
+      }
+      return { ...prev, [day]: daySlots };
+    });
+  };
+
+  const validateTime = (start, end) => {
+    return !start || !end || start < end;
+  };
+
+  const clearAvailability = () => {
+    setAvailability({});
+  };
+
+  const saveAvailability = () => {
+    for (const day in availability) {
+      const daySlots = availability[day];
+      for (const slot of daySlots) {
+        if (!validateTime(slot.start, slot.end)) {
+          alert(`Invalid time range on ${day}: Start time must be earlier than End time.`);
+          return;
+        }
+      }
+    }
+    console.log('Saved availability:', availability);
+    alert('Availability saved successfully!');
+  };
+
   return (
-    <div>InputAvailability</div>
-  )
-}
+    <div className="availability-container">
+      <h2>Set Your Availability</h2>
+      <table className="availability-table">
+        <thead>
+          <tr>
+            <th>Day</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {daysOfWeek.map((day) => (
+            <React.Fragment key={day}>
+              {(availability[day] || [{ start: '', end: '' }]).map((slot, index) => (
+                <tr key={`${day}-${index}`}>
+                  {index === 0 && (
+                    <td rowSpan={(availability[day] || [{}]).length || 1}>
+                      {day}
+                      <button className="add-slot-button" onClick={() => addTimeSlot(day)}>
+                        + Add Slot
+                      </button>
+                    </td>
+                  )}
+                  <td>
+                    <input
+                      type="time"
+                      value={slot.start || ''}
+                      onChange={(e) => handleTimeChange(day, index, 'start', e.target.value)}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="time"
+                      value={slot.end || ''}
+                      onChange={(e) => handleTimeChange(day, index, 'end', e.target.value)}
+                    />
+                  </td>
+                  <td>
+                    <button
+                      className="remove-slot-button"
+                      onClick={() => removeTimeSlot(day, index)}
+                      disabled={(availability[day]?.length || 1) <= 1}
+                    >
+                      Remove Slot
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </React.Fragment>
+          ))}
+        </tbody>
+      </table>
+      <div className="availability-buttons">
+        <button className="clear-button" onClick={clearAvailability}>
+          Clear All
+        </button>
+        <button className="save-button" onClick={saveAvailability}>
+          Save Availability
+        </button>
+      </div>
+    </div>
+  );
+};
 
-export default InputAvailability
+export default Availability;
