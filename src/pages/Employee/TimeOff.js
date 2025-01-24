@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import './TimeOff.css'; // Ensure you style this component appropriately
 
 const LeaveRequestForm = () => {
   const [leaveRequest, setLeaveRequest] = useState({
     startDate: '',
     endDate: '',
     reason: '',
-    totalDays: 0, // Changed to totalDays for clarity
+    totalDays: 0,
     status: 'Pending',
   });
 
@@ -81,57 +80,67 @@ const LeaveRequestForm = () => {
   };
 
   return (
-    <div className="leave-request-form">
-      <h2>Request Time Off</h2>
+    <div className="max-w-md mx-auto mt-8 p-6 bg-gray-100 rounded-lg shadow-lg">
+      <h2 className="text-2xl font-semibold text-center mb-6">Request Time Off</h2>
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>From:</label>
+        <div className="mb-4">
+          <label className="block font-semibold mb-2">From:</label>
           <input
             type="datetime-local"
             name="startDate"
             value={leaveRequest.startDate}
-            min={today + 'T00:00'} // Ensure the start date cannot be before today
+            min={today + 'T00:00'}
             onChange={handleInputChange}
+            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        <div className="form-group">
-          <label>To:</label>
+        <div className="mb-4">
+          <label className="block font-semibold mb-2">To:</label>
           <input
             type="datetime-local"
             name="endDate"
             value={leaveRequest.endDate}
-            min={leaveRequest.startDate || today + 'T00:00'} // End date must be after the start date
+            min={leaveRequest.startDate || today + 'T00:00'}
             onChange={handleInputChange}
+            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        <div className="form-group">
-          <label>Total Days:</label>
+        <div className="mb-4">
+          <label className="block font-semibold mb-2">Total Days:</label>
           <input
             type="text"
             value={leaveRequest.totalDays}
             disabled
             readOnly
+            className="w-full p-2 bg-gray-200 border border-gray-300 rounded-md cursor-not-allowed"
           />
         </div>
-        <div className="form-group">
-          <label>Reason:</label>
+        <div className="mb-4">
+          <label className="block font-semibold mb-2">Reason:</label>
           <textarea
             name="reason"
             value={leaveRequest.reason}
             onChange={handleInputChange}
             placeholder="Enter the reason for your leave request"
+            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none h-24"
           />
         </div>
-        <div className="form-group">
-          <label>Status:</label>
+        <div className="mb-4">
+          <label className="block font-semibold mb-2">Status:</label>
           <input
             type="text"
             value={leaveRequest.status}
             disabled
             readOnly
+            className="w-full p-2 bg-gray-200 border border-gray-300 rounded-md cursor-not-allowed"
           />
         </div>
-        <button type="submit" className="submit-button">Submit</button>
+        <button
+          type="submit"
+          className="w-full py-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50"
+        >
+          Submit
+        </button>
       </form>
     </div>
   );

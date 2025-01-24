@@ -6,12 +6,12 @@ import '../Dashboard.css';
 // Lazy load components 
 // This improves performance by loading components only when needed
 
-const MySchedule = React.lazy(() => import('../../components/Schedule/MySchedule'));
+const MySchedule = React.lazy(() => import('../../pages/Employee/MySchedule'));
 const IncidentReports = React.lazy(() => import('../../pages/Employee/IncidentReport'));
 const SwapShift = React.lazy(() => import('../../pages/Employee/SwapShift'));
 const TimeOff = React.lazy(() => import('../../pages/Employee/TimeOff'));
-const InputAvailability = React.lazy(() => import('../../components/InputAvailability/InputAvailability'));
-const PayStubs = React.lazy(() => import('../../components/PayStub/PayStub'));
+const InputAvailability = React.lazy(() => import('../../pages/Employee/InputAvailability'));
+const PayStubs = React.lazy(() => import('../../pages/Employee/PayStub'));
 
 // Sidebar Components generate naviagation links dynamically
 // Easier to add any links

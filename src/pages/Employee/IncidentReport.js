@@ -1,172 +1,128 @@
-import React, { useState, useEffect } from 'react';
-import './IncidentReport.css'; // Add CSS for styling
+import React from 'react';
 
-const IncidentReportForm = () => {
-  const [reportData, setReportData] = useState({
-    dateTime: '',
-    location: '',
-    employeeInvolved: '',
-    position: '',
-    incidentType: '',
-    description: '',
-    witnesses: '',
-  });
-
-  const [reportedBy, setReportedBy] = useState(''); // Store the name of the user from the token
-
-  useEffect(() => {
-    // Fetch user data (e.g., from a token or API)
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch('/api/user-profile', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`, // Add token to request header
-          },
-        });
-
-        if (response.ok) {
-          const user = await response.json();
-          setReportedBy(user.name); // Set the "Reported By" field
-        } else {
-          console.error('Failed to fetch user data');
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
-    };
-
-    fetchUserData();
-  }, []);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setReportData({ ...reportData, [name]: value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // Add "Reported By" field dynamically before submitting
-    const finalReport = { ...reportData, reportedBy };
-
-    // Validate required fields
-    if (!finalReport.dateTime || !finalReport.description) {
-      alert('Please fill out all required fields.');
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/reports', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(finalReport),
-      });
-
-      if (response.ok) {
-        alert('Incident report submitted successfully!');
-        setReportData({
-          dateTime: '',
-          location: '',
-          employeeInvolved: '',
-          position: '',
-          incidentType: '',
-          description: '',
-          witnesses: '',
-        });
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.message}`);
-      }
-    } catch (error) {
-      console.error('Error submitting report:', error);
-      alert('Failed to submit the report.');
-    }
-  };
-
+const IncidentReport = () => {
   return (
-    <div className="incident-report-container">
-      <h2>Incident Report</h2>
-      <form className="incident-report-form" onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Date/Time of Incident:</label>
+    <div className="max-w-[600px] mx-auto p-5 bg-gray-100 rounded-lg shadow-md">
+      <form className="flex flex-col">
+        {/* Date/Time of Incident */}
+        <div className="mb-4">
+          <label className="font-bold mb-2 block" htmlFor="incidentDateTime">
+            Date/Time of Incident
+          </label>
           <input
             type="datetime-local"
-            name="dateTime"
-            value={reportData.dateTime}
-            onChange={handleInputChange}
-            required
+            id="incidentDateTime"
+            className="w-full p-3 border border-gray-300 rounded"
           />
         </div>
-        <div className="form-group">
-          <label>Location:</label>
+
+        {/* Location */}
+        <div className="mb-4">
+          <label className="font-bold mb-2 block" htmlFor="incidentLocation">
+            Location
+          </label>
           <input
             type="text"
-            name="location"
-            value={reportData.location}
-            onChange={handleInputChange}
+            id="incidentLocation"
+            className="w-full p-3 border border-gray-300 rounded"
+            placeholder="Enter location"
           />
         </div>
-        <div className="form-group">
-          <label>Reported By:</label>
+
+        {/* Reported By */}
+        <div className="mb-4">
+          <label className="font-bold mb-2 block" htmlFor="reportedBy">
+            Reported By
+          </label>
           <input
             type="text"
-            name="reportedBy"
-            value={reportedBy}
+            id="reportedBy"
+            className="w-full p-3 border border-gray-300 rounded bg-gray-200 cursor-not-allowed"
+            value="John Doe (Autofilled)" // Example value from backend token
             disabled
           />
         </div>
-        <div className="form-group">
-          <label>Employee Involved:</label>
+
+        {/* Employee Involved */}
+        <div className="mb-4">
+          <label className="font-bold mb-2 block" htmlFor="employeeInvolved">
+            Employee Involved
+          </label>
           <input
             type="text"
-            name="employeeInvolved"
-            value={reportData.employeeInvolved}
-            onChange={handleInputChange}
+            id="employeeInvolved"
+            className="w-full p-3 border border-gray-300 rounded"
+            placeholder="Enter employee's name"
           />
         </div>
-        <div className="form-group">
-          <label>Position:</label>
+
+        {/* Position */}
+        <div className="mb-4">
+          <label className="font-bold mb-2 block" htmlFor="position">
+            Position
+          </label>
           <input
             type="text"
-            name="position"
-            value={reportData.position}
-            onChange={handleInputChange}
+            id="position"
+            className="w-full p-3 border border-gray-300 rounded"
+            placeholder="Enter position"
           />
         </div>
-        <div className="form-group">
-          <label>Incident Type:</label>
-          <input
-            type="text"
-            name="incidentType"
-            value={reportData.incidentType}
-            onChange={handleInputChange}
-          />
+
+        {/* Incident Type */}
+        <div className="mb-4">
+          <label className="font-bold mb-2 block" htmlFor="incidentType">
+            Incident Type
+          </label>
+          <select
+            id="incidentType"
+            className="w-full p-3 border border-gray-300 rounded"
+          >
+            <option value="">Select incident type</option>
+            <option value="safety">Safety</option>
+            <option value="harassment">Harassment</option>
+            <option value="propertyDamage">Property Damage</option>
+            <option value="injury">Injury</option>
+            <option value="other">Other</option>
+          </select>
         </div>
-        <div className="form-group">
-          <label>Description of Incident:</label>
+
+        {/* Description of Incident */}
+        <div className="mb-4">
+          <label className="font-bold mb-2 block" htmlFor="incidentDescription">
+            Description of Incident
+          </label>
           <textarea
-            name="description"
-            value={reportData.description}
-            onChange={handleInputChange}
-            required
-          />
+            id="incidentDescription"
+            className="w-full p-3 border border-gray-300 rounded resize-y"
+            rows="5"
+            placeholder="Describe the incident"
+          ></textarea>
         </div>
-        <div className="form-group">
-          <label>Witnesses:</label>
-          <input
-            type="text"
-            name="witnesses"
-            value={reportData.witnesses}
-            onChange={handleInputChange}
-          />
+
+        {/* Witnesses */}
+        <div className="mb-4">
+          <label className="font-bold mb-2 block" htmlFor="witnesses">
+            Witnesses
+          </label>
+          <textarea
+            id="witnesses"
+            className="w-full p-3 border border-gray-300 rounded resize-y"
+            rows="3"
+            placeholder="Enter witnesses (if any)"
+          ></textarea>
         </div>
-        <button type="submit" className="submit-button">Submit</button>
+
+        {/* Submit Button */}
+        <button
+          type="submit"
+          className="w-full bg-blue-500 text-white font-bold text-lg py-2 rounded hover:bg-blue-600"
+        >
+          Submit
+        </button>
       </form>
     </div>
   );
 };
 
-export default IncidentReportForm;
+export default IncidentReport;

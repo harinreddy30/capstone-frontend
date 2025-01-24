@@ -1,29 +1,40 @@
 import React from 'react';
-import './TopNavBar.css'; 
 
 const TopNavBar = () => {
   return (
-    <div className="top-navbar">
+    <div className="flex justify-between items-center px-6 py-3" style={{ backgroundColor: '#0a0f2c', color: 'white' }}>
       {/* Left Section */}
-      <div className="navbar-left">
-        <button className="menu-button">☰</button> {/* Menu icon */}
-        <h2 className="logo">SHIFTSMART</h2>
-        <div className="search-bar">
-          <input 
-            type="text" 
-            className="search-input" 
-            placeholder="Search Anything" 
+      <div className="flex items-center">
+        <button className="text-xl mr-4 text-white cursor-pointer focus:outline-none">
+          ☰
+        </button>
+        <h2 className="text-2xl font-bold mr-6">SHIFTSMART</h2>
+        <div className="flex items-center" style={{ backgroundColor: '#2d3651', borderRadius: '5px', padding: '5px 10px' }}>
+          <input
+            type="text"
+            className="bg-transparent border-none outline-none text-white placeholder-gray-300 flex-grow"
+            placeholder="Search Anything"
           />
-          <button className="search-icon">🔍</button>
+          <button className="ml-2 text-white cursor-pointer focus:outline-none">
+            🔍
+          </button>
         </div>
       </div>
 
-     
-      <div className="navbar-right">
-        <button className="icon-button">💬</button> {/* Chat Icon */}
-        <button className="icon-button">🔔</button> {/* Notifications Icon */}
-        <button className="icon-button">⚙️</button> {/* Settings Icon */}
-        <button className="logout-button">Logout</button>
+      {/* Right Section */}
+      <div className="flex items-center space-x-4">
+        <button className="text-xl text-white cursor-pointer focus:outline-none">
+          💬
+        </button>
+        <button className="text-xl text-white cursor-pointer focus:outline-none">
+          🔔
+        </button>
+        <button className="text-xl text-white cursor-pointer focus:outline-none">
+          ⚙️
+        </button>
+        <button className="text-sm font-medium text-white cursor-pointer focus:outline-none hover:underline">
+          Logout
+        </button>
       </div>
     </div>
   );

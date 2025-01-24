@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './InputAvailability.css';
 
 const Availability = () => {
   const [availability, setAvailability] = useState({});
@@ -56,47 +55,55 @@ const Availability = () => {
   };
 
   return (
-    <div className="availability-container">
-      <h2>Set Your Availability</h2>
-      <table className="availability-table">
+    <div className="p-6 bg-gray-100 min-h-screen">
+      <h2 className="text-2xl font-bold mb-6 text-gray-700">Set Your Availability</h2>
+      <table className="w-full border-collapse border border-gray-300 text-left">
         <thead>
-          <tr>
-            <th>Day</th>
-            <th>From</th>
-            <th>To</th>
-            <th>Actions</th>
+          <tr className="bg-gray-200">
+            <th className="p-4 border border-gray-300">Day</th>
+            <th className="p-4 border border-gray-300">From</th>
+            <th className="p-4 border border-gray-300">To</th>
+            <th className="p-4 border border-gray-300">Actions</th>
           </tr>
         </thead>
         <tbody>
           {daysOfWeek.map((day) => (
             <React.Fragment key={day}>
               {(availability[day] || [{ start: '', end: '' }]).map((slot, index) => (
-                <tr key={`${day}-${index}`}>
+                <tr key={`${day}-${index}`} className="odd:bg-white even:bg-gray-50">
                   {index === 0 && (
-                    <td rowSpan={(availability[day] || [{}]).length || 1}>
+                    <td
+                      rowSpan={(availability[day] || [{}]).length || 1}
+                      className="p-4 border border-gray-300 font-medium text-gray-700 align-middle"
+                    >
                       {day}
-                      <button className="add-slot-button" onClick={() => addTimeSlot(day)}>
+                      <button
+                        className="ml-4 px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                        onClick={() => addTimeSlot(day)}
+                      >
                         + Add Slot
                       </button>
                     </td>
                   )}
-                  <td>
+                  <td className="p-4 border border-gray-300">
                     <input
                       type="time"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={slot.start || ''}
                       onChange={(e) => handleTimeChange(day, index, 'start', e.target.value)}
                     />
                   </td>
-                  <td>
+                  <td className="p-4 border border-gray-300">
                     <input
                       type="time"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={slot.end || ''}
                       onChange={(e) => handleTimeChange(day, index, 'end', e.target.value)}
                     />
                   </td>
-                  <td>
+                  <td className="p-4 border border-gray-300">
                     <button
-                      className="remove-slot-button"
+                      className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
                       onClick={() => removeTimeSlot(day, index)}
                       disabled={(availability[day]?.length || 1) <= 1}
                     >
@@ -109,11 +116,17 @@ const Availability = () => {
           ))}
         </tbody>
       </table>
-      <div className="availability-buttons">
-        <button className="clear-button" onClick={clearAvailability}>
+      <div className="mt-6 flex justify-end gap-4">
+        <button
+          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+          onClick={clearAvailability}
+        >
           Clear All
         </button>
-        <button className="save-button" onClick={saveAvailability}>
+        <button
+          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          onClick={saveAvailability}
+        >
           Save Availability
         </button>
       </div>
