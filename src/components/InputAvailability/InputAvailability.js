@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './InputAvailability.css';
+import '../InputAvailability/InputAvailability.css'
 
 const Availability = () => {
   const [availability, setAvailability] = useState({});

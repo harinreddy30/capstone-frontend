@@ -1,4 +1,4 @@
-import { loginStart, loginSuccess, loginFailure } from './authSlice';
+import { loginStart, loginSuccess, loginFailure } from '../slices/authSlice';
 import apiClient from '../../api/apiClient';
 
 // AuthAction handle asynchoronous login logic and make the API call to the backend
