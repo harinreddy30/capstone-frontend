@@ -1,32 +1,39 @@
 import React, { useState } from 'react';
-import './TimeOff.css'; // Ensure you style this component appropriately
+import { useDispatch, useSelector } from 'react-redux';
+import { createLeaveRequest } from '../../redux/actions/leaveAction';
+
+import './TimeOff.css';
 
 const LeaveRequestForm = () => {
+  // LeaveRequest State 
   const [leaveRequest, setLeaveRequest] = useState({
     startDate: '',
     endDate: '',
     reason: '',
-    totalDays: 0, // Changed to totalDays for clarity
+    totalDays: 0,
     status: 'Pending',
   });
 
+  const dispatch = useDispatch(); // Dispatch the action
+  const { loading, error } = useSelector((state) => state.leave);
   const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
 
-  // Function to calculate total days between startDate and endDate
+  // Calculate total days between startDate and endDate
   const calculateTotalDays = (startDate, endDate) => {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
     if (start < end) {
-      const diff = (end - start) / (1000 * 60 * 60 * 24); // Convert difference in milliseconds to days
+      const diff = (end - start) / (1000 * 60 * 60 * 24); // Convert milliseconds to days
       return diff.toFixed(2); // Return total days with 2 decimal precision
     }
     return 0;
   };
 
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    const updatedRequest = { ...leaveRequest, [name]: value };
+    const { name, value } = e.target; // Extract name and value from event
+    const updatedRequest = { ...leaveRequest, [name]: value }; 
 
     if (name === 'startDate' || name === 'endDate') {
       updatedRequest.totalDays = calculateTotalDays(
@@ -35,9 +42,10 @@ const LeaveRequestForm = () => {
       );
     }
 
-    setLeaveRequest(updatedRequest);
+    setLeaveRequest(updatedRequest); // Update the LeaveRequest 
   };
 
+  // Upon Submission, dispatch the createLeaveRequest method
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -57,32 +65,14 @@ const LeaveRequestForm = () => {
       return;
     }
 
-    // Call backend API to submit leave request
-    try {
-      const response = await fetch('/api/leave-requests', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(leaveRequest),
-      });
-
-      if (response.ok) {
-        alert('Leave request submitted successfully!');
-        setLeaveRequest({ startDate: '', endDate: '', reason: '', totalDays: 0, status: 'Pending' });
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.message}`);
-      }
-    } catch (error) {
-      console.error('Error submitting leave request:', error);
-      alert('Failed to submit leave request.');
-    }
+    dispatch(createLeaveRequest(leaveRequest));
   };
 
   return (
     <div className="leave-request-form">
       <h2>Request Time Off</h2>
+      {loading && <p className="loading">Submitting your request...</p>}
+      {error && <p className="error">Error: {error}</p>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>From:</label>
@@ -106,12 +96,7 @@ const LeaveRequestForm = () => {
         </div>
         <div className="form-group">
           <label>Total Days:</label>
-          <input
-            type="text"
-            value={leaveRequest.totalDays}
-            disabled
-            readOnly
-          />
+          <input type="text" value={leaveRequest.totalDays} disabled readOnly />
         </div>
         <div className="form-group">
           <label>Reason:</label>
@@ -124,14 +109,11 @@ const LeaveRequestForm = () => {
         </div>
         <div className="form-group">
           <label>Status:</label>
-          <input
-            type="text"
-            value={leaveRequest.status}
-            disabled
-            readOnly
-          />
+          <input type="text" value={leaveRequest.status} disabled readOnly />
         </div>
-        <button type="submit" className="submit-button">Submit</button>
+        <button type="submit" className="submit-button" disabled={loading}>
+          {loading ? 'Submitting...' : 'Submit'}
+        </button>
       </form>
     </div>
   );
