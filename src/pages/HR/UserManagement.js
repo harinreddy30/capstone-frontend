@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from 'react-redux';
 import axios from "axios";
+import { fetchAllUsers, createUser, updateUser, DeleteUser } from "../../redux/action/userAction"; // Make sure actions are in place
+
 
 const roles = ["Employee", "HR", "Manager", "PayrollManager"];
 
 const UserManagement = () => {
-  const [users, setUsers] = useState([]);
+  // const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -20,18 +23,15 @@ const UserManagement = () => {
     hourlyWage: "",
   });
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  const dispatch = useDispatch(); // Dispatch the action
 
-  const fetchUsers = async () => {
-    try {
-      const res = await axios.get("/api/users");
-      setUsers(res.data);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    }
-  };
+    // Fetch Users from Redux store
+    const { users, loading, error } = useSelector((state) => state.users);
+
+  // Fetch Users
+  useEffect(() => {
+    fetchAllUsers();
+  }, [dispatch]);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -47,24 +47,35 @@ const UserManagement = () => {
     try {
       if (editMode) {
         // Update existing user
-        await axios.put(`/api/users/${selectedUser.employeeId}`, userForm);
+        dispatch(updateUser(selectedUser._id, userForm));
       } else {
         // Create a new user
-        await axios.post("/api/users", userForm);
+        dispatch(createUser(userForm));
       }
       setShowModal(false);
       setEditMode(false);
-      fetchUsers(); // Refresh user list
+      dispatch(fetchAllUsers()); // Refresh user list
+
     } catch (error) {
       console.error("Error submitting user data:", error);
     }
   };
 
+  // Handle Update User
   const handleEdit = (user) => {
     setSelectedUser(user);
     setUserForm(user);
     setEditMode(true);
     setShowModal(true);
+  };
+
+  // Handle Delete User
+  const handleDelete = (userId) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this user?");
+    if (confirmDelete) {
+      dispatch(DeleteUser(userId)); // Dispatch delete action
+      dispatch(fetchAllUsers()); // Refresh user list after deletion
+    }
   };
 
   return (
@@ -130,6 +141,12 @@ const UserManagement = () => {
                     className="bg-yellow-500 text-white px-3 py-1 rounded mr-2"
                   >
                     Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(user._id)}
+                    className="bg-red-500 text-white px-3 py-1 rounded"
+                  >
+                    Delete
                   </button>
                 </td>
               </tr>

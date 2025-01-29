@@ -1,4 +1,4 @@
-import { loginStart, loginSuccess, loginFailure } from './authSlice';
+import { loginStart, loginSuccess, loginFailure } from '../slices/authSlice';
 import apiClient from '../../api/apiClient';
 
 // AuthAction handle asynchoronous login logic and make the API call to the backend
@@ -13,7 +13,7 @@ export const loginUser = ({ email, password }) => async (dispatch) => {
     }
 
     try {
-        const response = await apiClient.post('/login', {email, password});
+        const response = await apiClient.post('/api/v1/login', {email, password});
 
         if (response?.data) {
             const token = response.data.token

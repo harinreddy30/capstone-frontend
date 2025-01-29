@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { createLeaveRequest } from '../../redux/action/leaveAction';
 
 const LeaveRequestForm = () => {
+
   const [leaveRequest, setLeaveRequest] = useState({
     startDate: '',
     endDate: '',
@@ -9,6 +12,8 @@ const LeaveRequestForm = () => {
     status: 'Pending',
   });
 
+  const dispatch = useDispatch(); // Dispatch the action
+  const { loading, error } = useSelector((state) => state.leave);
   const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
 
   // Function to calculate total days between startDate and endDate
@@ -38,6 +43,7 @@ const LeaveRequestForm = () => {
   };
 
   const handleSubmit = async (e) => {
+
     e.preventDefault();
 
     const { startDate, endDate, reason } = leaveRequest;
@@ -47,41 +53,26 @@ const LeaveRequestForm = () => {
       alert('Start date cannot be in the past.');
       return;
     }
+
     if (new Date(startDate) >= new Date(endDate)) {
       alert('End date must be after the start date.');
       return;
     }
+    
     if (!reason.trim()) {
       alert('Reason for time off is required.');
       return;
     }
 
-    // Call backend API to submit leave request
-    try {
-      const response = await fetch('/api/leave-requests', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(leaveRequest),
-      });
+    dispatch(createLeaveRequest(leaveRequest));
 
-      if (response.ok) {
-        alert('Leave request submitted successfully!');
-        setLeaveRequest({ startDate: '', endDate: '', reason: '', totalDays: 0, status: 'Pending' });
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.message}`);
-      }
-    } catch (error) {
-      console.error('Error submitting leave request:', error);
-      alert('Failed to submit leave request.');
-    }
   };
 
   return (
     <div className="max-w-md mx-auto mt-8 p-6 bg-gray-100 rounded-lg shadow-lg">
       <h2 className="text-2xl font-semibold text-center mb-6">Request Time Off</h2>
+      {loading && <p className="loading">Submitting your request...</p>}
+      {error && <p className="error">Error: {error}</p>}
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block font-semibold mb-2">From:</label>
