@@ -1,8 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    user: null, // Initially, no user is logged in.
-    token: null, // Stores JWT token
+    user: JSON.parse(localStorage.getItem("user")) || null, // Retrieve user from localStorage
+    token: localStorage.getItem("token") || null, // Try to get the token from localStorage
     loading: false, // Indicates if the login request is in progress.
     error: null, // Holds any error messages.
 }
@@ -27,13 +27,21 @@ const authSlice = createSlice({
             state.error = action.payload; // Store the error message.
         },
         logout: (state) => {
-            state.user = null; // Clear user data on logout.
+            state.user = null;
+            state.token = null;
+            localStorage.removeItem("user");
+            localStorage.removeItem("token"); // Remove data from localStorage on logout
+                     
         },
+        // // Action to set token from localStorage (or on app load)
+        // setToken: (state, action) => {
+        //     state.token = action.payload;
+        // }
     },
 });
 
 // Export the actions so that we can dispatch them from components.
-export const { loginStart, loginSuccess, loginFailure, logout } = authSlice.actions;
+export const { loginStart, loginSuccess, loginFailure, logout, setToken } = authSlice.actions;
 
 // Export the reducer to be used in the store.
 export default authSlice.reducer;

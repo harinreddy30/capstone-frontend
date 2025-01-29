@@ -1,8 +1,9 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { useSelector } from "react-redux"; // Use to manage application State, token and yser data\
+import { useSelector, useDispatch } from "react-redux"; // Use to manage application State, token and yser data\
 
 import Login from './pages/Auth/Login';
+import { setToken } from "./redux/slices/authSlice";
 
 import EmployeeDashboard from './Dashboard/EmployeeDashboard/EmployeeDashboard'
 import HRDashboard from './Dashboard/HRDashboard/HRDashboard'
@@ -22,6 +23,10 @@ const ProtectedRoute = ({ children, authorizedRoles }) => {
   if(!token){
     return <Navigate to='/login'/>
   }
+  // If the user is not loaded yet, you can either show a loading spinner or handle it gracefully.
+  if (!user) {
+    return <div>Loading...</div>; // or any placeholder while the user data is being fetched
+  }
 
   if(authorizedRoles && !authorizedRoles.includes(user.role)){
     console.log(`Redirecting to home because user role "${user.role}" is unauthorized.`);
@@ -34,15 +39,25 @@ const ProtectedRoute = ({ children, authorizedRoles }) => {
 
 function App() {
 
-    // UseEffect is used to remove the token from localStorage, if the token is missing
-    const { token } = useSelector((state) => state.auth);
+  // const dispatch = useDispatch();
+
+  // UseEffect is used to remove the token from localStorage, if the token is missing
+  // const { token } = useSelector((state) => state.auth);
+
+  // Restore the token from localStorage on page load/refresh
+  // useEffect(() => {
+  //   const storedToken = localStorage.getItem("token");
+  //   if (storedToken) {
+  //     dispatch(setToken(storedToken)); // Set the token into Redux state if it exists in localStorage
+  //   }
+  // }, [dispatch]);
 
     // Automaticaly logout if the token is missing
-    useEffect(() => {
-      if(!token){
-        localStorage.removeItem("token");
-      }
-    }, [token]);
+    // useEffect(() => {
+    //   if(!token){
+    //     localStorage.removeItem("token");
+    //   }
+    // }, [token]);
 
   return (
       <Router>

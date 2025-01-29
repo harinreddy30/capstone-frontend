@@ -17,11 +17,14 @@ export const loginUser = ({ email, password }) => async (dispatch) => {
 
         if (response?.data) {
             const token = response.data.token
+            const user = response.data.user
             
-            dispatch(loginSuccess({ user: response.data.user, token })); // Update Redux state
+            dispatch(loginSuccess({ user, token })); // Update Redux state
 
             // Save token to localStorage for persistence across reloads
             localStorage.setItem("token", token);
+            localStorage.setItem("user", JSON.stringify(user)); // Store user as JSON string
+
 
             return response.data; // Return data to handle role-based redirection
         } else {
@@ -36,3 +39,8 @@ export const loginUser = ({ email, password }) => async (dispatch) => {
     }
 
 }
+
+export const setToken = (token) => ({
+    type: 'SET_TOKEN',
+    payload: token,
+});
