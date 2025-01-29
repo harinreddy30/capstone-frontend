@@ -14,6 +14,11 @@ export const loginUser = ({ email, password }) => async (dispatch) => {
 
     try {
         const response = await apiClient.post('/api/v1/login', {email, password});
+        console.log('Login response:', response.data);
+        if (response?.data?.user) {
+            console.log('User:', response.data.user);
+            console.log('Role:', response.data.user.role);
+        }
 
         if (response?.data) {
             const token = response.data.token
@@ -22,7 +27,7 @@ export const loginUser = ({ email, password }) => async (dispatch) => {
 
             // Save token to localStorage for persistence across reloads
             localStorage.setItem("token", token);
-
+            console.log(response.data.user)
             return response.data; // Return data to handle role-based redirection
         } else {
             throw new Error('Response data is undefined');

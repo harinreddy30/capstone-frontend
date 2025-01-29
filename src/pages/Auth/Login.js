@@ -20,7 +20,7 @@ const Login = () => {
 
         e.preventDefault(); // Prevent the form from submitting
         const success = await dispatch(loginUser({ email, password })) // Dispatch the Login action with email and password
-        
+        console.log(success)
         if (!success) {
             console.error('Login failed: No data received');
             return;

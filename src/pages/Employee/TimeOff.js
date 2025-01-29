@@ -70,9 +70,11 @@ const LeaveRequestForm = () => {
 
   return (
     <div className="leave-request-form">
+
       <h2>Request Time Off</h2>
       {loading && <p className="loading">Submitting your request...</p>}
       {error && <p className="error">Error: {error}</p>}
+
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>From:</label>
@@ -98,6 +100,7 @@ const LeaveRequestForm = () => {
           <label>Total Days:</label>
           <input type="text" value={leaveRequest.totalDays} disabled readOnly />
         </div>
+        
         <div className="form-group">
           <label>Reason:</label>
           <textarea

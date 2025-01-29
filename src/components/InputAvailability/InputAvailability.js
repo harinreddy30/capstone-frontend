@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
+import { useDispatch } from "react-redux";
+import { createAvailabilityRequest } from "../../redux/actions/availabilityAction";
 import '../InputAvailability/InputAvailability.css'
 
 const Availability = () => {
   const [availability, setAvailability] = useState({});
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  console.log(availability)
+  const dispatch = useDispatch();
+
 
   const handleTimeChange = (day, index, type, value) => {
     setAvailability((prev) => {
@@ -41,7 +46,10 @@ const Availability = () => {
     setAvailability({});
   };
 
-  const saveAvailability = () => {
+  const saveAvailability = (e) => {
+    e.preventDefault();
+  
+    // Validate the availability time ranges
     for (const day in availability) {
       const daySlots = availability[day];
       for (const slot of daySlots) {
@@ -51,9 +59,26 @@ const Availability = () => {
         }
       }
     }
-    console.log('Saved availability:', availability);
-    alert('Availability saved successfully!');
+  
+    // Transform the `availability` object into the desired format
+    const formattedAvailability = {
+      availability: Object.entries(availability).flatMap(([day, slots]) =>
+        slots.map((slot) => ({
+          day,
+          startTime: slot.start,
+          endTime: slot.end,
+        }))
+      ),
+    };
+  
+    console.log("Formatted availability:", formattedAvailability); // Log the formatted structure
+  
+
+    dispatch(createAvailabilityRequest(formattedAvailability));
+    // Dispatch the Redux action with the transformed data
+    // dispatch(createAvailabilityRequest(formattedAvailability));
   };
+  
 
   return (
     <div className="availability-container">

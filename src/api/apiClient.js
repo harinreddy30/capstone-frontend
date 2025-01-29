@@ -5,9 +5,7 @@ const BACKEND_URI = process.env.REACT_APP_BACKEND_URI
 // Create an Axios Connection
 const apiClient = axios.create({
     baseURL: BACKEND_URI, // Backend URL
-    headers: {
-        'Content-Type': 'application/json',
-    },
+    
 });
 
 apiClient.interceptors.request.use((config) => {
