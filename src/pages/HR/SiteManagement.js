@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  fetchAllSites,
+  createSite,
+  updateSite,
+  DeleteSite,
+} from '../../redux/action/siteAction'
+import apiClient from "../../api/apiClient";
 
-const SiteManagement = () => {
-  const [sites, setSites] = useState([]);
+const SiteManagement = ( ) => {
+
+  // const [sites, setSites] = useState([]);
   const [managers, setManagers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -17,23 +25,20 @@ const SiteManagement = () => {
     description: "",
   });
 
-  useEffect(() => {
-    fetchSites();
-    fetchManagers();
-  }, []);
+  const dispatch = useDispatch(); // Dispatch the action
 
-  const fetchSites = async () => {
-    try {
-      const res = await axios.get("/api/sites");
-      setSites(res.data);
-    } catch (error) {
-      console.error("Error fetching sites:", error);
-    }
-  };
+  // Fetch Users from Redux store
+  const { sites, loading, error } = useSelector((state) => state.sites);
+  
+
+  useEffect(() => {
+    dispatch(fetchAllSites());
+    fetchManagers();
+  }, [dispatch]);
 
   const fetchManagers = async () => {
     try {
-      const res = await axios.get("/api/users"); // Fetch all users
+      const res = await apiClient.get("/api/v1/users"); // Fetch all users
       const managerList = res.data.filter((user) => user.role === "Manager"); // Only Managers
       setManagers(managerList);
     } catch (error) {
@@ -58,25 +63,40 @@ const SiteManagement = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
+      
       if (editMode) {
-        await axios.put(`/api/sites/${selectedSite.siteId}`, siteForm);
+        dispatch(updateSite(selectedSite._id, siteForm))
       } else {
-        await axios.post("/api/sites", siteForm);
+        dispatch(createSite(siteForm));
       }
+
       setShowModal(false);
       setEditMode(false);
-      fetchSites();
+      dispatch(fetchAllSites());
+
     } catch (error) {
       console.error("Error submitting site data:", error);
     }
   };
 
+  // Handle the edit
   const handleEdit = (site) => {
     setSelectedSite(site);
     setSiteForm(site);
     setEditMode(true);
     setShowModal(true);
   };
+
+  // Handle Delete User
+  const handleDelete = (siteId) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this Site?");
+    if (confirmDelete) {
+      dispatch(DeleteSite(siteId)); // Dispatch delete action
+      dispatch(fetchAllSites()); // Refresh user list after deletion
+    }
+  };
+  if (loading) return <div>Loading managers...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div className="p-6">
@@ -141,6 +161,12 @@ const SiteManagement = () => {
                   >
                     Edit
                   </button>
+                  <button
+                    onClick={() => handleDelete(site._id)}
+                    className="bg-red-500 text-white px-3 py-1 rounded"
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
@@ -196,7 +222,7 @@ const SiteManagement = () => {
               {/* Manager Selection */}
               <select
                 name="userId"
-                value={siteForm.userId}
+                value={siteForm.userId || ""}
                 onChange={handleInputChange}
                 className="border p-2 w-full"
                 required

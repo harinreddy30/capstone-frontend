@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from 'react-redux';
-import axios from "axios";
 import { fetchAllUsers, createUser, updateUser, DeleteUser } from "../../redux/action/userAction"; // Make sure actions are in place
 
 
 const roles = ["Employee", "HR", "Manager", "PayrollManager"];
 
 const UserManagement = () => {
+  
   // const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -28,10 +28,10 @@ const UserManagement = () => {
     // Fetch Users from Redux store
     const { users, loading, error } = useSelector((state) => state.users);
 
-  // Fetch Users
+  // Fetch Users from the API when component mounts
   useEffect(() => {
-    fetchAllUsers();
-  }, [dispatch]);
+    dispatch(fetchAllUsers()); // Dispatch the action to fetch users
+  }, [dispatch]); // This ensures it only runs once when the component is mounted
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);

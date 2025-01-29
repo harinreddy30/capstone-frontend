@@ -1,6 +1,21 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';  // For navigation in React Router v6+
+
 
 const TopNavBar = () => {
+
+  const navigate = useNavigate();  // Access the navigate function for navigation
+
+  const handleLogout = () => {
+    // Clear the authentication token (if it's stored in localStorage or Redux)
+    localStorage.removeItem('token');  // Assuming JWT token is stored in localStorage
+    
+    // Optionally, clear any user data from Redux or state here
+
+    // Redirect to the login page after logging out
+    navigate('/login');  // Redirect to '/login' route
+  };
+
   return (
     <div className="flex justify-between items-center px-6 py-3" style={{ backgroundColor: '#0a0f2c', color: 'white' }}>
       {/* Left Section */}
@@ -32,7 +47,10 @@ const TopNavBar = () => {
         <button className="text-xl text-white cursor-pointer focus:outline-none">
           ⚙️
         </button>
-        <button className="text-sm font-medium text-white cursor-pointer focus:outline-none hover:underline">
+        <button
+          onClick={handleLogout}  // Trigger the logout function on click
+          className="text-sm font-medium text-white cursor-pointer focus:outline-none hover:underline"
+        >
           Logout
         </button>
       </div>

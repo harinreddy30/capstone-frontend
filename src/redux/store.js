@@ -1,7 +1,9 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from '../redux/slices/authSlice';
 import leaveReducer from '../redux/slices/leaveSlice';
-import usersReducer from '../redux/slices/userSlice'
+import usersReducer from '../redux/slices/userSlice';
+import sitesReducer from '../redux/slices/siteSlice';
+
 import logger from 'redux-logger';
 
 
@@ -10,6 +12,7 @@ const store = configureStore({
         auth: authReducer,
         leave: leaveReducer, // Add the leave slice here
         users: usersReducer,
+        sites: sitesReducer,
 
     },
     // This will print every dispatched action and the state changes in the browser's console
