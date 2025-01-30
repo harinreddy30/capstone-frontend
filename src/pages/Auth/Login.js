@@ -18,6 +18,7 @@ const Login = () => {
     // This will triggered upon called
     const handleSubmit = async (e) => {
 
+        console.log(`${email}, ${password}`)
         e.preventDefault(); // Prevent the form from submitting
         const success = await dispatch(loginUser({ email, password })) // Dispatch the Login action with email and password
         console.log(success)

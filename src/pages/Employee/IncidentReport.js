@@ -22,8 +22,9 @@ const IncidentReport = () => {
     reportDescription: "",
     incidentDate: "",
     status: "",
-    created: user?.name || "", // Autofill from Redux state
+    created: user?.name || "Unknown", // Autofill from Redux state
   });
+  console.log(`${user.id}`)
 
   // Handle input changes
   const handleInputChange = (event) => {
@@ -73,21 +74,27 @@ const IncidentReport = () => {
   };
 
   return (
+
     <div className="max-w-[600px] mx-auto p-5 bg-gray-100 rounded-lg shadow-md">
       <form className="flex flex-col">
-        {/* Date/Time of Incident */}
-        <div className="mb-4">
-          <label className="font-bold mb-2 block" htmlFor="incidentDateTime">
+
+         {/* Date/Time of Incident */}
+         <div className="mb-4">
+          <label className="font-bold mb-2 block" htmlFor="incidentDate">
             Date/Time of Incident
           </label>
           <input
             type="datetime-local"
-            id="incidentDateTime"
+            id="incidentDate"
+            name="incidentDate"
+            value={reportForm.incidentDate}
+            onChange={handleInputChange}
             className="w-full p-3 border border-gray-300 rounded"
+            required
           />
         </div>
 
-        {/* Location */}
+        {/* Location
         <div className="mb-4">
           <label className="font-bold mb-2 block" htmlFor="incidentLocation">
             Location
@@ -97,24 +104,23 @@ const IncidentReport = () => {
             id="incidentLocation"
             className="w-full p-3 border border-gray-300 rounded"
             placeholder="Enter location"
+            value={reportForm.}
+            onChange={handleInputChange}
           />
-        </div>
+        </div> */}
 
-        {/* Reported By */}
+        {/* Created By (Auto-filled) */}
         <div className="mb-4">
-          <label className="font-bold mb-2 block" htmlFor="reportedBy">
-            Reported By
-          </label>
+          <label className="font-bold mb-2 block">Report Submitted By</label>
           <input
             type="text"
-            id="reportedBy"
-            className="w-full p-3 border border-gray-300 rounded bg-gray-200 cursor-not-allowed"
-            value="John Doe (Autofilled)" // Example value from backend token
+            value={user?.name || "Unknown"}
+            className="w-full p-3 border border-gray-300 rounded bg-gray-200"
             disabled
           />
         </div>
 
-        {/* Employee Involved */}
+        {/* Employee Involved
         <div className="mb-4">
           <label className="font-bold mb-2 block" htmlFor="employeeInvolved">
             Employee Involved
@@ -124,10 +130,12 @@ const IncidentReport = () => {
             id="employeeInvolved"
             className="w-full p-3 border border-gray-300 rounded"
             placeholder="Enter employee's name"
+            onChange={handleInputChange}
+            value= {reportForm.created}
           />
-        </div>
+        </div> */}
 
-        {/* Position */}
+        {/* Position
         <div className="mb-4">
           <label className="font-bold mb-2 block" htmlFor="position">
             Position
@@ -138,16 +146,20 @@ const IncidentReport = () => {
             className="w-full p-3 border border-gray-300 rounded"
             placeholder="Enter position"
           />
-        </div>
+        </div> */}
 
         {/* Incident Type */}
         <div className="mb-4">
-          <label className="font-bold mb-2 block" htmlFor="incidentType">
-            Incident Type
+          <label className="font-bold mb-2 block" htmlFor="reportName">
+            Incident Type (Report Name)
           </label>
           <select
-            id="incidentType"
+            id="reportName"
+            name="reportName"
             className="w-full p-3 border border-gray-300 rounded"
+            value={reportForm.reportName}
+            onChange={handleInputChange}
+            required
           >
             <option value="">Select incident type</option>
             <option value="safety">Safety</option>
@@ -158,20 +170,42 @@ const IncidentReport = () => {
           </select>
         </div>
 
-        {/* Description of Incident */}
+        {/* Report Description */}
         <div className="mb-4">
-          <label className="font-bold mb-2 block" htmlFor="incidentDescription">
-            Description of Incident
+          <label className="font-bold mb-2 block" htmlFor="reportDescription">
+            Report Description
           </label>
           <textarea
-            id="incidentDescription"
-            className="w-full p-3 border border-gray-300 rounded resize-y"
-            rows="5"
-            placeholder="Describe the incident"
-          ></textarea>
+            id="reportDescription"
+            name="reportDescription"
+            value={reportForm.reportDescription}
+            onChange={handleInputChange}
+            className="w-full p-3 border border-gray-300 rounded"
+            required
+          />
         </div>
 
-        {/* Witnesses */}
+
+        {/* Status */}
+        <div className="mb-4">
+          <label className="font-bold mb-2 block" htmlFor="status">
+            Status
+          </label>
+          <select
+            id="status"
+            name="status"
+            value={reportForm.status}
+            onChange={handleInputChange}
+            className="w-full p-3 border border-gray-300 rounded"
+            required
+          >
+            <option value="">Select Status</option>
+            <option value="Pending">Pending</option>
+            <option value="Resolved">Resolved</option>
+            <option value="Closed">Closed</option>
+          </select>
+        </div>
+        {/* Witnesses
         <div className="mb-4">
           <label className="font-bold mb-2 block" htmlFor="witnesses">
             Witnesses
@@ -182,11 +216,12 @@ const IncidentReport = () => {
             rows="3"
             placeholder="Enter witnesses (if any)"
           ></textarea>
-        </div>
+        </div> */}
 
         {/* Submit Button */}
         <button
           type="submit"
+          onClick={handleSubmit}
           className="w-full bg-blue-500 text-white font-bold text-lg py-2 rounded hover:bg-blue-600"
         >
           Submit

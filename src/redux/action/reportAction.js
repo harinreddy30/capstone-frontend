@@ -34,7 +34,8 @@ export const fetchReportById = (reportId) => async (dispatch) => {
 }
 // Create a Report
 export const createReport = (reportData) => async (dispatch) => {
-    dispatch(reportPending());
+    console.log(reportData)
+    dispatch(reportPending(reportData));
     try {
         const response = await apiClient.post("/api/v1/report", reportData)
         dispatch(reportCreateSuccess(response.data))
