@@ -24,7 +24,8 @@ import apiClient from '../../api/apiClient';
 import { 
     leavePending, 
     leaveSuccess, 
-    leaveFailure,  
+    leaveFailure,
+    createLeaveSuccess,  
     leaveUpdateSuccess, 
     
 } from '../slices/leaveSlice';
@@ -35,7 +36,7 @@ export const fetchLeaveRequests = () => async (dispatch) => {
     dispatch(leavePending()); // Dispatch the 'pending' state before making the request
     try {
         const response = await apiClient.get("/api/v1/leave");
-        
+
         dispatch(leaveSuccess(response.data)); // Dispatch success action with the fetched data
     } catch (error) {
         dispatch(leaveFailure(error.response?.data || 'Error fetching leave requests'));
@@ -55,8 +56,8 @@ export const createLeaveRequest = createAsyncThunk(
       // Prepare the payload
       const payload = { ...requestData, userId };
       const response = await apiClient.post("/api/v1/leave/create", payload );
-      console.log('Leave request response:', response.data); // Log response data
-      dispatch(leaveSuccess(response.data)); // Dispatch success with returned data
+
+      dispatch(createLeaveSuccess(response.data)); // Dispatch success with returned data
     } catch (error) {
       console.log('Error in createLeaveRequest:', error);  // Log the error here
       dispatch(leaveFailure(error.message)); // Dispatch failure with error message

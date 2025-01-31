@@ -6,6 +6,7 @@ const LeaveManagement = () => {
   const dispatch = useDispatch();
   const { leaveRequests, loading, error } = useSelector((state) => state.leave);
 
+  
   // Local state to track status changes
   const [updatedLeaves, setUpdatedLeaves] = useState({});
   const [successMessage, setSuccessMessage] = useState(""); 
@@ -13,6 +14,8 @@ const LeaveManagement = () => {
   useEffect(() => {
     dispatch(fetchLeaveRequests()); // Fetch all leave requests when component mounts
   }, [dispatch]);
+
+  console.log("Leave Requests Data:", leaveRequests);
 
   const handleStatusChange = (id, newStatus) => {
     setUpdatedLeaves((prev) => ({
@@ -46,34 +49,48 @@ const LeaveManagement = () => {
           </tr>
         </thead>
         <tbody>
-          {leaveRequests?.map((leave) => (
-            <tr key={leave.id} className="border">
-              <td className="border p-2">{leave.employeeName}</td>
-              <td className="border p-2">{new Date(leave.startDate).toLocaleDateString()}</td>
-              <td className="border p-2">{new Date(leave.endDate).toLocaleDateString()}</td>
-              <td className="border p-2">{leave.reason}</td>
-              <td className="border p-2">
-                <select
-                  className="border p-1"
-                  value={updatedLeaves[leave.id] || leave.status}
-                  onChange={(e) => handleStatusChange(leave.id, e.target.value)}
-                >
-                  <option value="Pending">Pending</option>
-                  <option value="Approved">Approved</option>
-                  <option value="Rejected">Rejected</option>
-                </select>
-              </td>
-              <td className="border p-2">
-                <button
-                  className="bg-blue-500 text-white px-3 py-1 rounded"
-                  onClick={() => handleSubmit(leave.id)}
-                >
-                  Submit
-                </button>
-              </td>
+          {leaveRequests.getLeave.length > 0 ? (
+            leaveRequests.getLeave
+            .map((leave) => (
+              <tr key={leave._id} className="border">
+                <td className="border p-2">
+                  {leave?.userId ? `${leave.userId.fname} ${leave.userId.lname}` : "Unknown Employee"}
+                </td>
+                <td className="border p-2">
+                  {leave?.startDate ? new Date(leave.startDate).toLocaleDateString() : "N/A"}
+                </td>
+                <td className="border p-2">
+                  {leave?.endDate ? new Date(leave.endDate).toLocaleDateString() : "N/A"}
+                </td>
+                <td className="border p-2">{leave?.reason || "No reason provided"}</td>
+                <td className="border p-2">
+                  <select
+                    className="border p-1"
+                    value={updatedLeaves[leave._id] || leave.status}
+                    onChange={(e) => handleStatusChange(leave._id, e.target.value)}
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Rejected">Rejected</option>
+                  </select>
+                </td>
+                <td className="border p-2">
+                  <button
+                    className="bg-blue-500 text-white px-3 py-1 rounded"
+                    onClick={() => handleSubmit(leave._id)}
+                  >
+                    Submit
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="6" className="text-center p-4">No leave requests available</td>
             </tr>
-          ))}
+          )}
         </tbody>
+
       </table>
     </div>
   );

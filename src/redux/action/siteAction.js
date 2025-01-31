@@ -14,7 +14,7 @@ from '../slices/siteSlice';
 export const fetchAllSites = () => async (dispatch) => {
     dispatch(sitePending()); 
     try {
-        const response = await apiClient.get("api/v1/sites")
+        const response = await apiClient.get("/api/v1/sites")
         dispatch(siteSuccess(response.data.sites)) // Dispatch SUcess action
 
     } catch (error) {
