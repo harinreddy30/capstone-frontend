@@ -22,9 +22,7 @@ const IncidentReport = () => {
     reportDescription: "",
     incidentDate: "",
     status: "",
-    created: user?.name || "Unknown", // Autofill from Redux state
   });
-  console.log(`${user.id}`)
 
   // Handle input changes
   const handleInputChange = (event) => {
@@ -109,7 +107,7 @@ const IncidentReport = () => {
           />
         </div> */}
 
-        {/* Created By (Auto-filled) */}
+        {/* Created By (Auto-filled)
         <div className="mb-4">
           <label className="font-bold mb-2 block">Report Submitted By</label>
           <input
@@ -118,7 +116,7 @@ const IncidentReport = () => {
             className="w-full p-3 border border-gray-300 rounded bg-gray-200"
             disabled
           />
-        </div>
+        </div> */}
 
         {/* Employee Involved
         <div className="mb-4">

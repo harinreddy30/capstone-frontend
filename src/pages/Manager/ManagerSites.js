@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import apiClient from "../../api/apiClient";
+
 
 const ManagerSites = ({ managerId }) => {
   const [sites, setSites] = useState([]);
@@ -22,7 +23,10 @@ const ManagerSites = ({ managerId }) => {
 
   const fetchManagerSites = async () => {
     try {
-      const res = await axios.get(`/api/manager/sites/${managerId}`);
+      const res = await apiClient.get(`/api/manager/sites/${managerId}`);
+      console.log(managerId);
+      console.log(res);
+
       setSites(res.data);
     } catch (error) {
       console.error("Error fetching sites:", error);
@@ -69,7 +73,7 @@ const ManagerSites = ({ managerId }) => {
   const handleAddShift = async (event) => {
     event.preventDefault();
     try {
-      await axios.post("/api/shifts", shiftForm);
+      await apiClient.post("/api/shifts", shiftForm);
       setShowShiftModal(false);
     } catch (error) {
       console.error("Error adding shift:", error);

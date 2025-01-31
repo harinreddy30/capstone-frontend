@@ -14,6 +14,7 @@ export const fetchAllReport = () => async (dispatch) => {
     dispatch(reportPending());
     try {
         const response = await apiClient.get("/api/v1/report")
+        console.log(response)
         dispatch(reportSuccess(response.data))
     } catch (error) {
         dispatch(reportFailure(error.response?.data || 'Error fetching Reports')); // Dispatch failure with error message
@@ -34,10 +35,11 @@ export const fetchReportById = (reportId) => async (dispatch) => {
 }
 // Create a Report
 export const createReport = (reportData) => async (dispatch) => {
-    console.log(reportData)
-    dispatch(reportPending(reportData));
+    // console.log(reportData)
+    dispatch(reportPending());
     try {
         const response = await apiClient.post("/api/v1/report", reportData)
+        console.log(response.data)
         dispatch(reportCreateSuccess(response.data))
     } catch (error) {
         dispatch(reportFailure(error.response?.data || 'Error Creating Report')); // Dispatch failure with error message
