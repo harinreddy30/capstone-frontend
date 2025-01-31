@@ -23,11 +23,8 @@ const ManagerSites = ({ managerId }) => {
 
   const fetchManagerSites = async () => {
     try {
-      const res = await apiClient.get(`/api/manager/sites/${managerId}`);
-      console.log(managerId);
-      console.log(res);
-
-      setSites(res.data);
+      const res = await apiClient.get("/api/manager/sites")
+      setSites(res.data.sites);
     } catch (error) {
       console.error("Error fetching sites:", error);
     }

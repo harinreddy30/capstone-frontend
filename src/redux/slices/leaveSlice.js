@@ -27,10 +27,17 @@ const leaveSlice = createSlice({
             state.error = action.payload; // Store the error message
             // console.error("Leave request failed:", action.payload); // Log the error
         },
+        leaveUpdateSuccess: (state, action) => {
+            state.loading = false;
+            state.leaveRequests = state.leaveRequests.map((leaveRequest) => 
+                leaveRequest._id === action.payload._id ? action.payload : leaveRequest
+            ); 
+        },
+    
     }
 })
 
 // Export actions to be dispatched
-export const { leavePending, leaveSuccess, leaveFailure } = leaveSlice.actions;
+export const { leavePending, leaveSuccess, leaveFailure, leaveUpdateSuccess } = leaveSlice.actions;
 // Export the reducer to be used in the store
 export default leaveSlice.reducer;
