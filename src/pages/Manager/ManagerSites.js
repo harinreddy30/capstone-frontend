@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from "react";
 import apiClient from "../../api/apiClient";
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  fetchAllSites,
+  fetchSitesByManager
+} from '../../redux/action/siteAction'
+
 
 
 const ManagerSites = ({ managerId }) => {
-  const [sites, setSites] = useState([]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [showShiftModal, setShowShiftModal] = useState(false);
   const [selectedSite, setSelectedSite] = useState(null);
@@ -17,18 +23,19 @@ const ManagerSites = ({ managerId }) => {
     siteId: "",
   });
 
-  useEffect(() => {
-    fetchManagerSites();
-  }, []);
+  const dispatch = useDispatch(); // Dispatch the action
+  const { sites, loading, error } = useSelector((state) => state.sites);
+  
 
-  const fetchManagerSites = async () => {
-    try {
-      const res = await apiClient.get("/api/manager/sites")
-      setSites(res.data.sites);
-    } catch (error) {
-      console.error("Error fetching sites:", error);
+  // const [sites, setSites] = useState([]);
+  
+
+  useEffect(() => {
+    if (!sites || sites.length === 0) { // Avoid refetching if sites are already fetched
+        dispatch(fetchSitesByManager());
     }
-  };
+}, [dispatch, sites]); // Dependency on sites, so it will re-fetch only if sites are empty
+
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
