@@ -1,23 +1,20 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+
+import { fetchAllReport } from "../../redux/action/reportAction";
 
 const ManagerReports = () => {
-  const [reports, setReports] = useState([]);
+  const dispatch = useDispatch();
+  const {reports, loading, error} = useSelector((state) => state.report);
   const [search, setSearch] = useState("");
   const [selectedReport, setSelectedReport] = useState(null);
 
   useEffect(() => {
-    fetchReports();
-  }, []);
+    dispatch(fetchAllReport());
+  }, [dispatch]);
 
-  const fetchReports = async () => {
-    try {
-      const response = await axios.get("/api/reports"); // Replace with actual API
-      setReports(response.data);
-    } catch (error) {
-      console.error("Error fetching reports:", error);
-    }
-  };
+  console.log("Reports Data:", reports);
+
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
