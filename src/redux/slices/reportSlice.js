@@ -8,7 +8,7 @@ const initialState = {
 }
 
 const reportSlice = createSlice({
-    name: "reports",
+    name: "report",
     initialState,
     reducers: {
 
@@ -21,6 +21,8 @@ const reportSlice = createSlice({
         reportSuccess: (state, action) => {
             state.loading = false;
             state.reports = action.payload;
+            localStorage.setItem("reports", JSON.stringify(state.reports));
+
         },
         reportFailure: (state, action) => {
             state.loading = false;

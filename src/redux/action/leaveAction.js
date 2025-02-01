@@ -27,6 +27,7 @@ import {
     leaveFailure,
     createLeaveSuccess,  
     leaveUpdateSuccess, 
+    leaveDeleteSuccess
     
 } from '../slices/leaveSlice';
 import { getUserIdFromToken } from "../../utilis/token"; // Import utility
@@ -75,5 +76,16 @@ export const updateLeaveStatus = (leaveId, updatedStatus) => async (dispatch) =>
         dispatch(leaveFailure(error.response?.data || 'Error updating leave request status'));
         console.log("Error Updating Leave Request Status:", error.message);
     }
+};
+
+export const DeleteRequest = (leaveId) => async (dispatch) => {
+  dispatch(leavePending());
+  try {
+      const response = await apiClient.delete(`/api/v1/leave/${leaveId}`);
+      dispatch(leaveDeleteSuccess(leaveId)); // Dispatch success and remove the deleted user from state
+  } catch (error) {
+      dispatch(leaveFailure(error.response?.data || 'Error updating Request'));
+      console.log("Error Deleting Request", error.message)
+  }
 };
 

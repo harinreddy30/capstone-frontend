@@ -5,7 +5,7 @@ import { fetchAllReport } from "../../redux/action/reportAction";
 
 const ManagerReports = () => {
   const dispatch = useDispatch();
-  const {reports, loading, error} = useSelector((state) => state.report);
+  const { reports, loading, error } = useSelector((state) => state.reports);
   const [search, setSearch] = useState("");
   const [selectedReport, setSelectedReport] = useState(null);
 
@@ -15,15 +15,15 @@ const ManagerReports = () => {
 
   console.log("Reports Data:", reports);
 
-
   const handleSearch = (e) => {
     setSearch(e.target.value);
   };
 
+  // Filter reports based on search term
   const filteredReports = reports.filter((report) =>
-    report.reportName.toLowerCase().includes(search.toLowerCase()) ||
-    report.createdBy.name.toLowerCase().includes(search.toLowerCase()) ||
-    report.status.toLowerCase().includes(search.toLowerCase())
+    (report.reportName?.toLowerCase().includes(search.toLowerCase()) ||
+     report.createdBy?.name?.toLowerCase().includes(search.toLowerCase()) ||
+     report.status?.toLowerCase().includes(search.toLowerCase()))
   );
 
   return (
@@ -39,6 +39,11 @@ const ManagerReports = () => {
           className="border p-2 rounded w-1/3"
         />
       </div>
+
+      {/* Loading or Error Messages */}
+      {loading && <div>Loading reports...</div>}
+      {error && <div className="text-red-500">Error: {error.message}</div>}
+      {reports.length === 0 && !loading && !error && <div>No reports available.</div>}
 
       {/* Reports Table */}
       <div className="overflow-x-auto">
@@ -58,7 +63,7 @@ const ManagerReports = () => {
               <tr key={report.reportId} className="text-center">
                 <td className="border p-2">{report.reportId}</td>
                 <td className="border p-2">{report.reportName}</td>
-                <td className="border p-2">{report.createdBy.name}</td>
+                <td className="border p-2">{report.createdBy?.name || "Unknown"}</td>
                 <td className="border p-2">{new Date(report.incidentDate).toLocaleDateString()}</td>
                 <td className="border p-2">{report.status}</td>
                 <td className="border p-2">
@@ -83,7 +88,7 @@ const ManagerReports = () => {
             <p><strong>Description:</strong> {selectedReport.reportDescription}</p>
             <p><strong>Incident Date:</strong> {new Date(selectedReport.incidentDate).toLocaleString()}</p>
             <p><strong>Status:</strong> {selectedReport.status}</p>
-            <p><strong>Created By:</strong> {selectedReport.createdBy.name}</p>
+            <p><strong>Created By:</strong> {selectedReport.createdBy?.name || "Unknown"}</p>
             <div className="flex justify-end mt-4">
               <button
                 className="bg-red-500 text-white px-4 py-2 rounded"

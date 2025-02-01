@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchLeaveRequests, updateLeaveStatus } from "../../redux/action/leaveAction";
+import { fetchLeaveRequests, updateLeaveStatus, DeleteRequest } from "../../redux/action/leaveAction";
 
 const LeaveManagement = () => {
   const dispatch = useDispatch();
@@ -9,7 +9,9 @@ const LeaveManagement = () => {
   
   // Local state to track status changes
   const [updatedLeaves, setUpdatedLeaves] = useState({});
-  const [successMessage, setSuccessMessage] = useState(""); 
+  const [successMessage, setSuccessMessage] = useState("");
+  const [selectedLeave, setSelectedleave] = useState(null);
+   
   
   useEffect(() => {
     dispatch(fetchLeaveRequests()); // Fetch all leave requests when component mounts
@@ -24,10 +26,22 @@ const LeaveManagement = () => {
     }));
   };
 
-  const handleSubmit = (id) => {
-    if (!updatedLeaves[id]) return;
-    dispatch(updateLeaveStatus(id, updatedLeaves[id]));
-    alert(`Leave request ${id} updated to ${updatedLeaves[id]}`);
+  const handleSubmit = async (id) => {
+
+    // if (!updatedLeaves[id]) return;
+    await dispatch(updateLeaveStatus(id, updatedLeaves )); 
+    setSuccessMessage(`Leave request ${id} updated to ${updatedLeaves[id]}`);
+    setTimeout(() => setSuccessMessage(""), 3000);
+  };
+
+
+
+  const handleDelete = (id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this request?");
+    if (confirmDelete) {
+      dispatch(DeleteRequest(id)); // Dispatch delete action
+      dispatch(fetchLeaveRequests()); // Refresh user list after deletion
+    }
   };
 
   return (
@@ -49,8 +63,8 @@ const LeaveManagement = () => {
           </tr>
         </thead>
         <tbody>
-          {leaveRequests.getLeave.length > 0 ? (
-            leaveRequests.getLeave
+          {leaveRequests?.getLeave?.length > 0 ? (
+            leaveRequests?.getLeave
             .map((leave) => (
               <tr key={leave._id} className="border">
                 <td className="border p-2">
@@ -80,6 +94,12 @@ const LeaveManagement = () => {
                     onClick={() => handleSubmit(leave._id)}
                   >
                     Submit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(leave._id)}
+                    className="bg-red-500 text-white px-3 py-1 rounded"
+                  >
+                    Delete
                   </button>
                 </td>
               </tr>
