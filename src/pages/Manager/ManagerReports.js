@@ -53,6 +53,7 @@ const ManagerReports = () => {
               <th className="border p-2">Report ID</th>
               <th className="border p-2">Report Name</th>
               <th className="border p-2">Created By</th>
+              <th className="border p-2">Role</th>
               <th className="border p-2">Incident Date</th>
               <th className="border p-2">Status</th>
               <th className="border p-2">Actions</th>
@@ -63,7 +64,10 @@ const ManagerReports = () => {
               <tr key={report.reportId} className="text-center">
                 <td className="border p-2">{report.reportId}</td>
                 <td className="border p-2">{report.reportName}</td>
-                <td className="border p-2">{report.createdBy?.name || "Unknown"}</td>
+                <td className="border p-2">
+                  {`${report.createdBy?.fname || "Unknown"} ${report.createdBy?.lname || ""}`}
+                </td>
+                <td className="border p-2">{report.createdBy?.role}</td>
                 <td className="border p-2">{new Date(report.incidentDate).toLocaleDateString()}</td>
                 <td className="border p-2">{report.status}</td>
                 <td className="border p-2">
