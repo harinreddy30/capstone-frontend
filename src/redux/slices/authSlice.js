@@ -45,4 +45,3 @@ export const { loginStart, loginSuccess, loginFailure, logout, setToken } = auth
 
 // Export the reducer to be used in the store.
 export default authSlice.reducer;
-

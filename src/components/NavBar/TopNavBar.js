@@ -6,6 +6,10 @@ const TopNavBar = () => {
 
   const navigate = useNavigate();  // Access the navigate function for navigation
 
+  const handleSettingsClick = () => {
+    navigate('/profile/edit');
+  };
+
   const handleLogout = () => {
     // Clear the authentication token (if it's stored in localStorage or Redux)
     localStorage.removeItem('token');  // Assuming JWT token is stored in localStorage
@@ -44,7 +48,9 @@ const TopNavBar = () => {
         <button className="text-xl text-white cursor-pointer focus:outline-none">
           🔔
         </button>
-        <button className="text-xl text-white cursor-pointer focus:outline-none">
+        <button 
+          onClick={handleSettingsClick}
+          className="text-xl text-white cursor-pointer focus:outline-none">
           ⚙️
         </button>
         <button
