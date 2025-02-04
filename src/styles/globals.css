@@ -1,0 +1,9 @@
+/* Add these styles if you haven't already */
+.eye {
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+}
+
+.eye-container {
+    perspective: 1000px;
+} 
