@@ -11,6 +11,7 @@ import ManagerDashboard from './Dashboard/ManagerDashboard/ManagerDashboard'
 import PayrollDashboard from './Dashboard/PayrollDashboard/PayrollDashboard'
 import AdminDashboard from './Dashboard/AdminDashboard/AdminDashboard'
 
+import ProfileEdit from './pages/Profile/ProfileEdit';
 // A private route wrapper to protect routes based on authentication
 // Implement RBAC to implement authentication and authorization
 const ProtectedRoute = ({ children, authorizedRoles }) => {
@@ -66,6 +67,16 @@ function App() {
           <Route path='/login' element={<Login />} /> 
 
           {/* Protected Routes */}
+
+          {/* Profile Protected Routes */}
+          <Route 
+            path="/profile/edit"
+            element={
+              <ProtectedRoute>
+                <ProfileEdit />
+              </ProtectedRoute>
+          }
+          />
 
           {/* Employee Protected Routes */}
           <Route 
