@@ -14,8 +14,8 @@ export const fetchAllReport = () => async (dispatch) => {
     dispatch(reportPending());
     try {
         const response = await apiClient.get("/api/v1/report")
-        console.log(response)
-        dispatch(reportSuccess(response.data))
+        dispatch(reportSuccess(response.data.report))
+        console.log(response.data.report)
     } catch (error) {
         dispatch(reportFailure(error.response?.data || 'Error fetching Reports')); // Dispatch failure with error message
         console.log("Error Fetching Reports", error.message)

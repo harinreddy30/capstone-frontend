@@ -37,11 +37,15 @@ const leaveSlice = createSlice({
                 leaveRequest._id === action.payload._id ? action.payload : leaveRequest
             ); 
         },
+        leaveDeleteSuccess: (state, action) => {
+            state.loading = false;
+            state.leaveRequests = state.leaveRequests.filter((leaveRequest) => leaveRequest._id !== action.payload); 
+        },
     
     }
 })
 
 // Export actions to be dispatched
-export const { leavePending, leaveSuccess, leaveFailure, createLeaveSuccess, leaveUpdateSuccess } = leaveSlice.actions;
+export const { leavePending, leaveSuccess, leaveFailure, createLeaveSuccess, leaveUpdateSuccess, leaveDeleteSuccess } = leaveSlice.actions;
 // Export the reducer to be used in the store
 export default leaveSlice.reducer;

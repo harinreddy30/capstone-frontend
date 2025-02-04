@@ -7,6 +7,14 @@ import {
   DeleteSite,
 } from '../../redux/action/siteAction'
 import apiClient from "../../api/apiClient";
+import axios from "axios"; // Import Axios
+
+
+const countries = {
+  "Canada": ["Ontario", "Quebec", "British Columbia", "Alberta"],
+  "USA": ["California", "Texas", "Florida", "New York"],
+  "India": ["Gujarat", "Maharashtra", "Punjab", "Rajasthan"]
+};
 
 const SiteManagement = ( ) => {
 
@@ -16,6 +24,8 @@ const SiteManagement = ( ) => {
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedSite, setSelectedSite] = useState(null);
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedProvince, setSelectedProvince] = useState("");
 
   const [siteForm, setSiteForm] = useState({
     name: "",
@@ -46,6 +56,58 @@ const SiteManagement = ( ) => {
     }
   };
 
+  // Fetch coordinates based on address
+  const fetchCoordinates = async (address) => {
+    try {
+      const response = await axios.get(
+        `https://nominatim.openstreetmap.org/search`,
+        {
+          params: {
+            q: address,
+            format: "json",
+          },
+        }
+      );
+
+      if (response.data.length > 0) {
+        const { lat, lon } = response.data[0];
+        setSiteForm((prev) => ({
+          ...prev,
+          location: {
+            ...prev.location,
+            coordinates: [parseFloat(lat), parseFloat(lon)], // Save as [latitude, longitude]
+          },
+        }));
+      } else {
+        console.error("No coordinates found for the address.");
+      }
+    } catch (error) {
+      console.error("Error fetching coordinates:", error);
+    }
+  };
+
+  // Handle address input change and auto-fetch coordinates
+  const handleLocationChange = (event) => {
+    const { value } = event.target;
+    setSiteForm((prev) => ({
+      ...prev,
+      location: { ...prev.location, address: value },
+    }));
+
+    if (value.length > 3) {
+      fetchCoordinates(value); // Auto-fetch when user types
+    }
+  };
+
+  const handleCountryChange = (event) => {
+    setSelectedCountry(event.target.value);
+    setSelectedProvince("");
+  };
+
+  const handleProvinceChange = (event) => {
+    setSelectedProvince(event.target.value);
+  };
+
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
@@ -55,14 +117,14 @@ const SiteManagement = ( ) => {
     setSiteForm({ ...siteForm, [name]: value });
   };
 
-  const handleLocationChange = (event) => {
-    const { name, value } = event.target;
-    setSiteForm({ ...siteForm, location: { ...siteForm.location, [name]: value } });
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
+
+      if (!siteForm.location.coordinates.length) {
+        alert("Invalid address! Please enter a valid address.");
+        return;
+      }
       
       if (editMode) {
         dispatch(updateSite(selectedSite._id, siteForm))
@@ -96,7 +158,8 @@ const SiteManagement = ( ) => {
     }
   };
   if (loading) return <div>Loading managers...</div>;
-  if (error) return <div>{error}</div>;
+  if (error) return <div>{JSON.stringify(error)}</div>;
+  ;
 
   return (
     <div className="p-6">
@@ -135,14 +198,15 @@ const SiteManagement = ( ) => {
             <th className="border p-2">Location</th>
             <th className="border p-2">Manager</th>
             <th className="border p-2">Available</th>
+            <th className="border p-2">Description</th>
             <th className="border p-2">Actions</th>
           </tr>
         </thead>
         <tbody>
           {sites
             .filter((site) =>
-              site.name.toLowerCase().includes(searchTerm.toLowerCase())
-            )
+              site?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+          )
             .map((site) => (
               <tr key={site.siteId} className="text-center">
                 <td className="border p-2">{site.siteId}</td>
@@ -153,6 +217,9 @@ const SiteManagement = ( ) => {
                 </td>
                 <td className="border p-2">
                   {site.isavailable ? "Yes" : "No"}
+                </td>
+                <td className="border p-2">
+                  {site.description}
                 </td>
                 <td className="border p-2">
                   <button
@@ -218,6 +285,29 @@ const SiteManagement = ( ) => {
                 className="border p-2 w-full"
                 required
               />
+
+              <select
+                value={selectedCountry}
+                onChange={handleCountryChange}
+                className="border p-2 w-full"
+              >
+                <option value="">Select Country</option>
+                {Object.keys(countries).map((country) => (
+                  <option key={country} value={country}>{country}</option>
+                ))}
+              </select>
+
+              <select
+                value={selectedProvince}
+                onChange={handleProvinceChange}
+                className="border p-2 w-full"
+                disabled={!selectedCountry}
+              >
+                <option value="">Select Province/State</option>
+                {selectedCountry && countries[selectedCountry].map((province) => (
+                  <option key={province} value={province}>{province}</option>
+                ))}
+              </select>
 
               {/* Manager Selection */}
               <select

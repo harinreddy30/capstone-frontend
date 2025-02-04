@@ -1,32 +1,29 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+
+import { fetchAllReport } from "../../redux/action/reportAction";
 
 const ManagerReports = () => {
-  const [reports, setReports] = useState([]);
+  const dispatch = useDispatch();
+  const { reports, loading, error } = useSelector((state) => state.reports);
   const [search, setSearch] = useState("");
   const [selectedReport, setSelectedReport] = useState(null);
 
   useEffect(() => {
-    fetchReports();
-  }, []);
+    dispatch(fetchAllReport());
+  }, [dispatch]);
 
-  const fetchReports = async () => {
-    try {
-      const response = await axios.get("/api/reports"); // Replace with actual API
-      setReports(response.data);
-    } catch (error) {
-      console.error("Error fetching reports:", error);
-    }
-  };
+  console.log("Reports Data:", reports);
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
   };
 
+  // Filter reports based on search term
   const filteredReports = reports.filter((report) =>
-    report.reportName.toLowerCase().includes(search.toLowerCase()) ||
-    report.createdBy.name.toLowerCase().includes(search.toLowerCase()) ||
-    report.status.toLowerCase().includes(search.toLowerCase())
+    (report.reportName?.toLowerCase().includes(search.toLowerCase()) ||
+     report.createdBy?.name?.toLowerCase().includes(search.toLowerCase()) ||
+     report.status?.toLowerCase().includes(search.toLowerCase()))
   );
 
   return (
@@ -43,6 +40,11 @@ const ManagerReports = () => {
         />
       </div>
 
+      {/* Loading or Error Messages */}
+      {loading && <div>Loading reports...</div>}
+      {error && <div className="text-red-500">Error: {error.message}</div>}
+      {reports.length === 0 && !loading && !error && <div>No reports available.</div>}
+
       {/* Reports Table */}
       <div className="overflow-x-auto">
         <table className="w-full border-collapse border border-gray-300">
@@ -51,6 +53,7 @@ const ManagerReports = () => {
               <th className="border p-2">Report ID</th>
               <th className="border p-2">Report Name</th>
               <th className="border p-2">Created By</th>
+              <th className="border p-2">Role</th>
               <th className="border p-2">Incident Date</th>
               <th className="border p-2">Status</th>
               <th className="border p-2">Actions</th>
@@ -61,7 +64,10 @@ const ManagerReports = () => {
               <tr key={report.reportId} className="text-center">
                 <td className="border p-2">{report.reportId}</td>
                 <td className="border p-2">{report.reportName}</td>
-                <td className="border p-2">{report.createdBy.name}</td>
+                <td className="border p-2">
+                  {`${report.createdBy?.fname || "Unknown"} ${report.createdBy?.lname || ""}`}
+                </td>
+                <td className="border p-2">{report.createdBy?.role}</td>
                 <td className="border p-2">{new Date(report.incidentDate).toLocaleDateString()}</td>
                 <td className="border p-2">{report.status}</td>
                 <td className="border p-2">
@@ -86,7 +92,7 @@ const ManagerReports = () => {
             <p><strong>Description:</strong> {selectedReport.reportDescription}</p>
             <p><strong>Incident Date:</strong> {new Date(selectedReport.incidentDate).toLocaleString()}</p>
             <p><strong>Status:</strong> {selectedReport.status}</p>
-            <p><strong>Created By:</strong> {selectedReport.createdBy.name}</p>
+            <p><strong>Created By:</strong> {selectedReport.createdBy?.name || "Unknown"}</p>
             <div className="flex justify-end mt-4">
               <button
                 className="bg-red-500 text-white px-4 py-2 rounded"

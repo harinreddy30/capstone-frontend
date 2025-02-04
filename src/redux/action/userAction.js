@@ -38,7 +38,7 @@ export const fetchUserById = (userId) => async(dispatch) => {
 export const createUser = (userData) => async (dispatch) => {
     dispatch(usersPending());
     try {
-        const response = await apiClient.post("/api/v1/users/create-userx", userData)
+        const response = await apiClient.post("/api/v1/users/create-user", userData)
         dispatch(userCreateSuccess(response.data)); // Dispatch success and add new user to state
 
     } catch (error) {

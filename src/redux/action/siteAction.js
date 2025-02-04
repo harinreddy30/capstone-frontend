@@ -73,14 +73,15 @@ export const DeleteSite = (siteId) => async (dispatch) => {
 };
 
 // Fetch Managers for a Specific Site
-export const fetchManagersBySite = (siteId) => async (dispatch) => {
-    dispatch(sitePending()); 
+export const fetchSitesByManager = () => async (dispatch) => {
+    dispatch(sitePending());
     try {
-        const response = await apiClient.get(`/api/v1/sites/${siteId}/managers`);
-        dispatch(siteSuccess(response.data.managers)); // Ensure managers array is stored
-
+        const response = await apiClient.get(`/api/v1/sites/manager/sites`);
+        console.log("Fetched sites:", response.data.sites); // Debugging log
+        dispatch(siteSuccess(response.data.sites || [])); // Ensure array
     } catch (error) {
-        dispatch(siteFailure(error.response?.data || "Error fetching Managers"));
-        console.log("Error Fetching Managers", error.message);
+        dispatch(siteFailure(error.response?.data || "Error fetching Sites"));
+        console.log("Error Fetching Manager Sites:", error.message);
     }
 };
+
