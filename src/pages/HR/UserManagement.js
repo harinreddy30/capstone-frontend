@@ -20,7 +20,7 @@ const UserManagement = () => {
     phone: "",
     dateOfBirth: "",
     role: "Employee",
-    hourlyWage: "",
+    hourlyWage: "0",
   });
 
   const dispatch = useDispatch(); // Dispatch the action
@@ -30,18 +30,23 @@ const UserManagement = () => {
 
   // Fetch Users from the API when component mounts
   useEffect(() => {
-    dispatch(fetchAllUsers()); // Dispatch the action to fetch users
-  }, [dispatch]); // This ensures it only runs once when the component is mounted
+    const fetchUsers = async () => {
+      await dispatch(fetchAllUsers());
+    };
+    fetchUsers();
+  }, [dispatch]);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
 
+  // Handle input changes in form
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setUserForm({ ...userForm, [name]: value });
   };
 
+  // Handle form submission for adding/updating user
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
@@ -52,29 +57,55 @@ const UserManagement = () => {
         // Create a new user
         dispatch(createUser(userForm));
       }
-      setShowModal(false);
-      setEditMode(false);
-      dispatch(fetchAllUsers()); // Refresh user list
+      closeModal();
+
+      // setShowModal(false);
+      // setEditMode(false);
+      // dispatch(fetchAllUsers()); // Refresh user list
 
     } catch (error) {
       console.error("Error submitting user data:", error);
     }
   };
 
-  // Handle Update User
+  // Open modal for editing user
   const handleEdit = (user) => {
     setSelectedUser(user);
-    setUserForm(user);
+    setUserForm({
+      fname: user.fname,
+      lname: user.lname,
+      email: user.email,
+      phone: user.phone || "",
+      dateOfBirth: user.dateOfBirth || "",
+      role: user.role,
+      hourlyWage: user.hourlyWage || "0",
+    });
     setEditMode(true);
     setShowModal(true);
   };
 
+  // Close modal and reset form
+  const closeModal = () => {
+    setShowModal(false);
+    setEditMode(false);
+    setUserForm({
+      fname: "",
+      lname: "",
+      email: "",
+      password: "",
+      phone: "",
+      dateOfBirth: "",
+      role: "Employee",
+      hourlyWage: "0",
+    });
+  };
+
   // Handle Delete User
-  const handleDelete = (userId) => {
+  const handleDelete = async (userId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this user?");
     if (confirmDelete) {
-      dispatch(DeleteUser(userId)); // Dispatch delete action
-      dispatch(fetchAllUsers()); // Refresh user list after deletion
+      await dispatch(DeleteUser(userId)); // Dispatch delete action
+      // dispatch(fetchAllUsers()); // Refresh user list after deletion
     }
   };
 
@@ -92,16 +123,6 @@ const UserManagement = () => {
           onClick={() => {
             setShowModal(true);
             setEditMode(false);
-            setUserForm({
-              fname: "",
-              lname: "",
-              email: "",
-              password: "",
-              phone: "",
-              dateOfBirth: "",
-              role: "Employee",
-              hourlyWage: "",
-            });
           }}
           className="bg-blue-500 text-white px-4 py-2 rounded"
         >
@@ -246,7 +267,7 @@ const UserManagement = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowModal(false)}
+                  onClick={closeModal}
                   className="bg-red-500 text-white px-4 py-2 rounded"
                 >
                   Cancel

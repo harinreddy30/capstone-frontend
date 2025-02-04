@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { fetchAllReport } from "../../redux/action/reportAction";
+import { fetchAllReport, DeleteReport } from "../../redux/action/reportAction";
 
 const ManagerReports = () => {
   const dispatch = useDispatch();
@@ -25,6 +25,15 @@ const ManagerReports = () => {
      report.createdBy?.name?.toLowerCase().includes(search.toLowerCase()) ||
      report.status?.toLowerCase().includes(search.toLowerCase()))
   );
+
+  // Handle Delete Report
+    const handleDelete = (reportId) => {
+      const confirmDelete = window.confirm("Are you sure you want to delete this Site?");
+      if (confirmDelete) {
+        dispatch(DeleteReport(reportId)); // Dispatch delete action
+        dispatch(fetchAllReport()); // Refresh user list after deletion
+      }
+    };
 
   return (
     <div className="p-6">
@@ -76,6 +85,12 @@ const ManagerReports = () => {
                     onClick={() => setSelectedReport(report)}
                   >
                     View
+                  </button>
+                  <button
+                    onClick={() => handleDelete(report._id)}
+                    className="bg-red-500 mx-2 text-white px-3 py-1 rounded"
+                  >
+                    Delete
                   </button>
                 </td>
               </tr>
