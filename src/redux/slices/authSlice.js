@@ -1,13 +1,17 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const initialState = {
+    user: JSON.parse(localStorage.getItem("user")) || null, // Retrieve user from localStorage
+    token: localStorage.getItem("token") || null, // Try to get the token from localStorage
+    loading: false, // Indicates if the login request is in progress.
+    error: null, // Holds any error messages.
+}
+
+// Slice consists of name, initial state, and reducers
 const authSlice = createSlice({
-    name: 'auth',
-    initialState: {
-        user: null,
-        token: null,
-        loading: false,
-        error: null,
-    },
+
+    name : 'auth', // Name of this slice of state.
+    initialState,
     reducers: {
         loginStart: (state) => {
             state.loading = true; // When the starts, set loading to true
@@ -27,23 +31,17 @@ const authSlice = createSlice({
             state.token = null;
             localStorage.removeItem("user");
             localStorage.removeItem("token"); // Remove data from localStorage on logout
+                     
         },
-        setToken: (state, action) => {
-            state.token = action.payload;
-        },
-        setUser: (state, action) => {
-            state.user = action.payload;
-        },
-        updateUser: (state, action) => {
-            console.log('Updating user in auth slice:', action.payload); // Debug log
-            state.user = { ...state.user, ...action.payload };
-        },
+        // // Action to set token from localStorage (or on app load)
+        // setToken: (state, action) => {
+        //     state.token = action.payload;
+        // }
     },
 });
 
 // Export the actions so that we can dispatch them from components.
-export const { loginStart, loginSuccess, loginFailure, logout, setToken, setUser, updateUser } = authSlice.actions;
+export const { loginStart, loginSuccess, loginFailure, logout, setToken } = authSlice.actions;
 
 // Export the reducer to be used in the store.
 export default authSlice.reducer;
-
