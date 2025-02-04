@@ -7,7 +7,7 @@ const initialState = {
 }
 
 const leaveSlice = createSlice({
-    name: 'leave',
+    name: 'leaveRequests',
     initialState,
     reducers: {
         
@@ -29,13 +29,14 @@ const leaveSlice = createSlice({
         },
         createLeaveSuccess: (state, action) => {
             state.loading = false;
-            state.leaveRequests.push(action.payload)
+            // state.leaveRequests.push(action.payload)
+            state.leaveRequests = action.payload; // Add the new leave request to the array
+
         },
         leaveUpdateSuccess: (state, action) => {
             state.loading = false;
-            state.leaveRequests = state.leaveRequests.map((leaveRequest) => 
-                leaveRequest._id === action.payload._id ? action.payload : leaveRequest
-            ); 
+            state.leaveRequests = state.leaveRequests.filter((leaveRequest) => leaveRequest._id !== action.payload); 
+
         },
         leaveDeleteSuccess: (state, action) => {
             state.loading = false;

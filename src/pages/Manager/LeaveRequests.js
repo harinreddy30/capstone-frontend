@@ -27,22 +27,35 @@ const LeaveManagement = () => {
   };
 
   const handleSubmit = async (id) => {
-
-    // if (!updatedLeaves[id]) return;
-    await dispatch(updateLeaveStatus(id, updatedLeaves )); 
-    setSuccessMessage(`Leave request ${id} updated to ${updatedLeaves[id]}`);
-    setTimeout(() => setSuccessMessage(""), 3000);
-  };
-
-
-
-  const handleDelete = (id) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this request?");
-    if (confirmDelete) {
-      dispatch(DeleteRequest(id)); // Dispatch delete action
-      dispatch(fetchLeaveRequests()); // Refresh user list after deletion
+    if (!updatedLeaves[id]) return; // Ensure a new status is selected
+  
+    try {
+      await dispatch(updateLeaveStatus(id, { status: updatedLeaves[id] })); // Send only { status: "APPROVED" }
+  
+      setSuccessMessage(`Leave request ${id} updated to ${updatedLeaves[id]}`);
+      setTimeout(() => setSuccessMessage(""), 3000);
+  
+      dispatch(fetchLeaveRequests()); // Refresh leave requests after updating
+    } catch (error) {
+      console.error("Error updating leave status:", error);
+      setSuccessMessage("Error updating leave status");
     }
   };
+  
+  
+
+
+  const handleDelete = async (id) => {
+  const confirmDelete = window.confirm("Are you sure you want to delete this request?");
+  if (confirmDelete) {
+    try {
+      await dispatch(DeleteRequest(id)); // Ensure delete request completes
+      dispatch(fetchLeaveRequests()); // Refresh leave requests after deletion
+    } catch (error) {
+      console.error("Error deleting leave request:", error);
+    }
+  }
+};
 
   return (
     <div className="max-w-4xl mx-auto mt-8 p-6 bg-gray-100 rounded-lg shadow-lg">
