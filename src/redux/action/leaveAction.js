@@ -73,3 +73,14 @@ export const DeleteRequest = (leaveId) => async (dispatch) => {
   }
 };
 
+export const fetchLeavesByEmployee = () => async (dispatch) => {
+  dispatch(leavePending()); // Dispatch the 'pending' state before making the request
+  try {
+      const response = await apiClient.get("/api/v1/leave/employee");
+      dispatch(leaveSuccess(response.data.sites || [])); // Dispatch success action with the fetched data
+  } catch (error) {
+      dispatch(leaveFailure(error.response?.data || 'Error fetching leaves'));
+      console.log("Error Fetching Leave Requests:", error.message);
+  }
+};
+
