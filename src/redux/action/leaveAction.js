@@ -1,24 +1,3 @@
-// import { createAsyncThunk } from "@reduxjs/toolkit";
-// import { leavePending, leaveSuccess, leaveFailure } from "../slices/leaveSlice";
-// import apiClient from "../../api/apiClient";
-// import { getUserIdFromToken } from "../../utilis/token"; // Import utility
-
-
-// // Thunk for creating a leave request
-
-// // const createLeaveRequest = (leaveRequest) => async (dispatch) => {
-// //     try {
-// //         dispatch(leavePending());
-// //         const userId = getUserIdFromToken(); // Get userId from token
-// //         const response = await apiClient.post('/leave/create', {
-// //             ...leaveRequest,
-// //             userId, // Add userId to the request body
-// //         });
-// //         dispatch(leaveSuccess(response.data));
-// //     } catch (error) {
-// //         dispatch(leaveFailure(error.message));
-// //     }
-// // };
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from '../../api/apiClient';
 import { 
@@ -68,15 +47,20 @@ export const createLeaveRequest = createAsyncThunk(
 
 // Update leave request status (Approve/Reject)
 export const updateLeaveStatus = (leaveId, updatedStatus) => async (dispatch) => {
-    dispatch(leavePending());
-    try {
-        const response = await apiClient.put(`/api/v1/leave/${leaveId}/status`, { status: updatedStatus });
-        dispatch(leaveUpdateSuccess(response.data)); // Dispatch success with the updated leave request data
-    } catch (error) {
-        dispatch(leaveFailure(error.response?.data || 'Error updating leave request status'));
-        console.log("Error Updating Leave Request Status:", error.message);
-    }
+  dispatch(leavePending()); // Indicate loading state (if needed)
+  console.log(updatedStatus)
+  try {
+      const response = await apiClient.put(`/api/v1/leave/${leaveId}/status`, updatedStatus);
+
+      dispatch(leaveUpdateSuccess(response.data)); // Dispatch success with updated leave request data
+  } catch (error) {
+      const errorMessage = error.response?.data?.message || "Error updating leave request status";
+      dispatch(leaveFailure(errorMessage)); // Dispatch failure with better error message
+      console.error("Error Updating Leave Request Status:", errorMessage);
+  }
 };
+
+
 
 export const DeleteRequest = (leaveId) => async (dispatch) => {
   dispatch(leavePending());
@@ -86,6 +70,17 @@ export const DeleteRequest = (leaveId) => async (dispatch) => {
   } catch (error) {
       dispatch(leaveFailure(error.response?.data || 'Error updating Request'));
       console.log("Error Deleting Request", error.message)
+  }
+};
+
+export const fetchLeavesByEmployee = () => async (dispatch) => {
+  dispatch(leavePending()); // Dispatch the 'pending' state before making the request
+  try {
+      const response = await apiClient.get("/api/v1/leave/employee");
+      dispatch(leaveSuccess(response.data.sites || [])); // Dispatch success action with the fetched data
+  } catch (error) {
+      dispatch(leaveFailure(error.response?.data || 'Error fetching leaves'));
+      console.log("Error Fetching Leave Requests:", error.message);
   }
 };
 
