@@ -1,8 +1,12 @@
 import React from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import TopNavBar from '../../components/NavBar/TopNavBar';
-import '../Dashboard.css'; 
+import '../Dashboard.css';
 
+// Import your payroll pages
+import PayrollGenerator from '../../pages/Payroll/PayrollGenerator';
+import PayrollManagement from '../../pages/Payroll/PayrollManagement';
+import EmployeeList from '../../pages/Payroll/EmployeeList';
 
 const PayrollDashboard = () => {
   return (
@@ -20,21 +24,19 @@ const PayrollDashboard = () => {
           </div>
 
           <ul className="nav-links">
-            <li><Link to="/HR/job-scheduling">Management</Link></li>
-            <li><Link to="/HR/incident-reports">Employee List</Link></li>
-            <li><Link to="/HR/swap-shift">Payroll & History</Link></li>
+            <li><Link to="/payroll/management">Management</Link></li>
+            <li><Link to="/payroll/employee-list">Employee List</Link></li>
+            <li><Link to="/payroll/generator">Payroll & History</Link></li>
           </ul>
         </div>
 
         {/* Main Content Area */}
         <div className="main-content">
           <Routes>
-            {/* <Route path="job-scheduling" element={<JobScheduling />} />
-            <Route path="incident-reports" element={<IncidentReports />} />
-            <Route path="swap-shift" element={<SwapShift />} />
-            <Route path="time-off" element={<TimeOff />} /> */}
-            {/* <Route path="input-availability" element={<InputAvailability />} /> */}
-            {/* <Route path="pay-stubs" element={<PayStubs />} /> */}
+            <Route path="/" element={<PayrollGenerator />} />
+            <Route path="/management" element={<PayrollManagement />} />
+            <Route path="/employee-list" element={<EmployeeList />} />
+            <Route path="/generator" element={<PayrollGenerator />} />
           </Routes>
         </div>
       </div>
