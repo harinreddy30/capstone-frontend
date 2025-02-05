@@ -1,33 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createLeaveRequest, fetchLeavesByEmployee } from '../../redux/action/leaveAction'; // Assuming you have a fetchLeaveRequests action
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { createLeaveRequest, fetchLeavesByEmployee } from "../../redux/action/leaveAction";
 
 const LeaveRequests = () => {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [leaveRequest, setLeaveRequest] = useState({
-    startDate: '',
-    endDate: '',
-    reason: '',
+    startDate: "",
+    endDate: "",
+    reason: "",
     totalDays: 0,
-    status: 'Pending',
+    status: "Pending",
   });
 
   const dispatch = useDispatch();
   const { loading, error, leaveRequests } = useSelector((state) => state.leave);
-  const today = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD format
+  const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
-    // Fetch all leave requests on component mount
     dispatch(fetchLeavesByEmployee());
   }, [dispatch]);
 
   const calculateTotalDays = (startDate, endDate) => {
     const start = new Date(startDate);
     const end = new Date(endDate);
-
     if (start < end) {
-      const diff = (end - start) / (1000 * 60 * 60 * 24); // Convert to days
-      return diff.toFixed(2);
+      return Math.ceil((end - start) / (1000 * 60 * 60 * 24));
     }
     return 0;
   };
@@ -36,147 +33,118 @@ const LeaveRequests = () => {
     const { name, value } = e.target;
     const updatedRequest = { ...leaveRequest, [name]: value };
 
-    if (name === 'startDate' || name === 'endDate') {
+    if (name === "startDate" || name === "endDate") {
       updatedRequest.totalDays = calculateTotalDays(updatedRequest.startDate, updatedRequest.endDate);
     }
 
     setLeaveRequest(updatedRequest);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     const { startDate, endDate, reason } = leaveRequest;
-
-    // Validation
     if (new Date(startDate) < new Date()) {
-      alert('Start date cannot be in the past.');
+      alert("Start date cannot be in the past.");
       return;
     }
-
     if (new Date(startDate) >= new Date(endDate)) {
-      alert('End date must be after the start date.');
+      alert("End date must be after the start date.");
       return;
     }
-
     if (!reason.trim()) {
-      alert('Reason for time off is required.');
+      alert("Reason for leave is required.");
       return;
     }
 
     dispatch(createLeaveRequest(leaveRequest));
-    setIsFormVisible(false); // Hide form after submission
+    setIsFormVisible(false);
     dispatch(fetchLeavesByEmployee());
-
   };
 
   return (
-    <div className="max-w-4xl mx-auto mt-8 p-6 bg-gray-100 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-semibold text-center mb-6">Leave Requests</h2>
+    <div className="max-w-4xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-lg">
+      <h2 className="text-2xl font-semibold text-center text-gray-700 mb-6">Leave Requests</h2>
 
-      {loading && <p className="loading">Fetching leave requests...</p>}
-      {error && <p className="error">Error: {error}</p>}
+      {loading && <p className="text-blue-500 text-center">Fetching leave requests...</p>}
+      {error && <p className="text-red-500 text-center">Error: {error}</p>}
 
-      <div className="mb-6">
-        <button
-          onClick={() => setIsFormVisible(!isFormVisible)}
-          className="py-2 px-4 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 focus:outline-none"
-        >
-          {isFormVisible ? 'Cancel' : 'Request Time Off'}
-        </button>
-      </div>
+      <button
+        onClick={() => setIsFormVisible(!isFormVisible)}
+        className="mb-4 w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600 transition"
+      >
+        {isFormVisible ? "Close Form" : "Request Leave"}
+      </button>
 
-      {/* Display Leave Request Form */}
       {isFormVisible && (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="bg-gray-100 p-4 rounded-lg shadow-md">
           <div className="mb-4">
-            <label className="block font-semibold mb-2">From:</label>
+            <label className="block text-gray-700">Start Date</label>
             <input
-              type="date" // Only date input
+              type="date"
               name="startDate"
+              min={today}
               value={leaveRequest.startDate}
-              min={today} // Minimum date is today
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 border rounded-md"
+              required
             />
           </div>
+
           <div className="mb-4">
-            <label className="block font-semibold mb-2">To:</label>
+            <label className="block text-gray-700">End Date</label>
             <input
-              type="date" // Only date input
+              type="date"
               name="endDate"
+              min={leaveRequest.startDate || today}
               value={leaveRequest.endDate}
-              min={leaveRequest.startDate || today} // Minimum date is startDate or today
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 border rounded-md"
+              required
             />
           </div>
+
           <div className="mb-4">
-            <label className="block font-semibold mb-2">Total Days:</label>
-            <input
-              type="text"
-              value={leaveRequest.totalDays}
-              disabled
-              readOnly
-              className="w-full p-2 bg-gray-200 border border-gray-300 rounded-md cursor-not-allowed"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block font-semibold mb-2">Reason:</label>
+            <label className="block text-gray-700">Reason</label>
             <textarea
               name="reason"
               value={leaveRequest.reason}
               onChange={handleInputChange}
-              placeholder="Enter the reason for your leave request"
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none h-24"
-            />
+              className="w-full p-2 border rounded-md"
+              placeholder="Enter your reason"
+              required
+            ></textarea>
           </div>
-          <div className="mb-4">
-            <label className="block font-semibold mb-2">Status:</label>
-            <input
-              type="text"
-              value={leaveRequest.status}
-              disabled
-              readOnly
-              className="w-full p-2 bg-gray-200 border border-gray-300 rounded-md cursor-not-allowed"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full py-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50"
-          >
-            Submit
+
+          <p className="text-gray-700 font-semibold mb-4">Total Days: {leaveRequest.totalDays}</p>
+
+          <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition">
+            Submit Request
           </button>
         </form>
       )}
 
-      {/* Display All Leave Requests */}
-      <div className="mt-8">
-        <h3 className="text-xl font-semibold mb-4">All Leave Requests</h3>
-        <table className="w-full table-auto">
-          <thead>
-            <tr>
-              <th className="px-4 py-2">Start Date</th>
-              <th className="px-4 py-2">End Date</th>
-              <th className="px-4 py-2">Total Days</th>
-              <th className="px-4 py-2">Reason</th>
-              <th className="px-4 py-2">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leaveRequests.map((leave) => (
-              <tr key={leave.id}>
-                <td className="px-4 py-2">{new Date(leave.startDate).toLocaleDateString()}</td>
-                <td className="px-4 py-2">{new Date(leave.endDate).toLocaleDateString()}</td>
-                <td className="px-4 py-2">
-                  {Math.ceil((new Date(leave.endDate) - new Date(leave.startDate)) / (1000 * 60 * 60 * 24)) + 1}
-                </td>
-                <td className="px-4 py-2">{leave.reason}</td>
-                <td className="px-4 py-2">{leave.status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="mt-6">
+        <h3 className="text-xl font-semibold text-gray-700 mb-4">Your Leave Requests</h3>
+        <div className="bg-gray-50 p-4 rounded-lg shadow">
+          {leaveRequests?.length === 0 ? (
+            <p className="text-gray-500 text-center">No leave requests found.</p>
+          ) : (
+            <ul>
+              {leaveRequests.map((leave, index) => (
+                <li key={index} className="p-4 bg-white rounded-md shadow-sm mb-2">
+                  <p className="text-gray-800">
+                    <strong>Start:</strong> {leave.startDate} | <strong>End:</strong> {leave.endDate}
+                  </p>
+                  <p className="text-gray-600"><strong>Reason:</strong> {leave.reason}</p>
+                  <p className={`font-semibold ${leave.status === "Approved" ? "text-green-600" : "text-yellow-600"}`}>
+                    Status: {leave.status}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );

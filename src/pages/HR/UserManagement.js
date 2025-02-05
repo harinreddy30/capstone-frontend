@@ -26,7 +26,7 @@ const UserManagement = () => {
   const dispatch = useDispatch(); // Dispatch the action
 
     // Fetch Users from Redux store
-    const { users, loading, error } = useSelector((state) => state.users);
+  const { users, loading, error } = useSelector((state) => state.users);
 
   // Fetch Users from the API when component mounts
   useEffect(() => {
@@ -61,7 +61,7 @@ const UserManagement = () => {
 
       // setShowModal(false);
       // setEditMode(false);
-      // dispatch(fetchAllUsers()); // Refresh user list
+      await dispatch(fetchAllUsers()); // Refresh user list
 
     } catch (error) {
       console.error("Error submitting user data:", error);

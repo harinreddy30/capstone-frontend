@@ -91,61 +91,7 @@ const IncidentReport = () => {
             required
           />
         </div>
-
-        {/* Location
-        <div className="mb-4">
-          <label className="font-bold mb-2 block" htmlFor="incidentLocation">
-            Location
-          </label>
-          <input
-            type="text"
-            id="incidentLocation"
-            className="w-full p-3 border border-gray-300 rounded"
-            placeholder="Enter location"
-            value={reportForm.}
-            onChange={handleInputChange}
-          />
-        </div> */}
-
-        {/* Created By (Auto-filled)
-        <div className="mb-4">
-          <label className="font-bold mb-2 block">Report Submitted By</label>
-          <input
-            type="text"
-            value={user?.name || "Unknown"}
-            className="w-full p-3 border border-gray-300 rounded bg-gray-200"
-            disabled
-          />
-        </div> */}
-
-        {/* Employee Involved
-        <div className="mb-4">
-          <label className="font-bold mb-2 block" htmlFor="employeeInvolved">
-            Employee Involved
-          </label>
-          <input
-            type="text"
-            id="employeeInvolved"
-            className="w-full p-3 border border-gray-300 rounded"
-            placeholder="Enter employee's name"
-            onChange={handleInputChange}
-            value= {reportForm.created}
-          />
-        </div> */}
-
-        {/* Position
-        <div className="mb-4">
-          <label className="font-bold mb-2 block" htmlFor="position">
-            Position
-          </label>
-          <input
-            type="text"
-            id="position"
-            className="w-full p-3 border border-gray-300 rounded"
-            placeholder="Enter position"
-          />
-        </div> */}
-
+        
         {/* Incident Type */}
         <div className="mb-4">
           <label className="font-bold mb-2 block" htmlFor="reportName">

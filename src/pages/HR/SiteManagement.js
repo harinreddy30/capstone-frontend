@@ -134,7 +134,7 @@ const SiteManagement = ( ) => {
 
       setShowModal(false);
       setEditMode(false);
-      dispatch(fetchAllSites());
+      await dispatch(fetchAllSites());
 
     } catch (error) {
       console.error("Error submitting site data:", error);

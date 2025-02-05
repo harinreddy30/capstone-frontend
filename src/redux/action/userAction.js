@@ -38,14 +38,18 @@ export const fetchUserById = (userId) => async(dispatch) => {
 export const createUser = (userData) => async (dispatch) => {
     dispatch(usersPending());
     try {
-        const response = await apiClient.post("/api/v1/users/create-user", userData)
-        dispatch(userCreateSuccess(response.data)); // Dispatch success and add new user to state
+        const response = await apiClient.post("/api/v1/users/create-user", userData);
+        console.log("User Created:", response.data); // Debugging
+
+        dispatch(userCreateSuccess(response.data.user)); // Send only the user object
 
     } catch (error) {
-        dispatch(usersFailure(error.response?.data || 'Error fetching users')); // Dispatch failure with error message
-        console.log("Error Creating Users", error.message)
+        dispatch(usersFailure(error.response?.data || 'Error creating user'));
+        console.log("Error Creating User:", error.message);
     }
-}
+};
+
+
 
 // Update a user
 export const updateUser = (userId, updatedData) => async (dispatch) => {

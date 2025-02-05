@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import apiClient from "../../api/apiClient";
 import { useDispatch, useSelector } from 'react-redux';
 import {
+  fetchAllSites,
   fetchSitesByManager
 } from '../../redux/action/siteAction'
+import { createShift, updateShift } from "../../redux/action/shiftAction";
 
 
 
@@ -11,6 +13,7 @@ const ManagerSites = ({ managerId }) => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [showShiftModal, setShowShiftModal] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [selectedSite, setSelectedSite] = useState(null);
   const [shiftForm, setShiftForm] = useState({
     shiftName: "",
@@ -73,15 +76,26 @@ const ManagerSites = ({ managerId }) => {
     }));
   };
 
+
   const handleAddShift = async (event) => {
-    event.preventDefault();
-    try {
-      await apiClient.post("/api/shifts", shiftForm);
-      setShowShiftModal(false);
-    } catch (error) {
-      console.error("Error adding shift:", error);
-    }
-  };
+      event.preventDefault();
+      try {
+        if (editMode) {
+          // Update existing user
+          dispatch(updateShift(selectedSite._id, shiftForm));
+        } else {
+          // Create a new user
+          dispatch(createShift(shiftForm));
+        }
+  
+        setShowShiftModal(false);
+        setEditMode(false);
+        // dispatch(fetchAllUsers()); // Refresh user list
+        await dispatch(fetchSitesByManager())
+      } catch (error) {
+        console.error("Error submitting shift data:", error);
+      }
+    };
 
   const openShiftModal = (site) => {
     setSelectedSite(site);
@@ -96,6 +110,7 @@ const ManagerSites = ({ managerId }) => {
     });
     setShowShiftModal(true);
   };
+  
 
   return (
     <div className="p-6">
