@@ -70,3 +70,14 @@ export const DeleteReport = (reportId) => async (dispatch) => {
         console.log("Error Deleting Reports", error.message)
     } 
 }
+
+export const fetchReportsByEmployee = () => async (dispatch) => {
+    dispatch(reportPending()); // Dispatch the 'pending' state before making the request
+    try {
+        const response = await apiClient.get("/api/v1/report/employee");
+        dispatch(reportSuccess(response.data.report || [])); // Dispatch success action with the fetched data
+    } catch (error) {
+        dispatch(reportFailure(error.response?.data || 'Error fetching reports'));
+        console.log("Error Fetching reports :", error.message);
+    }
+  };

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import apiClient from "../../api/apiClient";
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  fetchAllSites,
   fetchSitesByManager
 } from '../../redux/action/siteAction'
 

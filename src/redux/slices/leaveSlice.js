@@ -20,6 +20,7 @@ const leaveSlice = createSlice({
         leaveSuccess: (state, action) => {
             state.loading = false;
             state.leaveRequests = action.payload; // Add the new leave request to the array
+            localStorage.setItem("leaveRequests", JSON.stringify(state.leaveRequests));
         },
         // Action to handle when the request fails
         leaveFailure: (state, action) => {
@@ -30,7 +31,7 @@ const leaveSlice = createSlice({
         createLeaveSuccess: (state, action) => {
             state.loading = false;
             // state.leaveRequests.push(action.payload)
-            state.leaveRequests = action.payload; // Add the new leave request to the array
+            localStorage.setItem("leaveRequests", JSON.stringify(state.leaveRequests));
 
         },
         leaveUpdateSuccess: (state, action) => {
