@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { fetchAllReport, DeleteReport } from "../../redux/action/reportAction";
 
-const ManagerReports = () => {
+const ManagerReports = ({ onModalOpen, onModalClose }) => {
   const dispatch = useDispatch();
   const { reports, loading, error } = useSelector((state) => state.reports);
   const [search, setSearch] = useState("");
@@ -34,6 +34,18 @@ const ManagerReports = () => {
         dispatch(fetchAllReport()); // Refresh user list after deletion
       }
     };
+
+  // Modified to handle modal state
+  const handleViewReport = (report) => {
+    setSelectedReport(report);
+    onModalOpen();
+  };
+
+  // Modified close modal function
+  const closeModal = () => {
+    setSelectedReport(null);
+    onModalClose();
+  };
 
   return (
     <div className="p-6">
@@ -81,7 +93,7 @@ const ManagerReports = () => {
                 <td className="border p-2">
                   <button
                     className="bg-blue-500 text-white px-3 py-1 rounded"
-                    onClick={() => setSelectedReport(report)}
+                    onClick={() => handleViewReport(report)}
                   >
                     View
                   </button>
@@ -98,7 +110,7 @@ const ManagerReports = () => {
         </table>
       </div>
 
-      {/* Report Detail Modal */}
+      {/* Modified Report Detail Modal */}
       {selectedReport && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded shadow-lg w-1/2">
@@ -110,7 +122,7 @@ const ManagerReports = () => {
             <div className="flex justify-end mt-4">
               <button
                 className="bg-red-500 text-white px-4 py-2 rounded"
-                onClick={() => setSelectedReport(null)}
+                onClick={closeModal}
               >
                 Close
               </button>

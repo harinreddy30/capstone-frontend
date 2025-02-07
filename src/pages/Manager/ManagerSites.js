@@ -7,10 +7,7 @@ import {
 } from '../../redux/action/siteAction'
 import { createShift, updateShift } from "../../redux/action/shiftAction";
 
-
-
-const ManagerSites = ({ managerId }) => {
-
+const ManagerSites = ({ onModalOpen, onModalClose }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showShiftModal, setShowShiftModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -25,19 +22,14 @@ const ManagerSites = ({ managerId }) => {
     siteId: "",
   });
 
-  const dispatch = useDispatch(); // Dispatch the action
+  const dispatch = useDispatch();
   const { sites, loading, error } = useSelector((state) => state.sites);
   
-
-  // const [sites, setSites] = useState([]);
-  
-
   useEffect(() => {
-    if (!sites || sites.length === 0) { // Avoid refetching if sites are already fetched
+    if (!sites || sites.length === 0) {
         dispatch(fetchSitesByManager());
     }
-}, [dispatch, sites]); // Dependency on sites, so it will re-fetch only if sites are empty
-
+  }, [dispatch, sites]);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -76,27 +68,6 @@ const ManagerSites = ({ managerId }) => {
     }));
   };
 
-
-  const handleAddShift = async (event) => {
-      event.preventDefault();
-      try {
-        if (editMode) {
-          // Update existing user
-          dispatch(updateShift(selectedSite._id, shiftForm));
-        } else {
-          // Create a new user
-          dispatch(createShift(shiftForm));
-        }
-  
-        setShowShiftModal(false);
-        setEditMode(false);
-        // dispatch(fetchAllUsers()); // Refresh user list
-        await dispatch(fetchSitesByManager())
-      } catch (error) {
-        console.error("Error submitting shift data:", error);
-      }
-    };
-
   const openShiftModal = (site) => {
     setSelectedSite(site);
     setShiftForm({
@@ -109,8 +80,30 @@ const ManagerSites = ({ managerId }) => {
       siteId: site.siteId,
     });
     setShowShiftModal(true);
+    onModalOpen();
   };
   
+  const closeModal = () => {
+    setShowShiftModal(false);
+    setEditMode(false);
+    onModalClose();
+  };
+
+  const handleAddShift = async (event) => {
+    event.preventDefault();
+    try {
+      if (editMode) {
+        dispatch(updateShift(selectedSite._id, shiftForm));
+      } else {
+        dispatch(createShift(shiftForm));
+      }
+
+      closeModal();
+      await dispatch(fetchSitesByManager());
+    } catch (error) {
+      console.error("Error submitting shift data:", error);
+    }
+  };
 
   return (
     <div className="p-6">
@@ -157,7 +150,7 @@ const ManagerSites = ({ managerId }) => {
         </tbody>
       </table>
 
-      {/* Add Shift Modal */}
+      {/* Modified Add Shift Modal */}
       {showShiftModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
           <div className="bg-white p-6 rounded shadow-lg w-1/3">
@@ -248,7 +241,8 @@ const ManagerSites = ({ managerId }) => {
                   Save Shift
                 </button>
                 <button
-                  onClick={() => setShowShiftModal(false)}
+                  type="button"
+                  onClick={closeModal}
                   className="bg-gray-500 text-white px-4 py-2 rounded"
                 >
                   Cancel
