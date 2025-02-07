@@ -1,4 +1,6 @@
 import apiClient from '../../api/apiClient';
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { getUserIdFromToken } from "../../utilis/token"; // Import utility
 import{
     reportPending,
     reportSuccess,
@@ -33,7 +35,7 @@ export const fetchReportById = (reportId) => async (dispatch) => {
         console.log("Error Fetching Report", error.message)
     }
 }
-// Create a Report
+
 export const createReport = (reportData) => async (dispatch) => {
     // console.log(reportData)
     dispatch(reportPending());
@@ -74,8 +76,9 @@ export const DeleteReport = (reportId) => async (dispatch) => {
 export const fetchReportsByEmployee = () => async (dispatch) => {
     dispatch(reportPending()); // Dispatch the 'pending' state before making the request
     try {
-        const response = await apiClient.get("/api/v1/report/employee");
-        dispatch(reportSuccess(response.data.report || [])); // Dispatch success action with the fetched data
+        const response = await apiClient.get("/api/v1/report/emp/employee");
+        console.log(response.data.reports)
+        dispatch(reportSuccess(response.data.reports || [])); // Dispatch success action with the fetched data
     } catch (error) {
         dispatch(reportFailure(error.response?.data || 'Error fetching reports'));
         console.log("Error Fetching reports :", error.message);

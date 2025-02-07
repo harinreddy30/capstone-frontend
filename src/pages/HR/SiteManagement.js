@@ -159,7 +159,7 @@ const SiteManagement = ( ) => {
   };
   if (loading) return <div>Loading managers...</div>;
   if (error) return <div>{JSON.stringify(error)}</div>;
-  ;
+  
 
   return (
     <div className="p-6">

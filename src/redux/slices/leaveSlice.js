@@ -30,8 +30,8 @@ const leaveSlice = createSlice({
         },
         createLeaveSuccess: (state, action) => {
             state.loading = false;
-            // state.leaveRequests.push(action.payload)
-            localStorage.setItem("leaveRequests", JSON.stringify(state.leaveRequests));
+            state.leaveRequests.push(action.payload)
+            // localStorage.setItem("leaveRequests", JSON.stringify(state.leaveRequests));
 
         },
         leaveUpdateSuccess: (state, action) => {

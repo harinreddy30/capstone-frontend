@@ -1,14 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    reports: [],
+    reports: JSON.parse(localStorage.getItem("reports")) || [],
     report: null,
     loading: false,
     error: null,
 }
 
 const reportSlice = createSlice({
-    name: "report",
+    name: "reports",
     initialState,
     reducers: {
 
@@ -34,8 +34,10 @@ const reportSlice = createSlice({
         },
         reportCreateSuccess: (state, action) => {
             state.loading = false;
-            state.reports.push(action.payload);
+            state.reports = [...state.reports, action.payload]; // Ensure reactivity
+            localStorage.setItem("reports", JSON.stringify(state.reports)); // Sync with localStorage
         },
+        
         reportUpdateSuccess: (state, action) => {
             state.loading = false;
             state.reports = state.reports.map((report) => report._id === action.payload._id ? action.payload : report)
