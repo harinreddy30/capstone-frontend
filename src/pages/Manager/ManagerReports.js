@@ -106,7 +106,7 @@ const ManagerReports = () => {
             <p><strong>Description:</strong> {selectedReport.reportDescription}</p>
             <p><strong>Incident Date:</strong> {new Date(selectedReport.incidentDate).toLocaleString()}</p>
             <p><strong>Status:</strong> {selectedReport.status}</p>
-            <p><strong>Created By:</strong> {selectedReport.createdBy?.name || "Unknown"}</p>
+            <p><strong>Created By:</strong> {`${selectedReport.createdBy?.fname || "Unknown"} ${selectedReport.createdBy?.lname}`}</p>
             <div className="flex justify-end mt-4">
               <button
                 className="bg-red-500 text-white px-4 py-2 rounded"
