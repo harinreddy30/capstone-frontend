@@ -62,7 +62,6 @@ const LeaveManagement = () => {
       <h2 className="text-2xl font-semibold text-center mb-6">Manage Leave Requests</h2>
       
       {loading && <p className="text-center">Loading leave requests...</p>}
-      {error && <p className="text-center text-red-500">Error: {error}</p>}
 
       <table className="w-full border-collapse border border-gray-300">
         <thead>

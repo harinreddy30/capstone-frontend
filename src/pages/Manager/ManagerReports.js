@@ -27,10 +27,10 @@ const ManagerReports = () => {
   );
 
   // Handle Delete Report
-    const handleDelete = (reportId) => {
+    const handleDelete = async (reportId) => {
       const confirmDelete = window.confirm("Are you sure you want to delete this Site?");
       if (confirmDelete) {
-        dispatch(DeleteReport(reportId)); // Dispatch delete action
+        await dispatch(DeleteReport(reportId)); // Dispatch delete action
         dispatch(fetchAllReport()); // Refresh user list after deletion
       }
     };
@@ -51,7 +51,6 @@ const ManagerReports = () => {
 
       {/* Loading or Error Messages */}
       {loading && <div>Loading reports...</div>}
-      {error && <div className="text-red-500">Error: {error.message}</div>}
       {reports.length === 0 && !loading && !error && <div>No reports available.</div>}
 
       {/* Reports Table */}

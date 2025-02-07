@@ -16,18 +16,23 @@ const LeaveRequests = () => {
   const { loading, error, leaveRequests } = useSelector((state) => state.leave);
   const today = new Date().toISOString().split("T")[0];
 
+ 
   useEffect(() => {
     dispatch(fetchLeavesByEmployee());
   }, [dispatch]);
+  
 
+  
   const calculateTotalDays = (startDate, endDate) => {
     const start = new Date(startDate);
     const end = new Date(endDate);
-    if (start < end) {
-      return Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+  
+    if (start <= end) { // <-- Changed condition from (start < end) to (start <= end)
+      return Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1; // <-- Added "+1" to count same-day leaves
     }
     return 0;
   };
+  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -40,7 +45,7 @@ const LeaveRequests = () => {
     setLeaveRequest(updatedRequest);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const { startDate, endDate, reason } = leaveRequest;
@@ -57,17 +62,41 @@ const LeaveRequests = () => {
       return;
     }
 
-    dispatch(createLeaveRequest(leaveRequest));
+    await dispatch(createLeaveRequest(leaveRequest));
     setIsFormVisible(false);
+    setLeaveRequest({ startDate: "", endDate: "", reason: ""})
     dispatch(fetchLeavesByEmployee());
   };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+  
+    // Format day with ordinal suffix
+    const day = date.getDate();
+    const month = date.toLocaleString("en-US", { month: "long" });
+    const year = date.getFullYear();
+  
+    return `${getOrdinal(day)} ${month} ${year}`;
+  };
+  
+  // Function to add ordinal suffix (st, nd, rd, th)
+  const getOrdinal = (day) => {
+    if (day > 3 && day < 21) return day + "th";
+    switch (day % 10) {
+      case 1: return day + "st";
+      case 2: return day + "nd";
+      case 3: return day + "rd";
+      default: return day + "th";
+    }
+  };
+  
+  const leaveRequestsArray = Array.isArray(leaveRequests) ? leaveRequests : [];
 
   return (
     <div className="max-w-4xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-lg">
       <h2 className="text-2xl font-semibold text-center text-gray-700 mb-6">Leave Requests</h2>
 
-      {loading && <p className="text-blue-500 text-center">Fetching leave requests...</p>}
-      {error && <p className="text-red-500 text-center">Error: {error}</p>}
+      {loading && <p>Loading reports...</p>}
 
       <button
         onClick={() => setIsFormVisible(!isFormVisible)}
@@ -127,14 +156,14 @@ const LeaveRequests = () => {
       <div className="mt-6">
         <h3 className="text-xl font-semibold text-gray-700 mb-4">Your Leave Requests</h3>
         <div className="bg-gray-50 p-4 rounded-lg shadow">
-          {leaveRequests?.length === 0 ? (
+          {leaveRequestsArray?.length === 0 ? (
             <p className="text-gray-500 text-center">No leave requests found.</p>
           ) : (
             <ul>
-              {leaveRequests.map((leave, index) => (
+              {leaveRequestsArray.map((leave, index) => (
                 <li key={index} className="p-4 bg-white rounded-md shadow-sm mb-2">
                   <p className="text-gray-800">
-                    <strong>Start:</strong> {leave.startDate} | <strong>End:</strong> {leave.endDate}
+                    <strong>Start:</strong> {formatDate(leave.startDate)} | <strong>End:</strong> {formatDate(leave.endDate)}
                   </p>
                   <p className="text-gray-600"><strong>Reason:</strong> {leave.reason}</p>
                   <p className={`font-semibold ${leave.status === "Approved" ? "text-green-600" : "text-yellow-600"}`}>

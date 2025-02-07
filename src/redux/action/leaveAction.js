@@ -16,7 +16,6 @@ export const fetchLeaveRequests = () => async (dispatch) => {
     dispatch(leavePending()); // Dispatch the 'pending' state before making the request
     try {
         const response = await apiClient.get("/api/v1/leave");
-
         dispatch(leaveSuccess(response.data)); // Dispatch success action with the fetched data
     } catch (error) {
         dispatch(leaveFailure(error.response?.data || 'Error fetching leave requests'));
@@ -78,6 +77,7 @@ export const fetchLeavesByEmployee = () => async (dispatch) => {
   dispatch(leavePending()); // Dispatch the 'pending' state before making the request
   try {
       const response = await apiClient.get("/api/v1/leave/employee");
+      
       dispatch(leaveSuccess(response.data.Leaves || [])); // Dispatch success action with the fetched data
   } catch (error) {
       dispatch(leaveFailure(error.response?.data || 'Error fetching leaves'));

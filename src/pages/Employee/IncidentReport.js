@@ -95,7 +95,6 @@ const IncidentReport = () => {
       </button>
       
       {loading && <p>Loading reports...</p>}
-      {error && <p className="text-red-500">{error.message || "An error occurred"}</p>}
 
       <ul>
         {reports.map((report, index) => (
@@ -104,12 +103,12 @@ const IncidentReport = () => {
             <p>{report.reportDescription}</p>
             <p><strong>Incident Date:</strong> {new Date(report.incidentDate).toLocaleString()}</p>
             <p><strong>Status:</strong> {report.status}</p>
-            <button 
+            {/* <button 
               className="bg-yellow-500 text-white px-3 py-1 rounded mr-2"
               onClick={() => handleEdit(report)}
             >
               Edit
-            </button>
+            </button> */}
             <button 
               className="bg-red-500 text-white px-3 py-1 rounded"
               onClick={() => handleDelete(report._id)}
