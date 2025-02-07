@@ -4,7 +4,7 @@ import {
   fetchAllReport, createReport, updateReport, DeleteReport, fetchReportsByEmployee
 } from "../../redux/action/reportAction";
 
-const IncidentReport = () => {
+const IncidentReport = ({ onModalOpen, onModalClose }) => {
   const dispatch = useDispatch();
   const { reports, loading, error } = useSelector((state) => state.reports);
 
@@ -34,6 +34,26 @@ const IncidentReport = () => {
         fetchReports(); 
   }, [dispatch]);
   
+  // Modified to handle modal state
+  const handleCreateClick = () => {
+    setShowModal(true);
+    onModalOpen();
+  };
+
+  // Modified close modal function
+  const closeModal = () => {
+    setShowModal(false);
+    setEditMode(false);
+    setReportForm({
+      reportName: "",
+      reportDescription: "",
+      incidentDate: "",
+      status: "",
+    });
+    onModalClose();
+  };
+
+  // Modified handleSubmit
   const handleSubmit = async (event) => {
     event.preventDefault();
     const {reportName, reportDescription, incidentDate, status} = reportForm;
@@ -47,23 +67,11 @@ const IncidentReport = () => {
     }
 
     await dispatch(createReport(reportForm));
-    setShowModal(false);
+    closeModal(); // Use closeModal instead of setShowModal
     setEditMode(false);
     setReportForm({ reportName: "", reportDescription: "", incidentDate: "", status: "" });
 
     await dispatch(fetchReportsByEmployee());
-    // try {
-    //   if (editMode) {
-    //     dispatch(updateReport(selectedReport._id, reportForm));
-    //   } else {
-    //     dispatch(createReport(reportForm));
-    //   }
-    //   setShowModal(false);
-    //   setEditMode(false);
-    //   dispatch(fetchAllReport()); // Refresh Report list
-    // } catch (error) {
-    //   console.error("Error submitting Report data:", error);
-    // }
   };
 
   // Handle Edit Report
@@ -89,7 +97,7 @@ const IncidentReport = () => {
     <div className="max-w-3xl mx-auto p-5 bg-gray-100 rounded-lg shadow-md">
       <button 
         className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
-        onClick={() => setShowModal(true)}
+        onClick={handleCreateClick} // Updated to use new handler
       >
         Create Report
       </button>
@@ -183,7 +191,7 @@ const IncidentReport = () => {
                 <button 
                   type="button" 
                   className="bg-gray-400 text-white px-4 py-2 rounded mr-2"
-                  onClick={() => setShowModal(false)}
+                  onClick={closeModal} // Updated to use closeModal
                 >
                   Cancel
                 </button>

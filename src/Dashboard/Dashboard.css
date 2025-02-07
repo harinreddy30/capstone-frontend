@@ -24,7 +24,7 @@
     width: 70px;
 }
 
-.left-nav.collapsed .nav-links span {
+.left-nav.collapsed .nav-links span:not(:first-child) {
     display: none;
 }
 
@@ -192,5 +192,51 @@
   width: 100%;
   max-width: 500px;
   position: relative;
+}
+
+/* Add these styles for Employee Dashboard */
+.nav-links a {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: #4a5568;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.nav-links a:hover {
+    background-color: #f7fafc;
+    color: #2563eb;
+}
+
+.nav-links a.active {
+    background-color: #ebf5ff;
+    color: #2563eb;
+}
+
+/* Update existing styles */
+.left-nav {
+    background-color: white;
+    width: 250px;
+    transition: all 0.3s ease;
+    z-index: 10;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+}
+
+.left-nav.collapsed {
+    width: 70px;
+}
+
+.left-nav.collapsed .nav-links span:not(:first-child) {
+    display: none;
+}
+
+.main-content {
+    background-color: #f8f9fa;
+    padding: 2rem;
+    flex: 1;
 }
   

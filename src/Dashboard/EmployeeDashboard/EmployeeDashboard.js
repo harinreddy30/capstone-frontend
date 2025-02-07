@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import TopNavBar from '../../components/NavBar/TopNavBar';
 import '../Dashboard.css'; 
@@ -15,55 +15,99 @@ const PayStubs = React.lazy(() => import('../../pages/Employee/PayStub'));
 
 // Sidebar Components generate naviagation links dynamically
 // Easier to add any links
-const SideBar = () => {
+const SideBar = ({ isCollapsed, isModalOpen }) => {
+  // If modal is open, don't render the sidebar
+  if (isModalOpen) return null;
+
   const navLinks = [
-    { path: 'job-scheduling', label: 'My Schedule' },
-    { path: 'incident-reports', label: 'Incident Reports' },
-    { path: 'swap-shift', label: 'Swap Shift' },
-    { path: 'time-off', label: 'Time Off' },
-    { path: 'input-availability', label: 'Input Availability' },
-    { path: 'pay-stub', label: 'Pay Stubs' },    
+    { path: 'job-scheduling', label: 'My Schedule', icon: '📅' },
+    { path: 'incident-reports', label: 'Incident Reports', icon: '📝' },
+    { path: 'swap-shift', label: 'Swap Shift', icon: '🔄' },
+    { path: 'time-off', label: 'Time Off', icon: '🌴' },
+    { path: 'input-availability', label: 'Input Availability', icon: '⏰' },
+    { path: 'pay-stub', label: 'Pay Stubs', icon: '💰' },    
   ];
 
   return(
-
-    <div className="left-nav">
-      <div className="header">
-        <div className="user-info">
-          <p>Employee Username</p>
-          <p>Employee@gmail.com</p>
-        </div>
+    <div className={`left-nav ${isCollapsed ? 'collapsed' : ''}`}>
+      <div className="flex items-center mb-6">
+        {!isCollapsed && <span className="ml-3 font-semibold text-gray-800">Employee Dashboard</span>}
       </div>
-      <ul className="nav-links">
+      
+      <nav className="nav-links">
         {navLinks.map((link) => (
-          <li key={link.path}>
-            <Link to={`/employee/${link.path}`}>{link.label}</Link>
-          </li>
+          <Link
+            key={link.path}
+            to={`/employee/${link.path}`}
+            className="flex items-center mb-2 text-gray-700 hover:bg-gray-50 hover:text-blue-600 rounded-lg transition-colors duration-200"
+          >
+            <span className="text-xl w-8">{link.icon}</span>
+            {!isCollapsed && <span className="ml-3">{link.label}</span>}
+          </Link>
         ))}
-      </ul>
+      </nav>
     </div>
   );
-
-}
+};
 
 const EmployeeDashboard = () => {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    if (!isModalOpen) {
+      setIsSidebarCollapsed(!isSidebarCollapsed);
+      setIsMobileMenuOpen(!isMobileMenuOpen);
+    }
+  };
+
+  const handleModalOpen = () => {
+    setIsModalOpen(true);
+    setIsSidebarCollapsed(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setIsSidebarCollapsed(false);
+  };
+
   return (
     <div className="dashboard">
       {/* Top Navigation Bar */}
-      <TopNavBar />
+      <TopNavBar 
+        toggleSidebar={toggleSidebar}
+        isModalOpen={isModalOpen}
+      />
 
       <div className="dashboard-body">
+        {/* Overlay for mobile */}
+        <div 
+          className={`overlay ${isMobileMenuOpen ? 'active' : ''}`}
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+
         {/* Sidebar Navigation */}
-        <SideBar />
+        <SideBar 
+          isCollapsed={isSidebarCollapsed}
+          isModalOpen={isModalOpen}
+        />
 
         {/* Main Content Area */}
-        <div className="main-content">
-
+        <div className={`main-content ${isModalOpen ? 'modal-open' : ''}`}>
           {/*Suspense provide a fallback, while lazy-loaded components are fetched*/}
           <React.Suspense fallback={<p>Loading...</p>}>
             <Routes>
               <Route path="job-scheduling" element={<MySchedule />} />
-              <Route path="incident-reports" element={<IncidentReports />} />
+              <Route 
+                path="incident-reports" 
+                element={
+                  <IncidentReports 
+                    onModalOpen={handleModalOpen}
+                    onModalClose={handleModalClose}
+                  />
+                } 
+              />
               <Route path="swap-shift" element={<SwapShift />} />
               <Route path="time-off" element={<TimeOff />} />
               <Route path="input-availability" element={<InputAvailability />} />
@@ -71,7 +115,6 @@ const EmployeeDashboard = () => {
             </Routes>
           </React.Suspense>
         </div>
-
       </div>
     </div>
   );
