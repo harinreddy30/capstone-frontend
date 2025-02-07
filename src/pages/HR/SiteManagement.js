@@ -16,7 +16,7 @@ const countries = {
   "India": ["Gujarat", "Maharashtra", "Punjab", "Rajasthan"]
 };
 
-const SiteManagement = ( ) => {
+const SiteManagement = ({ onModalOpen, onModalClose }) => {
 
   // const [sites, setSites] = useState([]);
   const [managers, setManagers] = useState([]);
@@ -120,7 +120,6 @@ const SiteManagement = ( ) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-
       if (!siteForm.location.coordinates.length) {
         alert("Invalid address! Please enter a valid address.");
         return;
@@ -132,8 +131,7 @@ const SiteManagement = ( ) => {
         await dispatch(createSite(siteForm));
       }
 
-      setShowModal(false);
-      setEditMode(false);
+      closeModal();
       await dispatch(fetchAllSites());
 
     } catch (error) {
@@ -147,6 +145,7 @@ const SiteManagement = ( ) => {
     setSiteForm(site);
     setEditMode(true);
     setShowModal(true);
+    onModalOpen();
   };
 
   // Handle Delete User
@@ -157,6 +156,35 @@ const SiteManagement = ( ) => {
       dispatch(fetchAllSites()); // Refresh user list after deletion
     }
   };
+
+  // Add new handleAddClick function
+  const handleAddClick = () => {
+    setShowModal(true);
+    setEditMode(false);
+    setSiteForm({
+      name: "",
+      location: { address: "", coordinates: [] },
+      userId: "",
+      isavailable: true,
+      description: "",
+    });
+    onModalOpen();
+  };
+
+  // Add closeModal function
+  const closeModal = () => {
+    setShowModal(false);
+    setEditMode(false);
+    setSiteForm({
+      name: "",
+      location: { address: "", coordinates: [] },
+      userId: "",
+      isavailable: true,
+      description: "",
+    });
+    onModalClose();
+  };
+
   if (loading) return <div>Loading managers...</div>;
   if (error) return <div>{JSON.stringify(error)}</div>;
   
@@ -172,17 +200,7 @@ const SiteManagement = ( ) => {
           className="border p-2 rounded w-1/3"
         />
         <button
-          onClick={() => {
-            setShowModal(true);
-            setEditMode(false);
-            setSiteForm({
-              name: "",
-              location: { address: "", coordinates: [] },
-              userId: "",
-              isavailable: true,
-              description: "",
-            });
-          }}
+          onClick={handleAddClick}
           className="bg-blue-500 text-white px-4 py-2 rounded"
         >
           Add Site
@@ -336,7 +354,10 @@ const SiteManagement = ( ) => {
               <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">
                 {editMode ? "Update" : "Add"}
               </button>
-              <button onClick={() => setShowModal(false)} className="ml-2 bg-gray-500 text-white px-4 py-2 rounded">
+              <button 
+                onClick={closeModal}
+                className="ml-2 bg-gray-500 text-white px-4 py-2 rounded"
+              >
                 Cancel
               </button>
             </form>

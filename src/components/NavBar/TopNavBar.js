@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';  // For navigation in React Router v6+
 
 
-const TopNavBar = () => {
+const TopNavBar = ({ toggleSidebar }) => {
 
   const navigate = useNavigate();  // Access the navigate function for navigation
 
@@ -21,41 +21,47 @@ const TopNavBar = () => {
   };
 
   return (
-    <div className="flex justify-between items-center px-6 py-3" style={{ backgroundColor: '#0a0f2c', color: 'white' }}>
+    <div className="flex justify-between items-center px-6 py-3 bg-white border-b border-gray-200">
       {/* Left Section */}
       <div className="flex items-center">
-        <button className="text-xl mr-4 text-white cursor-pointer focus:outline-none">
+        <button 
+          onClick={toggleSidebar}
+          className="text-gray-600 hover:bg-gray-100 p-2 rounded-lg mr-4 focus:outline-none"
+        >
           ☰
         </button>
-        <h2 className="text-2xl font-bold mr-6">SHIFTSMART</h2>
-        <div className="flex items-center" style={{ backgroundColor: '#2d3651', borderRadius: '5px', padding: '5px 10px' }}>
+        <h2 className="text-xl font-semibold text-gray-800">SHIFTSMART</h2>
+      </div>
+
+      {/* Center Section - Search */}
+      <div className="flex-1 max-w-2xl mx-4">
+        <div className="relative">
           <input
             type="text"
-            className="bg-transparent border-none outline-none text-white placeholder-gray-300 flex-grow"
-            placeholder="Search Anything"
+            className="w-full px-4 py-2 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+            placeholder="Search..."
           />
-          <button className="ml-2 text-white cursor-pointer focus:outline-none">
-            🔍
-          </button>
+          <span className="absolute right-3 top-2.5 text-gray-400">🔍</span>
         </div>
       </div>
 
       {/* Right Section */}
       <div className="flex items-center space-x-4">
-        <button className="text-xl text-white cursor-pointer focus:outline-none">
+        <button className="text-gray-600 hover:bg-gray-100 p-2 rounded-full">
           💬
         </button>
-        <button className="text-xl text-white cursor-pointer focus:outline-none">
+        <button className="text-gray-600 hover:bg-gray-100 p-2 rounded-full">
           🔔
         </button>
         <button 
           onClick={handleSettingsClick}
-          className="text-xl text-white cursor-pointer focus:outline-none">
+          className="text-gray-600 hover:bg-gray-100 p-2 rounded-full"
+        >
           ⚙️
         </button>
         <button
-          onClick={handleLogout}  // Trigger the logout function on click
-          className="text-sm font-medium text-white cursor-pointer focus:outline-none hover:underline"
+          onClick={handleLogout}
+          className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg"
         >
           Logout
         </button>

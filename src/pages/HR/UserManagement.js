@@ -5,7 +5,7 @@ import { fetchAllUsers, createUser, updateUser, DeleteUser } from "../../redux/a
 
 const roles = ["Employee", "HR", "Manager", "PayrollManager"];
 
-const UserManagement = () => {
+const UserManagement = ({ onModalOpen, onModalClose }) => {
   
   // const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -81,13 +81,12 @@ const UserManagement = () => {
       hourlyWage: user.hourlyWage || "0",
     });
     setEditMode(true);
-    setShowModal(true);
+    openModal();
   };
 
-  // Close modal and reset form
-  const closeModal = () => {
-    setShowModal(false);
+  const handleAddClick = () => {
     setEditMode(false);
+    setSelectedUser(null);
     setUserForm({
       fname: "",
       lname: "",
@@ -98,6 +97,31 @@ const UserManagement = () => {
       role: "Employee",
       hourlyWage: "0",
     });
+    setShowModal(true);
+    onModalOpen();
+  };
+
+  const openModal = () => {
+    setShowModal(true);
+    onModalOpen();
+  };
+
+  // Close modal and reset form
+  const closeModal = () => {
+    setShowModal(false);
+    setEditMode(false);
+    setSelectedUser(null);
+    setUserForm({
+      fname: "",
+      lname: "",
+      email: "",
+      password: "",
+      phone: "",
+      dateOfBirth: "",
+      role: "Employee",
+      hourlyWage: "0",
+    });
+    onModalClose();
   };
 
   // Handle Delete User
@@ -110,7 +134,17 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="container mx-auto px-4">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">User Management</h1>
+        <button
+          onClick={handleAddClick}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Add User
+        </button>
+      </div>
+
       <div className="flex justify-between mb-4">
         <input
           type="text"
@@ -119,15 +153,6 @@ const UserManagement = () => {
           onChange={handleSearch}
           className="border p-2 rounded w-1/3"
         />
-        <button
-          onClick={() => {
-            setShowModal(true);
-            setEditMode(false);
-          }}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          Add User
-        </button>
       </div>
 
       {/* User Table */}
@@ -233,9 +258,12 @@ const UserManagement = () => {
               <input
                 type="date"
                 name="dateOfBirth"
+                placeholder="DOB"
                 value={userForm.dateOfBirth}
                 onChange={handleInputChange}
                 className="border p-2 w-full"
+                max={new Date().toISOString().split('T')[0]}
+                min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]}
               />
               <select
                 name="role"

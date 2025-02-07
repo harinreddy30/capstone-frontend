@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import TopNavBar from '../../components/NavBar/TopNavBar';
 import '../Dashboard.css';
@@ -12,54 +12,104 @@ const SiteManagement = React.lazy(() => import('../../pages/HR/SiteManagement'))
 // const Settings = React.lazy(() => import('../../pages/HR/Settings'));
 
 // Sidebar Component
-const SideBar = () => {
-  const navLinks = [
-    { path: 'user-management', label: 'User Management' },
-    { path: 'site-management', label: 'Site Management' },
+const SideBar = ({ isCollapsed, isModalOpen }) => {
+  // If modal is open, don't render the sidebar
+  if (isModalOpen) return null;
 
-    // { path: 'attendance-tracking', label: 'Attendance Tracking' },
-    // { path: 'payroll', label: 'Payroll' },
-    // { path: 'reports', label: 'Reports' },
-    // { path: 'approvals', label: 'Approvals' },
-    // { path: 'settings', label: 'Settings' },
+  const navLinks = [
+    { path: 'user-management', label: 'User Management', icon: '👥' },
+    { path: 'site-management', label: 'Site Management', icon: '🏢' },
   ];
 
   return (
-    <div className="left-nav">
-      <div className="header">
-        <div className="user-info">
-          <p>HR Manager</p>
-          <p>hr.manager@company.com</p>
-        </div>
+    <div className={`left-nav ${isCollapsed ? 'collapsed' : ''}`}>
+      <div className="flex items-center mb-6">
+        {/* <img src="/logo.png" alt="Logo" className="h-8 w-8" /> */}
+        {!isCollapsed && <span className="ml-3 font-semibold text-gray-800">HR Dashboard</span>}
       </div>
-      <ul className="nav-links">
+      
+      <nav className="nav-links">
         {navLinks.map((link) => (
-          <li key={link.path}>
-            <Link to={`/hr/${link.path}`}>{link.label}</Link>
-          </li>
+          <Link
+            key={link.path}
+            to={`/hr/${link.path}`}
+            className="flex items-center mb-2 text-gray-700 hover:bg-gray-50 hover:text-blue-600 rounded-lg transition-colors duration-200"
+          >
+            <span className="text-xl w-8">{link.icon}</span>
+            {!isCollapsed && <span className="ml-3">{link.label}</span>}
+          </Link>
         ))}
-      </ul>
+      </nav>
     </div>
   );
 };
 
 const HRDashboard = () => {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false); // Add modal state
+
+  const toggleSidebar = () => {
+    if (!isModalOpen) { // Only toggle if modal is not open
+      setIsSidebarCollapsed(!isSidebarCollapsed);
+      setIsMobileMenuOpen(!isMobileMenuOpen);
+    }
+  };
+
+  // Modal handlers
+  const handleModalOpen = () => {
+    setIsModalOpen(true);
+    setIsSidebarCollapsed(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setIsSidebarCollapsed(false);
+  };
+
   return (
     <div className="dashboard">
       {/* Top Navigation Bar */}
-      <TopNavBar />
+      <TopNavBar 
+        toggleSidebar={toggleSidebar}
+        isModalOpen={isModalOpen}
+      />
 
       <div className="dashboard-body">
+        {/* Overlay for mobile */}
+        <div 
+          className={`overlay ${isMobileMenuOpen ? 'active' : ''}`}
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+
         {/* Sidebar Navigation */}
-        <SideBar />
+        <SideBar 
+          isCollapsed={isSidebarCollapsed}
+          isModalOpen={isModalOpen}
+        />
 
         {/* Main Content Area */}
-        <div className="main-content">
+        <div className={`main-content ${isModalOpen ? 'modal-open' : ''}`}>
           <React.Suspense fallback={<p>Loading...</p>}>
             <Routes>
-              <Route path="user-management" element={<UserManagement />} />
-              <Route path="site-management" element={<SiteManagement />} />
-
+              <Route 
+                path="user-management" 
+                element={
+                  <UserManagement 
+                    onModalOpen={handleModalOpen}
+                    onModalClose={handleModalClose}
+                  />
+                } 
+              />
+              <Route 
+                path="site-management" 
+                element={
+                  <SiteManagement 
+                    onModalOpen={handleModalOpen}
+                    onModalClose={handleModalClose}
+                  />
+                } 
+              />
               {/* <Route path="attendance-tracking" element={<AttendanceTracking />} />
               <Route path="payroll" element={<Payroll />} />
               <Route path="reports" element={<Reports />} />

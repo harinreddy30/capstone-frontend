@@ -2,67 +2,195 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-  }
-  
-  .dashboard-body {
+    background-color: #f8f9fa;
+}
+
+.dashboard-body {
     display: flex;
     flex: 1;
-  }
-  
-  .left-nav {
-    background-color: #0a0f2c;
-  }
-  
-  .nav {
+    position: relative;
+}
+
+.left-nav {
+    background-color: white;
+    width: 250px;
+    transition: all 0.3s ease;
+    z-index: 10;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+}
+
+.left-nav.collapsed {
+    width: 70px;
+}
+
+.left-nav.collapsed .nav-links span {
+    display: none;
+}
+
+.left-nav.collapsed .user-info {
+    display: none;
+}
+
+.nav {
     width: 250px;
     background-color: #0a0f2c; /* Dark blue background */
     color: white;
     height: 100vh; /* Full height */
     display: flex;
     flex-direction: column;
-  }
-  
-  .header {
+}
+
+.header {
     padding: 20px;
     text-align: center;
     border-bottom: 1px solid #2d3651;
-  }
-  
-  .logo {
+}
+
+.logo {
     font-size: 1.5rem;
     margin-bottom: 10px;
-  }
-  
-  .user-info {
+}
+
+.user-info {
     font-size: 0.9rem;
     color: aliceblue;
-  }
-  
-  .nav-links {
+}
+
+.nav-links {
     list-style: none;
     padding: 0;
     margin: 0;
-  }
-  
-  .nav-links li {
+    margin-top: 1rem;
+}
+
+.nav-links li {
     padding: 15px 20px;
     border-bottom: 1px solid #2d3651;
-  }
-  
-  .nav-links li a {
+}
+
+.nav-links li a {
     text-decoration: none;
-    color: white;
+    color: #4a5568;
     display: block;
-  }
-  
-  .nav-links li a:hover {
-    background-color: #1e2a47;
-    border-radius: 5px;
-  }
-  
-  .main-content {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.nav-links li a:hover {
+    background-color: #f7fafc;
+    color: #2563eb;
+}
+
+.nav-links li a.active {
+    background-color: #ebf5ff;
+    color: #2563eb;
+}
+
+.main-content {
     flex: 1;
-    padding: 20px;
+    padding: 2rem;
+    background-color: #f8f9fa;
     overflow-y: auto;
-  }
+    transition: all 0.3s ease;
+}
+
+/* Header styles */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 1rem 2rem;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Card styles */
+.dashboard-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+}
+
+/* Date picker and filters style */
+.filters-bar {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+
+.filters-bar select, 
+.filters-bar input {
+    padding: 0.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    outline: none;
+}
+
+/* Media query for responsive behavior */
+@media (max-width: 768px) {
+    .left-nav {
+        position: absolute;
+        height: 100%;
+        left: 0;
+        transform: translateX(-100%);
+    }
+
+    .left-nav.expanded {
+        transform: translateX(0);
+    }
+
+    .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 5;
+    }
+
+    .overlay.active {
+        display: block;
+    }
+}
+
+/* Add these styles to your existing CSS */
+.main-content.modal-open {
+  margin-left: 0;
+  width: 100%;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 500px;
+  position: relative;
+}
   
