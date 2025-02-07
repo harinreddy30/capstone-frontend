@@ -52,10 +52,10 @@ const UserManagement = () => {
     try {
       if (editMode) {
         // Update existing user
-        dispatch(updateUser(selectedUser._id, userForm));
+        await dispatch(updateUser(selectedUser._id, userForm));
       } else {
         // Create a new user
-        dispatch(createUser(userForm));
+        await dispatch(createUser(userForm));
       }
       closeModal();
 

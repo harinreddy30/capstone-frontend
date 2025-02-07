@@ -127,9 +127,9 @@ const SiteManagement = ( ) => {
       }
       
       if (editMode) {
-        dispatch(updateSite(selectedSite._id, siteForm))
+        await dispatch(updateSite(selectedSite._id, siteForm))
       } else {
-        dispatch(createSite(siteForm));
+        await dispatch(createSite(siteForm));
       }
 
       setShowModal(false);
@@ -150,10 +150,10 @@ const SiteManagement = ( ) => {
   };
 
   // Handle Delete User
-  const handleDelete = (siteId) => {
+  const handleDelete = async (siteId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this Site?");
     if (confirmDelete) {
-      dispatch(DeleteSite(siteId)); // Dispatch delete action
+      await dispatch(DeleteSite(siteId)); // Dispatch delete action
       dispatch(fetchAllSites()); // Refresh user list after deletion
     }
   };
