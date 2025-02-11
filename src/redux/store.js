@@ -5,7 +5,8 @@ import usersReducer from '../redux/slices/userSlice';
 import sitesReducer from '../redux/slices/siteSlice';
 import shiftsReducer from "../redux/slices/shiftSlice";
 import reportsReducer from "../redux/slices/reportSlice";
-import profileReducer from '../redux/slices/profileSlice';
+import availabilityReducer from "../redux/slices/availabilitySlice"
+// import profileReducer from '../redux/slices/profileSlice';
 
 // import logger from 'redux-logger';
 
@@ -13,12 +14,13 @@ import profileReducer from '../redux/slices/profileSlice';
 const store = configureStore({
     reducer: {
         auth: authReducer,
-        profile: profileReducer,
+        // profile: profileReducer,
         leave: leaveReducer, // Add the leave slice here
         users: usersReducer,
         sites: sitesReducer,
         shifts: shiftsReducer,
         reports: reportsReducer,
+        availability: availabilityReducer,
 
     },
     // This will print every dispatched action and the state changes in the browser's console

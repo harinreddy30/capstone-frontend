@@ -18,8 +18,8 @@ const ProtectedRoute = ({ children, authorizedRoles }) => {
 
   // UsSelector takes the current state for updation
   const { token , user } = useSelector((state) => state.auth) // auth is the name of the Slice that contains token and user
-  console.log("Token in ProtectedRoute:", token);
-  console.log("User in ProtectedRoute:", user);
+  // console.log("Token in ProtectedRoute:", token);
+  // console.log("User in ProtectedRoute:", user);
 
   if(!token){
     return <Navigate to='/login'/>

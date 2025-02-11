@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import TopNavBar from '../../components/NavBar/TopNavBar';
 import '../Dashboard.css'; 
+import MyAvailability from '../../pages/Employee/MyAvailability';
 
 // Lazy load components 
 // This improves performance by loading components only when needed
@@ -24,7 +25,8 @@ const SideBar = ({ isCollapsed, isModalOpen }) => {
     { path: 'incident-reports', label: 'Incident Reports', icon: '📝' },
     { path: 'swap-shift', label: 'Swap Shift', icon: '🔄' },
     { path: 'time-off', label: 'Time Off', icon: '🌴' },
-    { path: 'input-availability', label: 'Input Availability', icon: '⏰' },
+    // { path: 'input-availability', label: 'Input Availability', icon: '⏰' },
+    { path: 'my-availability', label: 'My Availability', icon: '⏰' },
     { path: 'pay-stub', label: 'Pay Stubs', icon: '💰' },    
   ];
 
@@ -111,6 +113,7 @@ const EmployeeDashboard = () => {
               <Route path="swap-shift" element={<SwapShift />} />
               <Route path="time-off" element={<TimeOff />} />
               <Route path="input-availability" element={<InputAvailability />} />
+              <Route path="my-availability" element={<MyAvailability />} />
               <Route path="pay-stub" element={<PayStubs />} />
             </Routes>
           </React.Suspense>
