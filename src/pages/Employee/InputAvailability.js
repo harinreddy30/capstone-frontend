@@ -39,10 +39,34 @@ const Availability = () => {
 
   const handleChange = (e, day, index) => {
     const { name, value } = e.target;
-    const newAvailability = { ...formData };
-    newAvailability[day][index][name] = value; // Update startTime or endTime
+  
+    // Create a deep copy of formData
+    const newAvailability = JSON.parse(JSON.stringify(formData));
+  
+    // Update the specific slot
+    newAvailability[day][index][name] = value;
+  
+    // Update state with a fresh reference
     setFormData(newAvailability);
   };
+
+  const handleRemoveSlot = (day, index) => {
+    // Create a deep copy of formData
+    const newAvailability = JSON.parse(JSON.stringify(formData));
+  
+    // Remove the slot at the given index
+    newAvailability[day] = newAvailability[day].filter((_, i) => i !== index);
+  
+    setFormData(newAvailability);
+  };
+  
+  
+  // const handleChange = (e, day, index) => {
+  //   const { name, value } = e.target;
+  //   const newAvailability = { ...formData };
+  //   newAvailability[day][index][name] = value; // Update startTime or endTime
+  //   setFormData(newAvailability);
+  // };
 
   const handleAddSlot = (day) => {
     const newAvailability = { ...formData };
@@ -50,11 +74,11 @@ const Availability = () => {
     setFormData(newAvailability);
   };
 
-  const handleRemoveSlot = (day, index) => {
-    const newAvailability = { ...formData };
-    newAvailability[day].splice(index, 1);
-    setFormData(newAvailability);
-  };
+  // const handleRemoveSlot = (day, index) => {
+  //   const newAvailability = { ...formData };
+  //   newAvailability[day].splice(index, 1);
+  //   setFormData(newAvailability);
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
