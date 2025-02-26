@@ -13,11 +13,12 @@ export const fetchShifts = (siteId) => async (dispatch) => {
     try {
         dispatch(fetchShiftsStart());
         const response = await apiClient.get(`/api/v1/shifts/${siteId}`);
-        dispatch(fetchShiftsSuccess(response.data));
+        console.log(response.data)
+        dispatch(fetchShiftsSuccess(response.data || []));
 
     } catch (error) {
-        dispatch(fetchShiftsFailure(error.message));
-        console.log("Error Fetching Shifts", error);
+        dispatch(fetchShiftsFailure(error.response?.data || "Error fetching shifts"));
+        console.log("Error Fetching Shifts", error.message);
     }
 }
 

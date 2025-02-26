@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    shifts: [],
+    shifts: JSON.parse(localStorage.getItem("shifts")) || [],
     loading: false,
     error: null,
 }
@@ -20,6 +20,7 @@ const shiftSlice = createSlice({
         fetchShiftsSuccess: (state, action) => {
             state.loading = false;
             state.shifts = action.payload;
+            localStorage.setItem("shifts", JSON.stringify(state.shifts));
         },
         // Handle error
         fetchShiftsFailure: (state, action) => {
