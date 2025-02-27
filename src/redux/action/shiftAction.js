@@ -6,6 +6,7 @@ import {
     addShiftSuccess,
     updateShiftSuccess,
     deleteShiftSuccess,
+    clearShifts
 } from '../slices/shiftSlice';
 
 // Fetch shifts for a site
@@ -55,4 +56,8 @@ export const deleteShift = (shiftId) => async (dispatch) => {
         dispatch(fetchShiftsFailure(error.message));
         console.error('Error deleting shift:', error);
     }
+};
+
+export const clearShiftsAction = () => (dispatch) => {
+    dispatch(clearShifts());
 };

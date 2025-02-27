@@ -4,7 +4,7 @@ import {
   fetchAllSites,
   fetchSitesByManager
 } from '../../redux/action/siteAction'
-import { createShift, updateShift, fetchShifts, deleteShift } from "../../redux/action/shiftAction";
+import { createShift, updateShift, fetchShifts, deleteShift, clearShiftsAction } from "../../redux/action/shiftAction";
 
 const ManagerSites = ({ onModalOpen, onModalClose }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -32,6 +32,7 @@ const ManagerSites = ({ onModalOpen, onModalClose }) => {
       dispatch(fetchSitesByManager());
     }
   }, [dispatch, sites.length]);
+  
   
   
 
@@ -64,6 +65,16 @@ const ManagerSites = ({ onModalOpen, onModalClose }) => {
     setEditMode(true); 
     const site = sites.find(site => site._id === shift.site._id);
 
+    const daysMapReverse = {
+      Monday: "Mon",
+      Tuesday: "Tue",
+      Wednesday: "Wed",
+      Thursday: "Thu",
+      Friday: "Fri",
+      Saturday: "Sat",
+      Sunday: "Sun",
+  };
+
     if (!site) {
       console.error("Site not found for shift:", shift.site);
       return; // Exit if no site is found
@@ -75,7 +86,7 @@ const ManagerSites = ({ onModalOpen, onModalClose }) => {
       endTime: shift.endTime,
       hours: shift.hours, 
       jobDescription: shift.jobDescription,
-      applyToDays: shift.days, 
+      applyToDays: shift.days.map(day => daysMapReverse[day] || day), 
       siteId: shift.site, 
       selectedShiftId: shift._id, 
     });
@@ -112,6 +123,7 @@ const ManagerSites = ({ onModalOpen, onModalClose }) => {
         : [...prev.applyToDays, day],
     }));
   };
+  
 
   const openShiftModal = (site) => {
     setSelectedSite(site);
@@ -136,6 +148,7 @@ const ManagerSites = ({ onModalOpen, onModalClose }) => {
   };
 
   const openShiftsModal =  (site) => {
+    dispatch(clearShiftsAction()); 
     setSelectedSite(site);
     try {
       dispatch(fetchShifts(site._id));
@@ -246,66 +259,68 @@ const ManagerSites = ({ onModalOpen, onModalClose }) => {
 
        {/* View Shifts Modal */}
        {showShiftsModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-          <div className="bg-white p-6 rounded shadow-lg w-1/3">
-            <h2 className="text-xl font-bold mb-4">
-              Shifts for {selectedSite ? selectedSite.name : "Loading..."}
-            </h2>
-            
-            {shifts.length > 0 ? (
-              <table className="w-full border-collapse border">
-                <thead>
-                  <tr className="bg-gray-200">
-                    <th className="border p-2">Position</th>
-                    <th className="border p-2">Start Time</th>
-                    <th className="border p-2">End Time</th>
-                    <th className="border p-2">Days</th>
-                    <th className="border p-2">Job Description</th>
-                    <th className="border p-2">Actions</th> 
-                  </tr>
-                </thead>
-                <tbody>
-                  {shifts.map((shift) => (
-                    <tr key={shift._id} className="text-center">
-                      <td className="border p-2">{shift.position}</td>
-                      <td className="border p-2">{shift.startTime}</td>
-                      <td className="border p-2">{shift.endTime}</td>
-                      <td className="border p-2">
-                        {shift.days.join(", ")}
-                      </td>
-                      <td className="border p-2">{shift.jobDescription}</td>
-                      <td className="border p-2">
-                      <button
-                          onClick={() => openShiftModalForEdit(shift)} // Call openShiftModalForEdit
-                          className="bg-blue-500 text-white px-3 py-1 rounded ml-2"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteShift(shift._id)} 
-                          className="bg-red-500 text-white px-3 py-1 rounded"
-                        >
-                          Delete
-                        </button>
-                      </td>
+          <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+            <div className="bg-white p-6 rounded shadow-lg w-1/3">
+              <h2 className="text-xl font-bold mb-4">
+                Shifts for {selectedSite ? selectedSite.name : "Loading..."}
+              </h2>
+              
+              {/* Show loading spinner or placeholder while shifts are loading */}
+              {loading ? (
+                <p>Loading shifts...</p>
+              ) : shifts.length > 0 ? (
+                <table className="w-full border-collapse border">
+                  <thead>
+                    <tr className="bg-gray-200">
+                      <th className="border p-2">Position</th>
+                      <th className="border p-2">Start Time</th>
+                      <th className="border p-2">End Time</th>
+                      <th className="border p-2">Days</th>
+                      <th className="border p-2">Job Description</th>
+                      <th className="border p-2">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <p>No shifts available for this site.</p>
-            )}
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={closeModal}
-                className="bg-gray-500 text-white px-4 py-2 rounded"
-              >
-                Close
-              </button>
+                  </thead>
+                  <tbody>
+                    {shifts.map((shift) => (
+                      <tr key={shift._id} className="text-center">
+                        <td className="border p-2">{shift.position}</td>
+                        <td className="border p-2">{shift.startTime}</td>
+                        <td className="border p-2">{shift.endTime}</td>
+                        <td className="border p-2">{shift.days.join(", ")}</td>
+                        <td className="border p-2">{shift.jobDescription}</td>
+                        <td className="border p-2">
+                          <button
+                            onClick={() => openShiftModalForEdit(shift)} // Call openShiftModalForEdit
+                            className="bg-blue-500 text-white px-3 py-1 rounded ml-2"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteShift(shift._id)} 
+                            className="bg-red-500 text-white px-3 py-1 rounded"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p>No shifts available for this site.</p>
+              )}
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={closeModal}
+                  className="bg-gray-500 text-white px-4 py-2 rounded"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
 
       {/* Add Shift Modal */}
       {showShiftModal && (

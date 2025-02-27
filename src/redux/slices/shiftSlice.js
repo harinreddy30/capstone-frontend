@@ -41,6 +41,9 @@ const shiftSlice = createSlice({
         },
         deleteShiftSuccess: (state, action) => {
             state.shifts = state.shifts.filter((shift) => shift._id !== action.payload)
+        },
+        clearShifts: (state) => {
+            state.shifts = [];
         }
     }
 })
@@ -52,6 +55,7 @@ export const {
     addShiftSuccess,
     updateShiftSuccess,
     deleteShiftSuccess,
+    clearShifts
 } = shiftSlice.actions;
 
 export default shiftSlice.reducer;
