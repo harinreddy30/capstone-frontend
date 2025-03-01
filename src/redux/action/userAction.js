@@ -12,15 +12,23 @@ from '../slices/userSlice';
 
 // Fetch all the user
 export const fetchAllUsers = () => async (dispatch) => {
-    dispatch(usersPending()); // Dispatch the 'pending' state before making the request
+    dispatch(usersPending());
     try {
-        const response = await apiClient.get("/api/v1/users")
-        dispatch(usersSuccess(response.data)) // Dispatch success action with the fetched data
+        console.log('Making API request...');
+        const response = await apiClient.get("/api/v1/users");
+        console.log('API Response:', response.data);
+        
+        dispatch(usersSuccess(response.data));
+        return response.data;
     } catch (error) {
-        dispatch(usersFailure(error.response?.data || 'Error fetching users')); // Dispatch failure with error message
-        console.log("Error Fetching Users", error.message)
+        console.error("Error Fetching Users", error);
+        if (error.response?.status === 403) {
+            dispatch(usersFailure('You are not authorized to view this data. Please log in again.'));
+        } else {
+            dispatch(usersFailure(error.response?.data?.message || 'Error fetching users'));
+        }
     }
-}
+};
 
 // Fetch a user by ID (HR, SuperAdmin)
 export const fetchUserById = (userId) => async(dispatch) => {

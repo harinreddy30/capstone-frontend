@@ -19,12 +19,14 @@ export const loginUser = ({ email, password }) => async (dispatch) => {
             const token = response.data.token
             const user = response.data.user
             
+            // Set token in apiClient defaults after login
+            apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            
             dispatch(loginSuccess({ user, token })); // Update Redux state
 
             // Save token to localStorage for persistence across reloads
             localStorage.setItem("token", token);
             localStorage.setItem("user", JSON.stringify(user)); // Store user as JSON string
-
 
             return response.data; // Return data to handle role-based redirection
         } else {
@@ -37,7 +39,6 @@ export const loginUser = ({ email, password }) => async (dispatch) => {
         dispatch(loginFailure(errorMessage)); // Update Redux state
         return null; // Return null to indicate failure
     }
-
 }
 
 export const setToken = (token) => ({
