@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAllPayrolls, updatePayroll, finalizePayroll } from "../../redux/action/payrollAction";
+import { fetchAllPayrolls, finalizePayroll } from "../../redux/action/payrollAction";
 
-const PayrollManagement = ({ onModalOpen, onModalClose }) => {
+const PayrollManagement = () => {
   const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -10,13 +10,24 @@ const PayrollManagement = ({ onModalOpen, onModalClose }) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedPayroll, setSelectedPayroll] = useState(null);
   
-  const { payrolls: payrollsData = [], loading = false, error = null } = useSelector((state) => state.payroll || {});
-  const payrolls = Array.isArray(payrollsData) ? payrollsData : [];
+  // Get payroll data from Redux store with default values
+  const { payrolls = [], loading = false, error = null } = useSelector((state) => {
+    console.log('Full Redux State:', state);
+    console.log('Payroll State:', state.payroll);
+    return state.payroll || {};
+  });
 
+  console.log('Payrolls array:', payrolls);
+  console.log('Loading:', loading);
+  console.log('Error:', error);
+
+  // Fetch payrolls on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-        await dispatch(fetchAllPayrolls());
+        console.log('Starting to fetch payrolls...');
+        const result = await dispatch(fetchAllPayrolls());
+        console.log('API Response:', result);
       } catch (err) {
         console.error('Error fetching payrolls:', err);
       }
@@ -35,46 +46,63 @@ const PayrollManagement = ({ onModalOpen, onModalClose }) => {
   const handleReview = (payroll) => {
     setSelectedPayroll(payroll);
     setShowModal(true);
-    if (onModalOpen) onModalOpen();
   };
 
   const closeModal = () => {
     setSelectedPayroll(null);
     setShowModal(false);
-    if (onModalClose) onModalClose();
   };
 
   const handleFinalize = async (payrollId) => {
     try {
-      await dispatch(finalizePayroll(payrollId));
+      const userId = selectedPayroll.userId._id;
+      await dispatch(finalizePayroll(payrollId, userId));
+      await dispatch(fetchAllPayrolls()); // Refresh the list
       closeModal();
     } catch (err) {
       console.error('Error finalizing payroll:', err);
     }
   };
 
+  // Calculate total deductions
+  const calculateTotalDeductions = (deductions) => {
+    if (!deductions) return 0;
+    return (
+      Number(deductions.taxes || 0) +
+      Number(deductions.CPP || 0) +
+      Number(deductions.EI || 0) +
+      Number(deductions.otherDeductions || 0)
+    ).toFixed(2);
+  };
+
+  // Filter payrolls based on search term and date range
   const filteredPayrolls = payrolls.filter(payroll => {
+    // Skip payrolls with null userId
     if (!payroll?.userId) return false;
     
     const matchesSearch = 
-      (payroll.userId.fname || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (payroll.userId.lname || '').toLowerCase().includes(searchTerm.toLowerCase());
+        (payroll.userId.fname || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (payroll.userId.lname || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     if (!payroll.payPeriod?.start) return false;
     
     const payrollDate = new Date(payroll.payPeriod.start);
     const matchesDateRange = (!startDate || payrollDate >= new Date(startDate)) &&
-                           (!endDate || payrollDate <= new Date(endDate));
+                         (!endDate || payrollDate <= new Date(endDate));
 
     return matchesSearch && matchesDateRange;
   });
 
+  // Add this before the return statement to see what's being filtered
+  console.log('Filtered Payrolls:', filteredPayrolls);
+
+  // Calculate total employer cost
   const totalEmployerCost = filteredPayrolls.reduce((total, payroll) => 
     total + (Number(payroll.grossPay) || 0), 0
   ).toFixed(2);
 
   if (loading) return <div className="p-6">Loading...</div>;
-  if (error) return <div className="p-6 text-red-500">{typeof error === 'object' ? error.message : error}</div>;
+  if (error) return <div className="p-6 text-red-500">{error}</div>;
 
   return (
     <div className="p-6">
@@ -143,8 +171,8 @@ const PayrollManagement = ({ onModalOpen, onModalClose }) => {
                   {new Date(payroll.payPeriod.start).toLocaleDateString()} - 
                   {new Date(payroll.payPeriod.end).toLocaleDateString()}
                 </td>
-                <td className="p-4 text-gray-700">${payroll.grossPay.toFixed(2)}</td>
-                <td className="p-4 text-gray-700">${payroll.netPay.toFixed(2)}</td>
+                <td className="p-4 text-gray-700">${Number(payroll.grossPay).toFixed(2)}</td>
+                <td className="p-4 text-gray-700">${Number(payroll.netPay).toFixed(2)}</td>
                 <td className="p-4">
                   <span className={`px-3 py-1 rounded-full text-sm ${
                     payroll.status === "Finalized" 
@@ -170,8 +198,8 @@ const PayrollManagement = ({ onModalOpen, onModalClose }) => {
 
       {/* Review Modal */}
       {showModal && selectedPayroll && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg w-96">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg w-96 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-semibold mb-4">Review Payment</h3>
             <div className="space-y-4">
               <div>
@@ -185,28 +213,45 @@ const PayrollManagement = ({ onModalOpen, onModalClose }) => {
                 <p className="font-semibold">{selectedPayroll.hoursWorked}</p>
               </div>
               <div>
+                <p className="text-gray-600">Pay Period</p>
+                <p className="font-semibold">
+                  {new Date(selectedPayroll.payPeriod.start).toLocaleDateString()} - 
+                  {new Date(selectedPayroll.payPeriod.end).toLocaleDateString()}
+                </p>
+              </div>
+              <div>
                 <p className="text-gray-600">Gross Pay</p>
-                <p className="font-semibold">${selectedPayroll.grossPay.toFixed(2)}</p>
+                <p className="font-semibold">${Number(selectedPayroll.grossPay).toFixed(2)}</p>
               </div>
               <div>
                 <p className="text-gray-600">Deductions</p>
                 <div className="pl-4">
-                  <p>Taxes: ${selectedPayroll.deductions.taxes.toFixed(2)}</p>
-                  <p>CPP: ${selectedPayroll.deductions.CPP.toFixed(2)}</p>
-                  <p>EI: ${selectedPayroll.deductions.EI.toFixed(2)}</p>
+                  <p>Taxes: ${selectedPayroll.deductions?.taxes?.toFixed(2) || '0.00'}</p>
+                  <p>CPP: ${selectedPayroll.deductions?.CPP?.toFixed(2) || '0.00'}</p>
+                  <p>EI: ${selectedPayroll.deductions?.EI?.toFixed(2) || '0.00'}</p>
+                  {selectedPayroll.deductions?.otherDeductions > 0 && (
+                    <p>Other: ${selectedPayroll.deductions.otherDeductions.toFixed(2)}</p>
+                  )}
+                  <p className="mt-2 font-semibold">
+                    Total Deductions: ${calculateTotalDeductions(selectedPayroll.deductions)}
+                  </p>
                 </div>
               </div>
               <div>
                 <p className="text-gray-600">Net Pay</p>
-                <p className="font-semibold">${selectedPayroll.netPay.toFixed(2)}</p>
+                <p className="font-semibold">${Number(selectedPayroll.netPay).toFixed(2)}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">Status</p>
+                <p className="font-semibold">{selectedPayroll.status}</p>
               </div>
             </div>
-            <div className="flex justify-end mt-4">
+            <div className="flex justify-end mt-6">
               <button
                 onClick={closeModal}
                 className="bg-gray-500 text-white px-4 py-2 rounded mr-2"
               >
-                Cancel
+                Close
               </button>
               {selectedPayroll.status !== "Finalized" && (
                 <button 

@@ -27,14 +27,19 @@ export const generatePayroll = (payrollData) => async (dispatch) => {
 export const fetchAllPayrolls = () => async (dispatch) => {
     dispatch(payrollPending());
     try {
+        console.log('Making API request...');
         const response = await apiClient.get('/api/v1/payroll');
-        // Ensure we're dispatching an array
-        const payrollsData = Array.isArray(response.data) ? response.data : [];
+        console.log('Raw API response:', response);
+        
+        // Update this part to match the API response structure
+        const payrollsData = response.data.payroll || [];
+                
+        console.log('Processed payrolls data:', payrollsData);
         dispatch(payrollSuccess(payrollsData));
         return payrollsData;
     } catch (error) {
+        console.error('API Error:', error.response || error);
         dispatch(payrollFailure(error.response?.data?.message || 'Error fetching payrolls'));
-        console.error('Error fetching payrolls:', error);
     }
 };
 
