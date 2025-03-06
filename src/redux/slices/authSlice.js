@@ -5,6 +5,7 @@ const initialState = {
     token: localStorage.getItem("token") || null, // Try to get the token from localStorage
     loading: false, // Indicates if the login request is in progress.
     error: null, // Holds any error messages.
+    message: ''
 }
 
 // Slice consists of name, initial state, and reducers
@@ -37,11 +38,26 @@ const authSlice = createSlice({
         // setToken: (state, action) => {
         //     state.token = action.payload;
         // }
+        // Forgot Password Reducers
+        forgotPasswordStart: (state) => {
+            state.loading = true;
+            state.error = '';
+        },
+        forgotPasswordSuccess: (state, action) => {
+            state.loading = false;
+            state.message = action.payload;
+        },
+        forgotPasswordFailure: (state, action) => {
+            state.loading = false;
+            state.error = action.payload;
+        },
     },
 });
 
 // Export the actions so that we can dispatch them from components.
-export const { loginStart, loginSuccess, loginFailure, logout, setToken } = authSlice.actions;
+export const { loginStart, loginSuccess, loginFailure, logout, setToken,
+    forgotPasswordStart, forgotPasswordSuccess, forgotPasswordFailure
+ } = authSlice.actions;
 
 // Export the reducer to be used in the store.
 export default authSlice.reducer;

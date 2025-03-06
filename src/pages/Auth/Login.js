@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { loginUser } from '../../redux/action/authAction';
+import { loginUser, forgotPassword } from '../../redux/action/authAction';
 // import logo from '../../assets/logo.png'; // Add your logo
 
 const Login = () => {
@@ -9,11 +9,31 @@ const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [forgotPasswordModal, setForgotPasswordModal] = useState(false); // For forgot password modal
+    const [forgotEmail, setForgotEmail] = useState(''); // Email for password reset
+
 
     // Redux hooks
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { error, loading } = useSelector((state) => state.auth);
+
+    // Handle forgot password form submission
+    const handleForgotPasswordSubmit = async (e) => {
+        e.preventDefault();
+        if (!forgotEmail) {
+            console.error('Please provide an email for reset');
+            return;
+        }
+        const success = await dispatch(forgotPassword({ email: forgotEmail }));
+        if (!success) {
+            console.error('Forgot Password request failed');
+            return;
+        }
+        console.log('Reset password email sent');
+        setForgotPasswordModal(false); // Close the modal after submission
+    };
 
     // Eye movement animation handler
     useEffect(() => {
@@ -32,17 +52,21 @@ const Login = () => {
         return () => window.removeEventListener('mousemove', handleMouseMove);
     }, []);
 
-    // This will triggered upon called
+    // This will be triggered on form submission
     const handleSubmit = async (e) => {
-        console.log(`${email}, ${password}`)
         e.preventDefault();
-        const success = await dispatch(loginUser({ email, password }))
-        console.log(success)
+        if (!email || !password) {
+            console.error('Please provide both email and password');
+            return;
+        }
+        
+        const success = await dispatch(loginUser({ email, password }));
+
         if (!success) {
             console.error('Login failed: No data received');
             return;
-        }        
-        
+        }
+
         if (success) {
             const userRole = success.user.role;
 
@@ -52,7 +76,7 @@ const Login = () => {
                 return;
             }
 
-            // Based on the user role, navigate to proper dashboard
+            // Based on the user role, navigate to the appropriate dashboard
             switch (userRole) {
                 case 'Employee':
                     navigate('/employee/dashboard');
@@ -115,13 +139,22 @@ const Login = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Password
                             </label>
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required
-                            />
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-2 top-2 text-gray-500"
+                                >
+                                    {showPassword ? 'Hide' : 'Show'}
+                                </button>
+                            </div>
                         </div>
 
                         {/* Keep Me Logged In */}
@@ -137,7 +170,11 @@ const Login = () => {
                                     Keep me logged in
                                 </label>
                             </div>
-                            <a href="#" className="text-sm text-blue-600 hover:text-blue-800">
+                            <a
+                                href="#"
+                                className="text-sm text-blue-600 hover:text-blue-800"
+                                onClick={() => setForgotPasswordModal(true)} // Open the modal
+                            >
                                 Forgot password?
                             </a>
                         </div>
@@ -165,6 +202,44 @@ const Login = () => {
                     </p>
                 </div>
             </div>
+
+            {/* Forgot Password Modal */}
+            {forgotPasswordModal && (
+                <div className="fixed inset-0 bg-gray-700 bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg max-w-md w-full">
+                        <h2 className="text-xl font-semibold mb-4">Forgot Password</h2>
+                        <form onSubmit={handleForgotPasswordSubmit}>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Enter your email
+                                </label>
+                                <input
+                                    type="email"
+                                    value={forgotEmail}
+                                    onChange={(e) => setForgotEmail(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    required
+                                />
+                            </div>
+                            <div className="flex justify-end mt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setForgotPasswordModal(false)}
+                                    className="text-sm text-blue-600 hover:text-blue-800 mr-4"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-md"
+                                >
+                                    Send Reset Link
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             <style jsx>{`
                 .eye-container {
