@@ -12,6 +12,7 @@ import PayrollDashboard from './Dashboard/PayrollDashboard/PayrollDashboard'
 import AdminDashboard from './Dashboard/AdminDashboard/AdminDashboard'
 
 import ProfileEdit from './pages/Profile/ProfileEdit';
+import ResetPassword from "./pages/Auth/ResetPassword";
 // A private route wrapper to protect routes based on authentication
 // Implement RBAC to implement authentication and authorization
 const ProtectedRoute = ({ children, authorizedRoles }) => {
@@ -40,31 +41,13 @@ const ProtectedRoute = ({ children, authorizedRoles }) => {
 
 function App() {
 
-  // const dispatch = useDispatch();
-
-  // UseEffect is used to remove the token from localStorage, if the token is missing
-  // const { token } = useSelector((state) => state.auth);
-
-  // Restore the token from localStorage on page load/refresh
-  // useEffect(() => {
-  //   const storedToken = localStorage.getItem("token");
-  //   if (storedToken) {
-  //     dispatch(setToken(storedToken)); // Set the token into Redux state if it exists in localStorage
-  //   }
-  // }, [dispatch]);
-
-    // Automaticaly logout if the token is missing
-    // useEffect(() => {
-    //   if(!token){
-    //     localStorage.removeItem("token");
-    //   }
-    // }, [token]);
-
   return (
       <Router>
         <Routes>
           {/* Public Routes */}
           <Route path='/login' element={<Login />} /> 
+
+          <Route path='api/v1/users/reset-password/:token' element={<ResetPassword/>} />
 
           {/* Protected Routes */}
 
