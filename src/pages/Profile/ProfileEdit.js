@@ -5,15 +5,18 @@ import Layout from "../../components/Layout/Layout";
 
 const ProfileEdit = () => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
-  const { loading, error } = useSelector((state) => state.profile);
+  const { user, loading, error } = useSelector((state) => state.auth || { 
+    user: null, 
+    loading: false, 
+    error: null 
+  });
 
   const [successMessage, setSuccessMessage] = useState("");
-  const [userForm, setUserForm] = useState({
-    firstName: "",
-    lastName: "",
+  const [formData, setFormData] = useState({
+    fname: "",
+    lname: "",
     email: "",
-    mobileNumber: "",
+    phone: "",
     birthDate: "",
     pronouns: "",
     employeeId: "",
@@ -28,11 +31,11 @@ const ProfileEdit = () => {
 
   useEffect(() => {
     if (user) {
-      setUserForm({
-        firstName: user.fname || "",
-        lastName: user.lname || "",
+      setFormData({
+        fname: user.fname || "",
+        lname: user.lname || "",
         email: user.email || "",
-        mobileNumber: user.phone || "",
+        phone: user.phone || "",
         birthDate: user.dateOfBirth || "",
         pronouns: user.pronouns || "",
         employeeId: user.employeeId || "",
@@ -42,12 +45,11 @@ const ProfileEdit = () => {
     }
   }, [user]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setUserForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
   const handlePhotoUpload = (e) => {
@@ -55,7 +57,7 @@ const ProfileEdit = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setUserForm((prev) => ({
+        setFormData((prev) => ({
           ...prev,
           profilePhoto: reader.result,
         }));
@@ -69,7 +71,7 @@ const ProfileEdit = () => {
     setSuccessMessage("");
 
     try {
-      const result = await dispatch(updateUser(userForm));
+      const result = await dispatch(updateUser(formData));
       setSuccessMessage("Profile updated successfully!");
       dispatch(fetchAllUsers()); // Refresh user list
     } catch (error) {
@@ -77,6 +79,16 @@ const ProfileEdit = () => {
       alert(error.message || "Failed to update profile");
     }
   };
+
+  // Show loading state
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  // Show error state
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <Layout>
@@ -94,9 +106,9 @@ const ProfileEdit = () => {
                   </label>
                   <input
                     type="text"
-                    name="firstName"
-                    value={userForm.firstName}
-                    onChange={handleInputChange}
+                    name="fname"
+                    value={formData.fname}
+                    onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded-md"
                     required
                   />
@@ -107,9 +119,9 @@ const ProfileEdit = () => {
                   </label>
                   <input
                     type="text"
-                    name="lastName"
-                    value={userForm.lastName}
-                    onChange={handleInputChange}
+                    name="lname"
+                    value={formData.lname}
+                    onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded-md"
                     required
                   />
@@ -123,8 +135,8 @@ const ProfileEdit = () => {
                 <input
                   type="email"
                   name="email"
-                  value={userForm.email}
-                  onChange={handleInputChange}
+                  value={formData.email}
+                  onChange={handleChange}
                   className="w-full p-2 border border-gray-300 rounded-md"
                   required
                 />
@@ -137,9 +149,9 @@ const ProfileEdit = () => {
                   </label>
                   <input
                     type="tel"
-                    name="mobileNumber"
-                    value={userForm.mobileNumber}
-                    onChange={handleInputChange}
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded-md"
                   />
                 </div>
@@ -153,8 +165,8 @@ const ProfileEdit = () => {
                   <input
                     type="date"
                     name="birthDate"
-                    value={userForm.birthDate}
-                    onChange={handleInputChange}
+                    value={formData.birthDate}
+                    onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded-md"
                   />
                 </div>
@@ -164,8 +176,8 @@ const ProfileEdit = () => {
                   </label>
                   <select
                     name="pronouns"
-                    value={userForm.pronouns}
-                    onChange={handleInputChange}
+                    value={formData.pronouns}
+                    onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded-md"
                   >
                     <option value="Prefer not to share">Prefer not to share</option>
@@ -191,7 +203,7 @@ const ProfileEdit = () => {
               <h3 className="text-lg font-medium mb-2">Profile Photo</h3>
               <div className="flex items-center space-x-4">
                 <img
-                  src={userForm.profilePhoto || "/default-avatar.png"}
+                  src={formData.profilePhoto || "/default-avatar.png"}
                   alt="Profile"
                   className="w-20 h-20 rounded-full object-cover"
                 />

@@ -1,43 +1,123 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import TopNavBar from '../../components/NavBar/TopNavBar';
 import '../Dashboard.css';
 
-// Import your payroll pages
-import PayrollGenerator from '../../pages/Payroll/PayrollGenerator';
-import PayrollManagement from '../../pages/Payroll/PayrollManagement';
-import EmployeeList from '../../pages/Payroll/EmployeeList';
+// Lazy load components to improve performance
+const PayrollGenerator = React.lazy(() => import('../../pages/Payroll/PayrollGenerator'));
+const PayrollManagement = React.lazy(() => import('../../pages/Payroll/PayrollManagement'));
+const EmployeeList = React.lazy(() => import('../../pages/Payroll/EmployeeList'));
+
+// Sidebar Component with consistent styling
+const SideBar = ({ isCollapsed, isModalOpen }) => {
+  // If modal is open, don't render the sidebar
+  if (isModalOpen) return null;
+
+  const navLinks = [
+    { path: 'management', label: 'Management', icon: '💼' },
+    { path: 'employee-list', label: 'Employee List', icon: '👥' },
+    { path: 'generator', label: 'Payroll & History', icon: '💰' },
+  ];
+
+  return (
+    <div className={`left-nav ${isCollapsed ? 'collapsed' : ''}`}>
+      <div className="flex items-center mb-6">
+        {!isCollapsed && <span className="ml-3 font-semibold text-gray-800">Payroll Dashboard</span>}
+      </div>
+      
+      <nav className="nav-links">
+        {navLinks.map((link) => (
+          <Link
+            key={link.path}
+            to={`/payroll/${link.path}`}
+            className="flex items-center mb-2 text-gray-700 hover:bg-gray-50 hover:text-blue-600 rounded-lg transition-colors duration-200"
+          >
+            <span className="text-xl w-8">{link.icon}</span>
+            {!isCollapsed && <span className="ml-3">{link.label}</span>}
+          </Link>
+        ))}
+      </nav>
+    </div>
+  );
+};
 
 const PayrollDashboard = () => {
+  // Add state management for sidebar and modal
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    if (!isModalOpen) {
+      setIsSidebarCollapsed(!isSidebarCollapsed);
+      setIsMobileMenuOpen(!isMobileMenuOpen);
+    }
+  };
+
+  const handleModalOpen = () => {
+    setIsModalOpen(true);
+    setIsSidebarCollapsed(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setIsSidebarCollapsed(false);
+  };
+
   return (
     <div className="dashboard">
-      <TopNavBar />
+      {/* Top Navigation Bar */}
+      <TopNavBar 
+        toggleSidebar={toggleSidebar}
+        isModalOpen={isModalOpen}
+      />
 
       <div className="dashboard-body">
-        {/* Left Navigation */}
-        <div className="left-nav">
-          <div className="header">
-            <div className="user-info">
-              <p>Payroll Username</p>
-              <p>Payroll@gmail.com</p>
-            </div>
-          </div>
+        {/* Overlay for mobile */}
+        <div 
+          className={`overlay ${isMobileMenuOpen ? 'active' : ''}`}
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
 
-          <ul className="nav-links">
-            <li><Link to="/payroll/management">Management</Link></li>
-            <li><Link to="/payroll/employee-list">Employee List</Link></li>
-            <li><Link to="/payroll/generator">Payroll & History</Link></li>
-          </ul>
-        </div>
+        {/* Sidebar Navigation */}
+        <SideBar 
+          isCollapsed={isSidebarCollapsed}
+          isModalOpen={isModalOpen}
+        />
 
         {/* Main Content Area */}
-        <div className="main-content">
-          <Routes>
-            <Route path="/" element={<PayrollGenerator />} />
-            <Route path="/management" element={<PayrollManagement />} />
-            <Route path="/employee-list" element={<EmployeeList />} />
-            <Route path="/generator" element={<PayrollGenerator />} />
-          </Routes>
+        <div className={`main-content ${isModalOpen ? 'modal-open' : ''}`}>
+          <React.Suspense fallback={<p>Loading...</p>}>
+            <Routes>
+              <Route 
+                path="management" 
+                element={
+                  <PayrollManagement 
+                    onModalOpen={handleModalOpen}
+                    onModalClose={handleModalClose}
+                  />
+                } 
+              />
+              <Route 
+                path="employee-list" 
+                element={
+                  <EmployeeList 
+                    onModalOpen={handleModalOpen}
+                    onModalClose={handleModalClose}
+                  />
+                } 
+              />
+              <Route 
+                path="generator" 
+                element={
+                  <PayrollGenerator 
+                    onModalOpen={handleModalOpen}
+                    onModalClose={handleModalClose}
+                  />
+                } 
+              />
+            </Routes>
+          </React.Suspense>
         </div>
       </div>
     </div>
