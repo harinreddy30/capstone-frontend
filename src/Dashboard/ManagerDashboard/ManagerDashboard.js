@@ -9,7 +9,7 @@ const ManagerSites = React.lazy(() => import('../../pages/Manager/ManagerSites')
 const ManagerReports = React.lazy(() => import('../../pages/Manager/ManagerReports'));
 // const ViewAvailability = React.lazy(() => import('../../pages/Manager/ViewAvailability'));
 const LeaveRequests = React.lazy(() => import('../../pages/Manager/LeaveRequests'));
-// const ChatGroup = React.lazy(() => import('../../pages/Manager/ChatGroup'));
+const ChatGroup = React.lazy(() => import('../../components/ChatGroup/ChatGroup'));
 
 // Sidebar Component
 const SideBar = ({ isCollapsed, isModalOpen }) => {

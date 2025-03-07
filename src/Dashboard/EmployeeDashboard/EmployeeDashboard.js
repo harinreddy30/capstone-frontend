@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import TopNavBar from '../../components/NavBar/TopNavBar';
 import '../Dashboard.css'; 
 import MyAvailability from '../../pages/Employee/MyAvailability';
@@ -13,6 +13,9 @@ const SwapShift = React.lazy(() => import('../../pages/Employee/SwapShift'));
 const TimeOff = React.lazy(() => import('../../pages/Employee/TimeOff'));
 const InputAvailability = React.lazy(() => import('../../pages/Employee/InputAvailability'));
 const PayStubs = React.lazy(() => import('../../pages/Employee/PayStub'));
+const ChatGroup = React.lazy(() => import('../../components/ChatGroup/ChatGroup'));
+const GroupChatPage = React.lazy(() => import('../../components/ChatGroup/GroupChatPage'));
+
 
 // Sidebar Components generate naviagation links dynamically
 // Easier to add any links
@@ -28,6 +31,8 @@ const SideBar = ({ isCollapsed, isModalOpen }) => {
     // { path: 'input-availability', label: 'Input Availability', icon: '⏰' },
     { path: 'my-availability', label: 'My Availability', icon: '⏰' },
     { path: 'pay-stub', label: 'Pay Stubs', icon: '💰' },    
+    { path: 'chat-group', label: 'Chat Group', icon: '💬' },
+
   ];
 
   return(
@@ -115,6 +120,10 @@ const EmployeeDashboard = () => {
               <Route path="input-availability" element={<InputAvailability />} />
               <Route path="my-availability" element={<MyAvailability />} />
               <Route path="pay-stub" element={<PayStubs />} />
+              <Route path="chat-group" element={<ChatGroup />} /> 
+              <Route path="chat-group/:groupId" element={<GroupChatPage />} />
+
+
             </Routes>
           </React.Suspense>
         </div>

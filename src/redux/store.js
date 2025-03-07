@@ -6,6 +6,10 @@ import sitesReducer from '../redux/slices/siteSlice';
 import shiftsReducer from "../redux/slices/shiftSlice";
 import reportsReducer from "../redux/slices/reportSlice";
 import availabilityReducer from "../redux/slices/availabilitySlice"
+import chatReducer from "../redux/slices/chatSlice"
+import groupReducer from "../redux/slices/groupSlice";
+import messageReducer from "../redux/slices/messageSlice";
+
 // import profileReducer from '../redux/slices/profileSlice';
 
 // import logger from 'redux-logger';
@@ -21,6 +25,10 @@ const store = configureStore({
         shifts: shiftsReducer,
         reports: reportsReducer,
         availability: availabilityReducer,
+        chat: chatReducer,
+        groups: groupReducer,
+        message: messageReducer,
+
 
     },
     // This will print every dispatched action and the state changes in the browser's console
