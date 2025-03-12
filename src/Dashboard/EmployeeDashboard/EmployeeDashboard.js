@@ -124,7 +124,6 @@ const EmployeeDashboard = () => {
               <Route path="chat-group" element={<ChatGroup />} /> 
               <Route path="chat-group/:groupId" element={<GroupChatPage />} />
 
-
             </Routes>
           </React.Suspense>
         </div>
