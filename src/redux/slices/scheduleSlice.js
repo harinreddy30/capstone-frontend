@@ -20,41 +20,47 @@ const scheduleSlice = createSlice({
         scheduleSuccess: (state, action) => {
             state.loading = false;
             state.schedules = action.payload;
+            state.error = null;
         },
 
         // Action to handle when the request fails
         scheduleFailure: (state, action) => {
             state.loading = false;
             state.error = action.payload;
+            state.schedules = [];
             console.log(action.payload)
         },
 
         // Action to handle when creating a schedule is successful
         scheduleCreateSuccess: (state, action) => {
             state.loading = false;
-            state.schedules.push(action.payload);
+            state.schedules = [...state.schedules, action.payload];
+            state.error = null;
         },
 
         // Action to handle when updating schedule is successful
         scheduleUpdateSuccess: (state, action) => {
             state.loading = false;
             state.schedules = state.schedules.map((schedule) =>
-                schedule.schedules_id === action.payload.schedules_id ? action.payload : schedule
+                schedule._id === action.payload._id ? action.payload : schedule
             );
+            state.error = null;
         },
 
         // Action to handle when deleting a schedule is successful
         scheduleDeleteSuccess: (state, action) => {
             state.loading = false;
             state.schedules = state.schedules.filter(
-                (schedule) => schedule.schedules_id !== action.payload
+                (schedule) => schedule._id !== action.payload
             );
+            state.error = null;
         },
 
         // Action to handle when getting user schedules is successful
         userSchedulesSuccess: (state, action) => {
             state.loading = false;
             state.schedules = action.payload;
+            state.error = null;
         },
     }
 });

@@ -15,11 +15,8 @@ export const createSchedule = (scheduleData) => async (dispatch) => {
     try {
         dispatch(schedulePending());
         console.log("Creating schedule:", scheduleData);
-
-        // const userId = getUserIdFromToken();
-        // const payload = { ...scheduleData, user_id: userId };
         
-        const response = await apiClient.post("/api/v1/schedules", payload);
+        const response = await apiClient.post("/api/v1/schedule", scheduleData);
         console.log("Schedule created:", response.data);
         
         dispatch(scheduleCreateSuccess(response.data));
@@ -35,9 +32,9 @@ export const createSchedule = (scheduleData) => async (dispatch) => {
 export const getAllSchedules = () => async (dispatch) => {
     try {
         dispatch(schedulePending());
-        const response = await apiClient.get("/api/v1/schedules");
-        dispatch(scheduleSuccess(response.data));
-        return response.data;
+        const response = await apiClient.get("/api/v1/schedule");
+        dispatch(scheduleSuccess(response.data.schedule));
+        return response.data.schedule;
     } catch (error) {
         console.error("Error in getAllSchedules:", error);
         dispatch(scheduleFailure(error.message));
@@ -49,7 +46,7 @@ export const getAllSchedules = () => async (dispatch) => {
 export const getUserSchedules = (userId) => async (dispatch) => {
     try {
         dispatch(schedulePending());
-        const response = await apiClient.get(`/api/v1/schedules/${userId}`);
+        const response = await apiClient.get(`/api/v1/schedule/${userId}`);
         dispatch(userSchedulesSuccess(response.data));
         return response.data;
     } catch (error) {
@@ -63,7 +60,7 @@ export const getUserSchedules = (userId) => async (dispatch) => {
 export const updateSchedule = (scheduleId, updateData) => async (dispatch) => {
     try {
         dispatch(schedulePending());
-        const response = await apiClient.put(`/api/v1/schedules/${scheduleId}`, updateData);
+        const response = await apiClient.put(`/api/v1/schedule/${scheduleId}`, updateData);
         dispatch(scheduleUpdateSuccess(response.data));
         return response.data;
     } catch (error) {
@@ -77,7 +74,7 @@ export const updateSchedule = (scheduleId, updateData) => async (dispatch) => {
 export const deleteSchedule = (scheduleId) => async (dispatch) => {
     try {
         dispatch(schedulePending());
-        await apiClient.delete(`/api/v1/schedules/${scheduleId}`);
+        await apiClient.delete(`/api/v1/schedule/${scheduleId}`);
         dispatch(scheduleDeleteSuccess(scheduleId));
         return true;
     } catch (error) {
