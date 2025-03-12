@@ -59,13 +59,48 @@ export const getAvailability = () => async (dispatch) => {
 export const getAvailabilityById = (id) => async (dispatch) => {
     try {
         dispatch(availabilityPending());
-        const response = await apiClient.get(`/api/v1/availability/${id}`);
-        dispatch(availabilityByIdSuccess(response.data));
-        return response.data;
+        console.log('Fetching availability for ID:', id);
+        
+        const token = localStorage.getItem("token");
+        const response = await apiClient.get(`/api/v1/availability`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        console.log('Availability response:', response.data);
+        
+        // Transform the data to match the expected structure
+        const transformedData = {
+            availability: response.data?.availability || {
+                Monday: [],
+                Tuesday: [],
+                Wednesday: [],
+                Thursday: [],
+                Friday: [],
+                Saturday: [],
+                Sunday: []
+            }
+        };
+        
+        console.log('Transformed availability data:', transformedData);
+        dispatch(availabilityByIdSuccess(transformedData));
+        return transformedData;
     } catch (error) {
-        console.error("Error in getAvailabilityById:", error);
-        dispatch(availabilityFailure(error.message));
-        return null;
+        console.error("Error in getAvailabilityById:", error.response || error);
+        // If 404, return empty availability structure
+        const emptyAvailability = {
+            availability: {
+                Monday: [],
+                Tuesday: [],
+                Wednesday: [],
+                Thursday: [],
+                Friday: [],
+                Saturday: [],
+                Sunday: []
+            }
+        };
+        dispatch(availabilityByIdSuccess(emptyAvailability));
+        return emptyAvailability;
     }
 };
 

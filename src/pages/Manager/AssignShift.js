@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createSchedule, getAllSchedules } from '../../redux/action/scheduleAction';
 import { fetchAllUsers } from '../../redux/action/userAction';
 import { fetchAllSites } from '../../redux/action/siteAction';
 import { fetchShifts } from '../../redux/action/shiftAction';
-import { getAvailability } from '../../redux/action/availabilityAction';
+import { getAvailabilityById } from '../../redux/action/availabilityAction';
 import './AssignShift.css';
 
 const AssignShift = () => {
@@ -30,69 +30,156 @@ const AssignShift = () => {
   const { user: currentUser } = useSelector((state) => state.auth);
   const { sites = [], loading: sitesLoading } = useSelector((state) => state.sites);
   const { shifts = [], loading: shiftsLoading } = useSelector((state) => state.shifts);
-  const { availability = {} } = useSelector((state) => state.availability);
+  const availabilityState = useSelector((state) => state.availability);
 
-  // Filter only employees
-  const employees = users?.filter(user => user.role === 'Employee') || [];
+  // Memoize filtered employees to prevent unnecessary recalculations
+  const employees = useMemo(() => 
+    users?.filter(user => user.role === 'Employee') || [], 
+    [users]
+  );
 
   // Get the day name for the selected date
-  const selectedDayName = selectedDate.toLocaleDateString('en-US', { weekday: 'long' });
+  const selectedDayName = useMemo(() => 
+    selectedDate.toLocaleDateString('en-US', { weekday: 'long' }),
+    [selectedDate]
+  );
+
+  // Helper function to compare times that might cross midnight
+  const isTimeSlotAvailable = (slot, shiftStart, shiftEnd) => {
+    const parseTime = (timeStr) => {
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      return hours * 60 + minutes;
+    };
+
+    const slotStart = parseTime(slot.start_time);
+    const slotEnd = slot.end_time === '00:00' ? 1440 : parseTime(slot.end_time);
+    const start = parseTime(shiftStart);
+    const end = shiftEnd === '00:00' ? 1440 : parseTime(shiftEnd);
+
+    // For debugging
+    console.log('Comparing times:', {
+      slot: `${slot.start_time}-${slot.end_time}`,
+      shift: `${shiftStart}-${shiftEnd}`,
+      slotStart,
+      slotEnd,
+      start,
+      end,
+      available: slot.available
+    });
+
+    // Must be an available slot
+    if (!slot.available) return false;
+
+    // Case 1: Exact match
+    if (slotStart === start && slotEnd === end) return true;
+
+    // Case 2: Shift is within slot
+    if (slotStart <= start && slotEnd >= end) return true;
+
+    // Case 3: Shift crosses midnight
+    if (end < start) {
+      // Split into two parts: start to midnight, and midnight to end
+      const beforeMidnight = slotStart <= start && slotEnd === 1440;
+      const afterMidnight = slotStart === 0 && slotEnd >= end;
+      return beforeMidnight || afterMidnight;
+    }
+
+    return false;
+  };
+
+  // Get employee availability
+  const getEmployeeAvailability = (employeeId, day) => {
+    console.log('Getting availability for day:', day);
+    console.log('Full availability state:', availabilityState);
+    
+    if (!availabilityState?.availability?.availability?.[day]) {
+      console.log('No availability data for day:', day);
+      return [];
+    }
+    
+    const dayAvailability = availabilityState.availability.availability[day] || [];
+    console.log('Found availability for day:', dayAvailability);
+    return dayAvailability;
+  };
+
+  // Fetch availability when employee is selected
+  useEffect(() => {
+    const fetchEmployeeAvailability = async () => {
+      if (selectedEmployee) {
+        console.log('Fetching availability for employee:', selectedEmployee);
+        try {
+          const result = await dispatch(getAvailabilityById(selectedEmployee));
+          console.log('Availability fetch result:', result);
+        } catch (error) {
+          console.error('Error fetching availability:', error);
+        }
+      }
+    };
+    fetchEmployeeAvailability();
+  }, [dispatch, selectedEmployee]);
 
   // Filter shifts based on site, day, and availability
-  const getAvailableShifts = () => {
+  const getAvailableShifts = useMemo(() => {
     if (!selectedSite || !shifts.length) return [];
 
+    console.log('Filtering shifts for site:', selectedSite);
+    console.log('Selected day:', selectedDayName);
+
     // Get all shifts for the selected site
-    const siteShifts = shifts.filter(shift => shift.site === selectedSite);
+    const siteShifts = shifts.filter(shift => shift.site._id === selectedSite);
+    console.log('Site shifts:', siteShifts);
 
     // Filter shifts based on the day
     const dayShifts = siteShifts.filter(shift => shift.days.includes(selectedDayName));
+    console.log('Day shifts:', dayShifts);
 
-    // Get already assigned shifts for this date
-    const assignedShifts = schedules.filter(schedule => {
-      const scheduleDate = new Date(schedule.date);
-      return scheduleDate.toDateString() === selectedDate.toDateString();
-    });
+    // If no employee selected, return all unassigned shifts
+    if (!selectedEmployee) {
+      console.log('No employee selected, returning all shifts');
+      return dayShifts;
+    }
 
-    // Filter out already assigned shifts
-    const unassignedShifts = dayShifts.filter(shift => 
-      !assignedShifts.some(schedule => schedule.shiftId === shift._id)
-    );
-
-    if (!selectedEmployee) return unassignedShifts;
-
-    // If employee is selected, filter based on their availability
-    const employeeAvailability = availability[selectedEmployee]?.[selectedDayName] || [];
+    // Get employee availability
+    const employeeAvailability = getEmployeeAvailability(selectedEmployee, selectedDayName);
+    console.log('Raw availability state:', availabilityState);
+    console.log('Employee ID:', selectedEmployee);
+    console.log('Employee availability for', selectedDayName, ':', employeeAvailability);
     
-    return unassignedShifts.map(shift => ({
-      ...shift,
-      isAvailable: employeeAvailability.some(slot => 
-        slot.available && 
-        shift.startTime >= slot.start_time && 
-        shift.endTime <= slot.end_time
-      )
-    }));
-  };
+    return dayShifts.map(shift => {
+      const isAvailable = employeeAvailability.some(slot => {
+        const available = isTimeSlotAvailable(slot, shift.startTime, shift.endTime);
+        console.log(`Checking availability for shift ${shift.position}:`, {
+          slot,
+          shiftTime: `${shift.startTime}-${shift.endTime}`,
+          available
+        });
+        return available;
+      });
+
+      return {
+        ...shift,
+        isAvailable
+      };
+    });
+  }, [selectedSite, shifts, selectedDayName, selectedEmployee, availabilityState]);
 
   // Get available employees for a shift
-  const getAvailableEmployees = (shift) => {
-    if (!shift) return employees;
+  const getAvailableEmployees = useMemo(() => {
+    if (!selectedShift) return employees;
 
     return employees.filter(employee => {
-      const employeeAvailability = availability[employee._id]?.[selectedDayName] || [];
+      const employeeAvailability = getEmployeeAvailability(employee._id, selectedDayName);
       return employeeAvailability.some(slot => 
-        slot.available && 
-        shift.startTime >= slot.start_time && 
-        shift.endTime <= slot.end_time
+        isTimeSlotAvailable(slot, selectedShift.startTime, selectedShift.endTime)
       );
     });
-  };
+  }, [employees, selectedShift, selectedDayName, availabilityState]);
 
+  // Initial data fetch
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (currentUser && ['Manager', 'HR', 'SuperAdmin', 'PayrollManager'].includes(currentUser.role)) {
-          console.log('Fetching data...');
           await Promise.all([
             dispatch(fetchAllUsers()),
             dispatch(getAllSchedules()),
@@ -118,13 +205,6 @@ const AssignShift = () => {
     }
   }, [dispatch, selectedSite]);
 
-  // Fetch availability for all employees
-  useEffect(() => {
-    employees.forEach(employee => {
-      dispatch(getAvailability(employee._id));
-    });
-  }, [dispatch, employees]);
-
   // Reset selected shift when site changes
   useEffect(() => {
     setSelectedShift(null);
@@ -141,8 +221,8 @@ const AssignShift = () => {
     console.log('Filtered employees:', employees);
     console.log('Sites:', sites);
     console.log('Shifts:', shifts);
-    console.log('Availability:', availability);
-  }, [users, employees, sites, shifts, availability]);
+    console.log('Availability:', availabilityState);
+  }, [users, employees, sites, shifts, availabilityState]);
 
   // Show error message if there's an error
   if (error || userError) {
@@ -205,17 +285,12 @@ const AssignShift = () => {
     return ((endTime - startTime) / (1000 * 60 * 60)).toFixed(1); // Convert to hours with 1 decimal
   };
 
-  // Check if employee is available for the shift
+  // Update the isEmployeeAvailable function to use the new helper
   const isEmployeeAvailable = (employee, date, startTime, endTime) => {
-    if (!availability[employee._id]) return false;
-    
     const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' });
-    const dayAvailability = availability[employee._id][dayOfWeek] || [];
-    
+    const dayAvailability = getEmployeeAvailability(employee._id, dayOfWeek);
     return dayAvailability.some(slot => 
-      slot.available && 
-      startTime >= slot.start_time && 
-      endTime <= slot.end_time
+      isTimeSlotAvailable(slot, startTime, endTime)
     );
   };
 
@@ -436,25 +511,28 @@ const AssignShift = () => {
                 <select
                   value={selectedShift ? selectedShift._id : ''}
                   onChange={(e) => {
-                    const shift = shifts.find(s => s._id === e.target.value);
+                    const shift = getAvailableShifts.find(s => s._id === e.target.value);
                     setSelectedShift(shift);
-                    setSelectedEmployee(''); // Reset employee when shift changes
+                    setSelectedEmployee('');
                   }}
                   className="w-full p-2 border rounded"
                   required
                 >
                   <option value="">Select a shift</option>
-                  {getAvailableShifts().map((shift) => (
-                    <option 
-                      key={shift._id} 
-                      value={shift._id}
-                      disabled={selectedEmployee && !shift.isAvailable}
-                      className={selectedEmployee && !shift.isAvailable ? 'text-gray-400' : ''}
-                    >
-                      {shift.position} ({shift.startTime} - {shift.endTime})
-                      {selectedEmployee && !shift.isAvailable ? ' - Not Available' : ''}
-                    </option>
-                  ))}
+                  {getAvailableShifts.map((shift) => {
+                    const isAvailable = !selectedEmployee || shift.isAvailable;
+                    return (
+                      <option 
+                        key={shift._id} 
+                        value={shift._id}
+                        disabled={!isAvailable}
+                        style={{ color: isAvailable ? 'black' : '#999' }}
+                      >
+                        {shift.position} ({shift.startTime} - {shift.endTime})
+                        {!isAvailable ? ' - Not Available' : ''}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 
@@ -468,7 +546,7 @@ const AssignShift = () => {
                   required
                 >
                   <option value="">Select an employee</option>
-                  {getAvailableEmployees(selectedShift).map((employee) => (
+                  {getAvailableEmployees.map((employee) => (
                     <option key={employee._id} value={employee._id}>
                       {employee.fname} {employee.lname}
                     </option>
