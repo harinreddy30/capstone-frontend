@@ -30,6 +30,8 @@ const scheduleSlice = createSlice({
         // Action to handle when creating a schedule is successful
         scheduleCreateSuccess: (state, action) => {
             state.loading = false;
+            state.schedules = [...state.schedules, action.payload];
+            state.error = null;
             state.schedule = [...state.schedule, action.payload]; // Append new schedule
             localStorage.setItem("schedule", JSON.stringify(state.schedule));
         },

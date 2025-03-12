@@ -5,7 +5,7 @@ import '../Dashboard.css';
 
 // Lazy load components to improve performance
 const ManagerSites = React.lazy(() => import('../../pages/Manager/ManagerSites'));
-// const AssignShift = React.lazy(() => import('../../pages/Manager/AssignShift'));
+const AssignShift = React.lazy(() => import('../../pages/Manager/AssignShift'));
 const ManagerReports = React.lazy(() => import('../../pages/Manager/ManagerReports'));
 // const ViewAvailability = React.lazy(() => import('../../pages/Manager/ViewAvailability'));
 const LeaveRequests = React.lazy(() => import('../../pages/Manager/LeaveRequests'));
@@ -114,8 +114,8 @@ const ManagerDashboard = () => {
                 } 
               />
               <Route path="leave-requests" element={<LeaveRequests />} />
-              {/* <Route path="assign-shift" element={<AssignShift />} />
-              <Route path="view-availability" element={<ViewAvailability />} />
+              <Route path="assign-shift" element={<AssignShift />} />
+              {/* <Route path="view-availability" element={<ViewAvailability />} />
               <Route path="chat-group" element={<ChatGroup />} /> */}
             </Routes>
           </React.Suspense>
