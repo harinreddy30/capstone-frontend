@@ -6,6 +6,8 @@ import '../Dashboard.css';
 // Lazy load components to improve performance
 const UserManagement = React.lazy(() => import('../../pages/HR/UserManagement'));
 const SiteManagement = React.lazy(() => import('../../pages/HR/SiteManagement'));
+const ChatGroup = React.lazy(() => import('../../components/ChatGroup/ChatGroup'));
+const GroupChatPage = React.lazy(() => import('../../components/ChatGroup/GroupChatPage'));
 // const Payroll = React.lazy(() => import('../../pages/HR/Payroll'));
 // const Reports = React.lazy(() => import('../../pages/HR/Reports'));
 // const Approvals = React.lazy(() => import('../../pages/HR/Approvals'));
@@ -19,6 +21,8 @@ const SideBar = ({ isCollapsed, isModalOpen }) => {
   const navLinks = [
     { path: 'user-management', label: 'User Management', icon: '👥' },
     { path: 'site-management', label: 'Site Management', icon: '🏢' },
+    { path: 'chat-group', label: 'Chat Group', icon: '💬' },
+
   ];
 
   return (
@@ -110,6 +114,8 @@ const HRDashboard = () => {
                   />
                 } 
               />
+                            <Route path="chat-group" element={<ChatGroup />} /> 
+                            <Route path="chat-group/:groupId" element={<GroupChatPage />} />
               {/* <Route path="attendance-tracking" element={<AttendanceTracking />} />
               <Route path="payroll" element={<Payroll />} />
               <Route path="reports" element={<Reports />} />

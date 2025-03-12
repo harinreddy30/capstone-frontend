@@ -1,19 +1,23 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUserGroups } from '../../redux/action/groupAction';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation  } from 'react-router-dom';
 
 const ChatGroup = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { groups, loading, error } = useSelector((state) => state.groups);
   
   useEffect(() => {
     dispatch(fetchUserGroups());
   }, [dispatch]);
 
+  // Extract role from the current URL path
+  const role = location.pathname.split('/')[1]; // 'employee' or 'manager' or 'hr'
+
   const handleGroupClick = (groupId) => {
-    navigate(`/employee/chat-group/${groupId}`);
+    navigate(`/${role}/chat-group/${groupId}`);
   };
 
   if (loading) return (

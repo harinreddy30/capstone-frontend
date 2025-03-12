@@ -15,9 +15,7 @@ const GroupChatPage = () => {
     const group = useSelector((state) => state.groups?.currentGroup);  // Safe access
     console.log("Group data in Redux:", group);  // Log the group after dispatching
 
-
     const user = useSelector((state) => state.auth.user); // assuming you store user in Redux
-
 
     // Fetch group messages
     useEffect(() => {
@@ -94,30 +92,26 @@ const GroupChatPage = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    // Display group name - You can fetch it from the API if necessary
-    // useEffect(() => {
-    //     // You can replace this with a fetch request to get the group details
-    //     setGroupName("Group Name");  // Replace with dynamic group name from backend if needed
-    // }, [groupId]);
-
     if (loading) return <p>Loading messages...</p>;
     if (error) return <p>Error: {error}</p>;
 
     return (
         <div className="chat-container p-4">
-            <h2 className="text-2xl font-semibold mb-4">
-                {group ? group?.name : "Loading group..."}
+            <h2 className="text-3xl font-extrabold text-blue-600 mb-4">
+            {group ? group?.name : "Loading group..."}
             </h2>
             <div className="messages-list overflow-auto h-96 p-4 border rounded-lg mb-4 flex flex-col-reverse">
                 {messages.length > 0 ? (
                     messages.map((msg) => (
                         <div key={msg._id || msg.timestamp}
-                            className="message mb-2">
-                            <div className="sender font-bold">
-                                {msg.sender.fname} {msg.sender.lname}
+                            className={`message mb-2 flex ${msg.sender._id === user._id ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`message-content p-2 rounded-lg ${msg.sender._id === user._id ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
+                                <div className="sender font-bold">
+                                    {msg.sender.fname} {msg.sender.lname}
+                                </div>
+                                <div className="message-text">{msg.message}</div>
+                                {/* <div className="timestamp text-sm text-gray-500">{new Date(msg.timestamp).toLocaleTimeString()}</div> */}
                             </div>
-                            <div className="message-text">{msg.message}</div>
-                            {/* <div className="timestamp text-sm text-gray-500">{new Date(msg.timestamp).toLocaleTimeString()}</div> */}
                         </div>
                     ))
                 ) : (
@@ -141,7 +135,6 @@ const GroupChatPage = () => {
                     >
                     Send
                 </button>
-
             </div>
         </div>
     );

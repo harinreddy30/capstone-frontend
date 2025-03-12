@@ -7,6 +7,8 @@ import '../Dashboard.css';
 const PayrollGenerator = React.lazy(() => import('../../pages/Payroll/PayrollGenerator'));
 const PayrollManagement = React.lazy(() => import('../../pages/Payroll/PayrollManagement'));
 const EmployeeList = React.lazy(() => import('../../pages/Payroll/EmployeeList'));
+// const ChatGroup = React.lazy(() => import('../../components/ChatGroup/ChatGroup'));
+// const GroupChatPage = React.lazy(() => import('../../components/ChatGroup/GroupChatPage'));
 
 // Sidebar Component with consistent styling
 const SideBar = ({ isCollapsed, isModalOpen }) => {
@@ -17,6 +19,8 @@ const SideBar = ({ isCollapsed, isModalOpen }) => {
     { path: 'management', label: 'Management', icon: '💼' },
     { path: 'employee-list', label: 'Employee List', icon: '👥' },
     { path: 'generator', label: 'Payroll & History', icon: '💰' },
+    // { path: 'chat-group', label: 'Chat Group', icon: '💬' },
+
   ];
 
   return (
