@@ -1,95 +1,150 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
-import { fetchUserGroups } from '../../redux/action/groupAction';
-import socket from '../../utilis/socket';  // Ensure the socket is correctly imported
-import { currentGroupSet } from '../../redux/slices/groupSlice';
+import { fetchMessages, sendGroupMessage } from '../../redux/action/messageAction';
+import { fetchGroupById } from '../../redux/action/groupAction';
+
+import socket from '../../utilis/socket'; // Ensure the socket connection is correctly set up
 
 const GroupChatPage = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { groupId } = useParams();
-  const { groups, loading, error } = useSelector((state) => state.groups);
-  const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState([]);
-  const [users, setUsers] = useState([]);
+    const { groupId } = useParams();  // Get groupId from URL params
+    const dispatch = useDispatch();
+    const { messages, loading, error } = useSelector((state) => state.messages);
+    const [newMessage, setNewMessage] = useState('');
+    const messagesEndRef = useRef(null);  // For auto-scrolling to the bottom
+    const group = useSelector((state) => state.groups?.currentGroup);  // Safe access
+    console.log("Group data in Redux:", group);  // Log the group after dispatching
 
-  // Find current group
-  const currentGroup = groups.find((group) => group._id === groupId);
 
-  useEffect(() => {
-    if (!currentGroup) {
-      navigate('/chat');
-    } else {
-      // Fetch group messages and users when component mounts
-      dispatch(currentGroupSet(currentGroup));
+    const user = useSelector((state) => state.auth.user); // assuming you store user in Redux
 
-      if (socket) { // Ensure socket is defined before using it
-        socket.emit('joinGroup', groupId); // Join the group in the socket room
 
-        // Listen for new messages
-        socket.on('message', (newMessage) => {
-          setMessages((prevMessages) => [...prevMessages, newMessage]);
+    // Fetch group messages
+    useEffect(() => {
+        dispatch(fetchMessages(groupId));
+
+        const token = localStorage.getItem("token"); // Or get it from Redux or any state management
+        console.log('JWT Token:', token);
+        
+        // Authenticate the user with the token after connecting to the socket
+        if (token) {
+            socket.emit("authenticate", { token });
+        }
+
+        // Join the group room using socket
+        socket.emit("joinRoom", { room: groupId });
+
+        // Handle incoming group messages in real-time
+        socket.on("receiveMessage", (data) => {
+            console.log("Received message:", data);
+            dispatch(fetchMessages(groupId)); // Refresh messages when a new one arrives
         });
 
-        // Fetch the list of users
-        setUsers(currentGroup.members);
-      }
-    }
+        return () => {
+            socket.off("receiveMessage");
+            socket.emit("leaveRoom", { room: groupId }); // Optional but good practice
+            // Clean up the socket listener
+        };
+    }, [dispatch, groupId]);
 
-    // Cleanup socket listener on component unmount
-    return () => {
-      if (socket) {
-        socket.off('message');
-      }
+    // Scroll to the bottom when messages change
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
+
+    useEffect(() => {
+        console.log('Group data in Redux:', group);  // Log to check if the group data is correctly set
+
+        dispatch(fetchGroupById(groupId));
+    }, [groupId]);
+
+    // Send a new message to the group
+    const handleSendMessage = () => {
+        if (newMessage.trim() === '') return;
+
+        // Optimistically update the UI by appending the message immediately
+        const newMsg = {
+            sender: {
+                _id: user._id,
+                fname: user.fname,
+                lname: user.lname
+            },
+            message: newMessage,
+            groupId,
+            timestamp: new Date(),
+        };
+        dispatch(sendGroupMessage(newMessage, groupId));  // Send message via Redux action
+
+        // Emit the message to the server via socket for real-time communication
+        socket.emit("sendMessage", {
+            message: newMessage,
+            groupId,
+            sender: {
+                _id: user._id,
+                fname: user.fname,
+                lname: user.lname
+            },  // You can send the actual sender ID if needed
+        });
+        console.log(newMessage)
+
+        // Clear input after sending message
+        setNewMessage('');
+
+        // Scroll to the latest message
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
-  }, [dispatch, groupId, currentGroup, navigate, groups]);
 
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      if (socket) { // Ensure socket is defined before emitting the message
-        socket.emit('sendMessage', { message, groupId }); // Send the message to the group
-        setMessage('');
-      }
-    }
-  };
+    // Display group name - You can fetch it from the API if necessary
+    // useEffect(() => {
+    //     // You can replace this with a fetch request to get the group details
+    //     setGroupName("Group Name");  // Replace with dynamic group name from backend if needed
+    // }, [groupId]);
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>{error}</p>;
+    if (loading) return <p>Loading messages...</p>;
+    if (error) return <p>Error: {error}</p>;
 
-  return (
-    <div className="group-chat-page">
-      <div className="group-chat-header">
-        <h1>{currentGroup ? currentGroup.name : 'Group Chat'}</h1>
-        <div className="group-users">
-          <h3>Users:</h3>
-          <ul>
-            {users.map((user) => (
-              <li key={user._id}>{user.fname} {user.lname}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
-      <div className="group-chat-body">
-        <div className="messages">
-          {messages.map((msg, idx) => (
-            <div key={idx} className={`message ${msg.sender === 'me' ? 'mine' : ''}`}>
-              <strong>{msg.sender === 'me' ? 'You' : msg.sender}:</strong> {msg.content}
+    return (
+        <div className="chat-container p-4">
+            <h2 className="text-2xl font-semibold mb-4">
+                {group ? group?.name : "Loading group..."}
+            </h2>
+            <div className="messages-list overflow-auto h-96 p-4 border rounded-lg mb-4 flex flex-col-reverse">
+                {messages.length > 0 ? (
+                    messages.map((msg) => (
+                        <div key={msg._id || msg.timestamp}
+                            className="message mb-2">
+                            <div className="sender font-bold">
+                                {msg.sender.fname} {msg.sender.lname}
+                            </div>
+                            <div className="message-text">{msg.message}</div>
+                            {/* <div className="timestamp text-sm text-gray-500">{new Date(msg.timestamp).toLocaleTimeString()}</div> */}
+                        </div>
+                    ))
+                ) : (
+                    <p>No messages yet.</p>
+                )}
+                <div ref={messagesEndRef} />
             </div>
-          ))}
+
+            <div className="message-input flex">
+                <input
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder="Type your message..."
+                    className="flex-1 p-2 border rounded-l-lg"
+                />
+                <button
+                    onClick={handleSendMessage}
+                    disabled={!newMessage.trim()}
+                    className="bg-blue-500 text-white p-2 rounded-r-lg disabled:opacity-50"
+                    >
+                    Send
+                </button>
+
+            </div>
         </div>
-      </div>
-      <div className="group-chat-footer">
-        <input
-          type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Type a message..."
-        />
-        <button onClick={handleSendMessage}>Send</button>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default GroupChatPage;

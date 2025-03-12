@@ -3,7 +3,9 @@ import {
   groupsPending, 
   groupsSuccess, 
   groupsFailure, 
-  currentGroupSet 
+  currentGroupSet, 
+  currentGroupFailure,
+  currentGroupPending
 } from "../slices/groupSlice";
 
 // Fetch all Groups
@@ -29,6 +31,20 @@ export const fetchUserGroups = () => async (dispatch) => {
     dispatch(groupsFailure(error.response?.data || "Failed to fetch user's groups"));
   }
 };
+
+export const fetchGroupById = (groupId) => async (dispatch) => {
+  dispatch(groupsPending());
+  try {
+      const response = await apiClient.get(`/api/v1/chat/${groupId}`);
+      console.log("Group fetched from API:", response.data); // Ensure data is correct
+      dispatch(currentGroupSet(response.data));  // Dispatch to store group data in Redux
+      console.log("Dispatched currentGroupSet with data:", response.data);  // Confirm action dispatch
+  } catch (error) {
+      dispatch(groupsFailure(error.response?.data || "Failed to load group"));
+  }
+};
+
+
 
 // Create Group
 export const createGroup = (groupData) => async (dispatch) => {

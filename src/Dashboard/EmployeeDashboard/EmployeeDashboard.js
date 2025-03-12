@@ -46,6 +46,7 @@ const SideBar = ({ isCollapsed, isModalOpen }) => {
           <Link
             key={link.path}
             to={`/employee/${link.path}`}
+            onClick={() => console.log(`Navigating to /employee/${link.path}`)}  // Debugging navigation
             className="flex items-center mb-2 text-gray-700 hover:bg-gray-50 hover:text-blue-600 rounded-lg transition-colors duration-200"
           >
             <span className="text-xl w-8">{link.icon}</span>

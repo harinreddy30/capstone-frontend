@@ -27,7 +27,7 @@ const store = configureStore({
         availability: availabilityReducer,
         chat: chatReducer,
         groups: groupReducer,
-        message: messageReducer,
+        messages: messageReducer,
 
 
         payroll: payrollReducer,
