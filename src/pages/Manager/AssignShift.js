@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { createSchedule, getAllSchedules } from '../../redux/action/scheduleAction';
+import { fetchSchedule } from '../../redux/action/scheduleAction';
 import { fetchAllUsers } from '../../redux/action/userAction';
 import { fetchAllSites } from '../../redux/action/siteAction';
 import { fetchShifts } from '../../redux/action/shiftAction';
@@ -95,7 +95,7 @@ const AssignShift = () => {
           console.log('Fetching data...');
           await Promise.all([
             dispatch(fetchAllUsers()),
-            dispatch(getAllSchedules()),
+            dispatch(fetchSchedule()),
             dispatch(fetchAllSites()),
           ]);
         } else {
@@ -251,7 +251,7 @@ const AssignShift = () => {
     };
 
     try {
-      await dispatch(createSchedule(scheduleData));
+      await dispatch(fetchSchedule(scheduleData));
       handleModalClose();
     } catch (error) {
       console.error('Error creating schedule:', error);
