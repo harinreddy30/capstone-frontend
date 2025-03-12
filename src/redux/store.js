@@ -6,6 +6,9 @@ import sitesReducer from '../redux/slices/siteSlice';
 import shiftsReducer from "../redux/slices/shiftSlice";
 import reportsReducer from "../redux/slices/reportSlice";
 import availabilityReducer from "../redux/slices/availabilitySlice"
+import chatReducer from "../redux/slices/chatSlice"
+import groupReducer from "../redux/slices/groupSlice";
+import messageReducer from "../redux/slices/messageSlice";
 import payrollReducer from './slices/payrollSlice';
 import scheduleReducer from './slices/scheduleSlice';
 // import profileReducer from '../redux/slices/profileSlice';
@@ -23,6 +26,11 @@ const store = configureStore({
         shifts: shiftsReducer,
         reports: reportsReducer,
         availability: availabilityReducer,
+        chat: chatReducer,
+        groups: groupReducer,
+        messages: messageReducer,
+
+
         payroll: payrollReducer,
         schedule: scheduleReducer,
     },
