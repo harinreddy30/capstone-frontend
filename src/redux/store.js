@@ -9,7 +9,8 @@ import availabilityReducer from "../redux/slices/availabilitySlice"
 import chatReducer from "../redux/slices/chatSlice"
 import groupReducer from "../redux/slices/groupSlice";
 import messageReducer from "../redux/slices/messageSlice";
-import payrollReducer from './slices/payrollSlice';
+import scheduleReducer from "../redux/slices/scheduleSlice";
+
 // import profileReducer from '../redux/slices/profileSlice';
 
 // import logger from 'redux-logger';
@@ -28,9 +29,10 @@ const store = configureStore({
         chat: chatReducer,
         groups: groupReducer,
         messages: messageReducer,
+        schedule: scheduleReducer,
 
 
-        payroll: payrollReducer,
+        // payroll: payrollReducer,
     },
     // This will print every dispatched action and the state changes in the browser's console
     // middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger), // 

@@ -55,28 +55,45 @@ const ProfileEdit = () => {
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({
-          ...prev,
-          profilePhoto: reader.result,
-        }));
-      };
-      reader.readAsDataURL(file);
+        // Check file size (limit to 1MB)
+        if (file.size > 1024 * 1024) {
+            alert("File is too large. Please select an image under 1MB.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setFormData(prev => ({
+                ...prev,
+                profilePhoto: reader.result // This will be a base64 string
+            }));
+        };
+        reader.readAsDataURL(file);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSuccessMessage("");
-
+    
     try {
-      const result = await dispatch(updateUser(formData));
-      setSuccessMessage("Profile updated successfully!");
-      dispatch(fetchAllUsers()); // Refresh user list
+        // Create data object for submission
+        const dataToSubmit = {
+            ...formData,
+            dateOfBirth: formData.birthDate,
+            profile: formData.profilePhoto,
+            employeeId: user.employeeId // Make sure we have the employee ID
+        };
+
+        console.log('Submitting data:', dataToSubmit);
+        const updatedUser = await dispatch(updateUser(dataToSubmit));
+        
+        if (updatedUser) {
+            setSuccessMessage("Profile updated successfully!");
+            dispatch(fetchAllUsers());
+        }
     } catch (error) {
-      console.error("Error updating profile:", error);
-      alert(error.message || "Failed to update profile");
+        console.error('Submit error:', error);
+        alert(error.message || "Failed to update profile");
     }
   };
 
