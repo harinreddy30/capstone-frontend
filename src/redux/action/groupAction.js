@@ -5,7 +5,9 @@ import {
   groupsFailure, 
   currentGroupSet, 
   currentGroupFailure,
-  currentGroupPending
+  currentGroupPending,
+  groupCreated,
+  userAddedToGroup  
 } from "../slices/groupSlice";
 
 // Fetch all Groups
@@ -33,17 +35,26 @@ export const fetchUserGroups = () => async (dispatch) => {
 };
 
 export const fetchGroupById = (groupId) => async (dispatch) => {
-  dispatch(groupsPending());
+  dispatch(currentGroupPending()); // Dispatch to show loading state
+
   try {
-      const response = await apiClient.get(`/api/v1/chat/${groupId}`);
-      console.log("Group fetched from API:", response.data); // Ensure data is correct
-      dispatch(currentGroupSet(response.data));  // Dispatch to store group data in Redux
-      console.log("Dispatched currentGroupSet with data:", response.data);  // Confirm action dispatch
+      console.log("Fetching group data for groupId:", groupId);
+      
+      // Make the API request to get group data
+      const response = await apiClient.get(`/api/v1/chat/groups/${groupId}`);
+      
+      console.log('Group API Response:', response.data);
+      
+      // Dispatch the success action with the received group data
+      dispatch(currentGroupSet(response.data));
   } catch (error) {
-      dispatch(groupsFailure(error.response?.data || "Failed to load group"));
+      console.error('Error fetching group:', error);
+      
+      // Dispatch failure action in case of an error
+      const errorMessage = error.response?.data?.message || "Failed to fetch group data";
+      dispatch(currentGroupFailure(errorMessage));
   }
 };
-
 
 
 // Create Group
@@ -51,32 +62,39 @@ export const createGroup = (groupData) => async (dispatch) => {
   dispatch(groupsPending());
   try {
     const response = await apiClient.post("/api/v1/chat/groups", groupData);
-    dispatch(fetchGroups()); // Refresh the groups list after creating
+    dispatch(groupCreated(response.data)); // Add created group to state
+    dispatch(fetchGroups()); // Optionally refresh groups list
   } catch (error) {
     dispatch(groupsFailure(error.response?.data || "Failed to create group"));
   }
 };
 
-// Join Group
-export const joinGroup = (groupId) => async (dispatch) => {
+
+// Join a group
+export const joinGroup = (groupId, userId) => async (dispatch) => {
   dispatch(groupsPending());
   try {
-    const response = await apiClient.put(`/api/v1/chat/groups/join/${groupId}`);
-    dispatch(currentGroupSet(response.data.group));
-    dispatch(fetchUserGroups()); // Refresh user's joined groups list
+    const response = await apiClient.put(`/api/v1/chat/groups/join/${groupId}`, { userId });
+
+    dispatch(userAddedToGroup({ groupId, userId }));
+    dispatch(fetchGroups()); // Optional: refresh list
   } catch (error) {
-    dispatch(groupsFailure(error.response?.data || "Failed to join group"));
+    dispatch(groupsFailure(error.response?.data || "Failed to add user to the group"));
+    console.log("Error Joining Group:", error.message);
   }
 };
 
-// Add User to Group
-export const addUserToGroup = (groupId, userId) => async (dispatch) => {
-    dispatch(groupsPending());
-    try {
-      const response = await apiClient.post("/api/v1/chat/groups/add-user", { groupId, userId });
-      dispatch(fetchGroups()); // Refresh the groups list after adding user
-    } catch (error) {
-      dispatch(groupsFailure(error.response?.data || "Failed to add user to the group"));
-    }
+export const removeUserFromGroup = (groupId, userId) => async (dispatch) => {
+  dispatch(groupsPending());
+  try {
+    const response = await apiClient.put(`/api/v1/chat/groups/remove/${groupId}`, { userId });
+    
+    dispatch(fetchGroupById(groupId)); // Refresh group after removal
+  } catch (error) {
+    dispatch(groupsFailure(error.response?.data || "Failed to remove user from group"));
+    console.log("Error Removing User:", error.message);
+  }
 };
+
+
   

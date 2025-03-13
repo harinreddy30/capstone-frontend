@@ -1,46 +1,69 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
+
+const initialState = {
+  groups: [],
+  currentGroup: null,
+  loading: false,
+  error: null
+};
 
 const groupSlice = createSlice({
-  name: "groups",
-  initialState: {
-    groups: [],
-    currentGroup: null,
-    loading: false,
-    error: null,
-  },
+  name: 'group',
+  initialState,
   reducers: {
     groupsPending: (state) => {
       state.loading = true;
+      state.error = null;
     },
     groupsSuccess: (state, action) => {
       state.loading = false;
       state.groups = action.payload;
     },
-    currentGroupPending: (state) => {
-      state.loading = true;
-    },
-    currentGroupSet: (state, action) => {
-      
-      state.currentGroup = action.payload;
-    },
     groupsFailure: (state, action) => {
       state.loading = false;
       state.error = action.payload;
     },
+    currentGroupSet: (state, action) => {
+      state.currentGroup = action.payload;
+    },
     currentGroupFailure: (state, action) => {
-      state.loading = false;
+      state.currentGroup = null;
       state.error = action.payload;
     },
-  },
+    currentGroupPending: (state) => {
+      state.currentGroup = null;
+      state.loading = true;
+    },
+    groupCreated: (state, action) => {
+      state.groups.push(action.payload);  // Add new group to the list
+    },
+    userAddedToGroup: (state, action) => {
+      const { groupId, userId } = action.payload;
+      const group = state.groups.find((g) => g._id === groupId);
+      if (group && !group.members.includes(userId)) {
+        group.members.push(userId);
+      }
+    
+      // Optional: also update currentGroup if it's the same group
+      if (state.currentGroup && state.currentGroup._id === groupId) {
+        if (!state.currentGroup.members.includes(userId)) {
+          state.currentGroup.members.push(userId);
+        }
+      }
+    }
+    
+  }
 });
 
 export const {
   groupsPending,
   groupsSuccess,
   groupsFailure,
-  currentGroupPending,
   currentGroupSet,
-  currentGroupFailure
+  currentGroupFailure,
+  currentGroupPending,
+  groupCreated,
+  userAddedToGroup
 } = groupSlice.actions;
 
 export default groupSlice.reducer;
