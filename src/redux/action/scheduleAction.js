@@ -12,15 +12,19 @@ import apiClient from "../../api/apiClient";
 export const createSchedule = (scheduleData) => async (dispatch) => {
     try {
         dispatch(schedulePending());
-        console.log("Creating schedule:", scheduleData);
+        console.log("Creating schedule with data:", scheduleData);
         
         const response = await apiClient.post("/api/v1/schedule", scheduleData);
-        console.log("Schedule created:", response.data);
+        console.log("Schedule creation response:", response.data);
         
-        dispatch(scheduleCreateSuccess(response.data));
-        return response.data;
+        if (response.data) {
+            dispatch(scheduleCreateSuccess(response.data));
+            return response.data;
+        } else {
+            throw new Error('No data received from schedule creation');
+        }
     } catch (error) {
-        console.error("Error in createSchedule:", error);
+        console.error("Error in createSchedule:", error.response || error);
         dispatch(scheduleFailure(error.message));
         return null;
     }
@@ -30,11 +34,22 @@ export const createSchedule = (scheduleData) => async (dispatch) => {
 export const getAllSchedules = () => async (dispatch) => {
     try {
         dispatch(schedulePending());
+        console.log('Fetching all schedules...');
         const response = await apiClient.get("/api/v1/schedule");
+        console.log('All schedules response:', response.data);
+        
+        if (!Array.isArray(response.data)) {
+            console.log('Response data is not an array, checking for nested structure...');
+            const scheduleData = response.data.schedule || response.data.schedules || [];
+            console.log('Extracted schedule data:', scheduleData);
+            dispatch(scheduleSuccess(scheduleData));
+            return scheduleData;
+        }
+        
         dispatch(scheduleSuccess(response.data));
         return response.data;
     } catch (error) {
-        console.error("Error in getAllSchedules:", error);
+        console.error("Error in getAllSchedules:", error.response || error);
         dispatch(scheduleFailure(error.message));
         return null;
     }

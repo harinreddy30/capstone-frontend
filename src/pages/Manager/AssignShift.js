@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchSchedule } from '../../redux/action/scheduleAction';
+import { fetchSchedule, createSchedule, getAllSchedules } from '../../redux/action/scheduleAction';
 import { fetchAllUsers } from '../../redux/action/userAction';
 import { fetchAllSites } from '../../redux/action/siteAction';
 import { fetchShifts } from '../../redux/action/shiftAction';
@@ -26,7 +26,7 @@ const AssignShift = () => {
 
   // Get data from Redux store
   const { users, loading: usersLoading, error: userError } = useSelector((state) => state.users);
-  const { schedules = [] } = useSelector((state) => state.schedule || { schedules: [] });
+  const { schedule = [], loading: scheduleLoading } = useSelector((state) => state.schedule);
   const { user: currentUser } = useSelector((state) => state.auth);
   const { sites = [], loading: sitesLoading } = useSelector((state) => state.sites);
   const { shifts = [], loading: shiftsLoading } = useSelector((state) => state.shifts);
@@ -49,14 +49,14 @@ const AssignShift = () => {
     const dayShifts = siteShifts.filter(shift => shift.days.includes(selectedDayName));
 
     // Get already assigned shifts for this date
-    const assignedShifts = schedules.filter(schedule => {
-      const scheduleDate = new Date(schedule.date);
+    const assignedShifts = schedule.filter(scheduleItem => {
+      const scheduleDate = new Date(scheduleItem.date);
       return scheduleDate.toDateString() === selectedDate.toDateString();
     });
 
     // Filter out already assigned shifts
     const unassignedShifts = dayShifts.filter(shift => 
-      !assignedShifts.some(schedule => schedule.shiftId === shift._id)
+      !assignedShifts.some(scheduleItem => scheduleItem.shiftId === shift._id)
     );
 
     if (!selectedEmployee) return unassignedShifts;
@@ -92,13 +92,18 @@ const AssignShift = () => {
     const fetchData = async () => {
       try {
         if (currentUser && ['Manager', 'HR', 'SuperAdmin', 'PayrollManager'].includes(currentUser.role)) {
-          console.log('Fetching data...');
-          await Promise.all([
+          console.log('Current user role:', currentUser.role);
+          console.log('Starting data fetch...');
+          
+          const results = await Promise.all([
             dispatch(fetchAllUsers()),
-            dispatch(fetchSchedule()),
+            dispatch(getAllSchedules()),
             dispatch(fetchAllSites()),
           ]);
+          console.log('Fetch results:', results);
+          console.log('Data fetched successfully');
         } else {
+          console.log('User not authorized:', currentUser);
           setError('You do not have permission to view this page');
         }
       } catch (err) {
@@ -107,6 +112,7 @@ const AssignShift = () => {
       }
     };
 
+    console.log('AssignShift component mounted');
     fetchData();
     generateWeekDays(selectedDate);
   }, [dispatch, selectedDate, currentUser]);
@@ -137,15 +143,46 @@ const AssignShift = () => {
 
   // Add debugging logs
   useEffect(() => {
-    console.log('Users data:', users);
-    console.log('Filtered employees:', employees);
-    console.log('Sites:', sites);
-    console.log('Shifts:', shifts);
-    console.log('Availability:', availability);
-  }, [users, employees, sites, shifts, availability]);
+    console.log('Component State:', {
+      selectedDate,
+      currentWeek,
+      selectedEmployee,
+      selectedSite,
+      selectedShift,
+      error,
+      shiftDetails
+    });
+
+    console.log('Redux State:', {
+      users: users?.length || 0,
+      employees: employees?.length || 0,
+      schedule: schedule?.length || 0,
+      sites: sites?.length || 0,
+      shifts: shifts?.length || 0,
+      currentUser: currentUser?.role,
+      availability: Object.keys(availability || {}).length
+    });
+    
+    if (scheduleLoading || usersLoading || sitesLoading || shiftsLoading) {
+      console.log('Loading states:', {
+        scheduleLoading,
+        usersLoading,
+        sitesLoading,
+        shiftsLoading
+      });
+    }
+
+    if (error || userError) {
+      console.error('Errors:', { error, userError });
+    }
+  }, [users, schedule, sites, shifts, availability, 
+      scheduleLoading, usersLoading, sitesLoading, shiftsLoading,
+      selectedDate, currentWeek, selectedEmployee, selectedSite, 
+      selectedShift, error, userError]);
 
   // Show error message if there's an error
   if (error || userError) {
+    console.error('Rendering error state:', error || userError);
     return (
       <div className="p-6 text-center">
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -154,6 +191,23 @@ const AssignShift = () => {
       </div>
     );
   }
+
+  // Add a loading state check
+  if (usersLoading || scheduleLoading || sitesLoading) {
+    console.log('Rendering loading state');
+    return (
+      <div className="p-6 text-center">
+        <div className="text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
+  // Log when the main content is about to render
+  console.log('Rendering main content with:', {
+    weekDays: currentWeek.length,
+    employeesCount: employees.length,
+    sitesCount: sites.length
+  });
 
   const generateWeekDays = (date) => {
     const week = [];
@@ -251,8 +305,14 @@ const AssignShift = () => {
     };
 
     try {
-      await dispatch(fetchSchedule(scheduleData));
-      handleModalClose();
+      console.log('Creating schedule with data:', scheduleData);
+      const result = await dispatch(createSchedule(scheduleData));
+      console.log('Schedule creation result:', result);
+      if (result) {
+        // Refresh schedules after creating a new one
+        await dispatch(getAllSchedules());
+        handleModalClose();
+      }
     } catch (error) {
       console.error('Error creating schedule:', error);
       setError(error.message || 'Error creating schedule');
@@ -261,8 +321,8 @@ const AssignShift = () => {
 
   // Function to get shifts for a specific date
   const getShiftsForDate = (date) => {
-    return schedules.filter(schedule => {
-      const scheduleDate = new Date(schedule.date);
+    return schedule.filter(scheduleItem => {
+      const scheduleDate = new Date(scheduleItem.date);
       return scheduleDate.toDateString() === date.toDateString();
     });
   };
