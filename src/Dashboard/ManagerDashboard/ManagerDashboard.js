@@ -10,8 +10,6 @@ const ManagerReports = React.lazy(() => import('../../pages/Manager/ManagerRepor
 // const ViewAvailability = React.lazy(() => import('../../pages/Manager/ViewAvailability'));
 const LeaveRequests = React.lazy(() => import('../../pages/Manager/LeaveRequests'));
 const ChatGroup = React.lazy(() => import('../../components/ChatGroup/ChatGroup'));
-const GroupChatPage = React.lazy(() => import('../../components/ChatGroup/GroupChatPage'));
-
 
 // Sidebar Component
 const SideBar = ({ isCollapsed, isModalOpen }) => {
@@ -116,8 +114,8 @@ const ManagerDashboard = () => {
                 } 
               />
               <Route path="leave-requests" element={<LeaveRequests />} />
-              {/* <Route path="assign-shift" element={<AssignShift />} />
-              <Route path="view-availability" element={<ViewAvailability />} />
+              <Route path="assign-shift" element={<AssignShift />} />
+              {/* <Route path="view-availability" element={<ViewAvailability />} />
               <Route path="chat-group" element={<ChatGroup />} /> */}
             </Routes>
           </React.Suspense>
