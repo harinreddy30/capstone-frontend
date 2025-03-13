@@ -37,17 +37,19 @@ export const fetchReportById = (reportId) => async (dispatch) => {
 }
 
 export const createReport = (reportData) => async (dispatch) => {
-    // console.log(reportData)
     dispatch(reportPending());
     try {
-        const response = await apiClient.post("/api/v1/report", reportData)
-        console.log(response.data)
-        dispatch(reportCreateSuccess(response.data))
+        const response = await apiClient.post("/api/v1/report", reportData);
+        console.log('Create report response:', response.data);
+        dispatch(reportCreateSuccess(response.data));
+        return response.data;
     } catch (error) {
-        dispatch(reportFailure(error.response?.data || 'Error Creating Report')); // Dispatch failure with error message
-        console.log("Error Creating Reports", error.message)
+        const errorMessage = error.response?.data || 'Error Creating Report';
+        dispatch(reportFailure(errorMessage));
+        console.error("Error Creating Reports:", error.message);
+        throw error;
     }
-}
+};
 
 // Create a Report
 export const updateReport = (reportId, reportData) => async (dispatch) => {
@@ -74,13 +76,26 @@ export const DeleteReport = (reportId) => async (dispatch) => {
 }
 
 export const fetchReportsByEmployee = () => async (dispatch) => {
-    dispatch(reportPending()); // Dispatch the 'pending' state before making the request
+    dispatch(reportPending());
     try {
         const response = await apiClient.get("/api/v1/report/emp/employee");
-        console.log(response.data.reports)
-        dispatch(reportSuccess(response.data.reports || [])); // Dispatch success action with the fetched data
+        console.log('Fetched reports:', response.data.reports);
+        
+        if (!Array.isArray(response.data.reports)) {
+            console.error('Expected reports array but got:', typeof response.data.reports);
+            dispatch(reportSuccess([]));
+            return;
+        }
+        
+        // Sort reports by date, most recent first
+        const sortedReports = response.data.reports.sort((a, b) => 
+            new Date(b.incidentDate) - new Date(a.incidentDate)
+        );
+        
+        dispatch(reportSuccess(sortedReports));
     } catch (error) {
-        dispatch(reportFailure(error.response?.data || 'Error fetching reports'));
-        console.log("Error Fetching reports :", error.message);
+        const errorMessage = error.response?.data || 'Error fetching reports';
+        dispatch(reportFailure(errorMessage));
+        console.error("Error Fetching reports:", error.message);
     }
-  };
+};

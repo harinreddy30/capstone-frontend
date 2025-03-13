@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { fetchAllReport, DeleteReport } from "../../redux/action/reportAction";
+import { fetchAllReport, DeleteReport, updateReport } from "../../redux/action/reportAction";
 
 const ManagerReports = ({ onModalOpen, onModalClose }) => {
   const dispatch = useDispatch();
@@ -27,13 +27,24 @@ const ManagerReports = ({ onModalOpen, onModalClose }) => {
   );
 
   // Handle Delete Report
-    const handleDelete = async (reportId) => {
-      const confirmDelete = window.confirm("Are you sure you want to delete this Site?");
-      if (confirmDelete) {
-        await dispatch(DeleteReport(reportId)); // Dispatch delete action
-        dispatch(fetchAllReport()); // Refresh user list after deletion
-      }
-    };
+  const handleDelete = async (reportId) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this Site?");
+    if (confirmDelete) {
+      await dispatch(DeleteReport(reportId)); // Dispatch delete action
+      dispatch(fetchAllReport()); // Refresh user list after deletion
+    }
+  };
+
+  // Handle Status Update
+  const handleStatusUpdate = async (report, newStatus) => {
+    try {
+      await dispatch(updateReport(report._id, { ...report, status: newStatus }));
+      dispatch(fetchAllReport()); // Refresh reports after update
+    } catch (error) {
+      console.error('Error updating report status:', error);
+      alert('Failed to update report status');
+    }
+  };
 
   // Modified to handle modal state
   const handleViewReport = (report) => {
@@ -89,17 +100,27 @@ const ManagerReports = ({ onModalOpen, onModalClose }) => {
                 </td>
                 <td className="border p-2">{report.createdBy?.role}</td>
                 <td className="border p-2">{new Date(report.incidentDate).toLocaleDateString()}</td>
-                <td className="border p-2">{report.status}</td>
+                <td className="border p-2">
+                  <select
+                    value={report.status}
+                    onChange={(e) => handleStatusUpdate(report, e.target.value)}
+                    className="w-full p-1 rounded border border-gray-300 focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="Resolved">Resolved</option>
+                    <option value="Closed">Closed</option>
+                  </select>
+                </td>
                 <td className="border p-2">
                   <button
-                    className="bg-blue-500 text-white px-3 py-1 rounded"
+                    className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
                     onClick={() => handleViewReport(report)}
                   >
                     View
                   </button>
                   <button
                     onClick={() => handleDelete(report._id)}
-                    className="bg-red-500 mx-2 text-white px-3 py-1 rounded"
+                    className="bg-red-500 text-white px-3 py-1 rounded"
                   >
                     Delete
                   </button>
@@ -114,11 +135,22 @@ const ManagerReports = ({ onModalOpen, onModalClose }) => {
       {selectedReport && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded shadow-lg w-1/2">
-            <h3 className="text-xl font-semibold">{selectedReport.reportName}</h3>
-            <p><strong>Description:</strong> {selectedReport.reportDescription}</p>
-            <p><strong>Incident Date:</strong> {new Date(selectedReport.incidentDate).toLocaleString()}</p>
-            <p><strong>Status:</strong> {selectedReport.status}</p>
-            <p><strong>Created By:</strong> {`${selectedReport.createdBy?.fname || "Unknown"} ${selectedReport.createdBy?.lname}`}</p>
+            <h3 className="text-xl font-semibold mb-4">{selectedReport.reportName}</h3>
+            <p className="mb-3"><strong>Description:</strong> {selectedReport.reportDescription}</p>
+            <p className="mb-3"><strong>Incident Date:</strong> {new Date(selectedReport.incidentDate).toLocaleString()}</p>
+            <div className="mb-4">
+              <strong>Status:</strong>
+              <select
+                value={selectedReport.status}
+                onChange={(e) => handleStatusUpdate(selectedReport, e.target.value)}
+                className="ml-2 p-1 rounded border border-gray-300 focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="Pending">Pending</option>
+                <option value="Resolved">Resolved</option>
+                <option value="Closed">Closed</option>
+              </select>
+            </div>
+            <p className="mb-4"><strong>Created By:</strong> {`${selectedReport.createdBy?.fname || "Unknown"} ${selectedReport.createdBy?.lname}`}</p>
             <div className="flex justify-end mt-4">
               <button
                 className="bg-red-500 text-white px-4 py-2 rounded"
