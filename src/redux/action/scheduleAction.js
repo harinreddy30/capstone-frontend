@@ -18,7 +18,7 @@ export const createSchedule = (scheduleData) => async (dispatch) => {
         // const userId = getUserIdFromToken();
         const payload = { ...scheduleData};
 
-        const response = await apiClient.post("/api/v1/schedules", payload);
+        const response = await apiClient.post("/api/v1/schedule", payload);
         console.log("Schedule created:", response.data);
 
         dispatch(scheduleCreateSuccess(response.data));

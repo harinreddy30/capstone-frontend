@@ -6,7 +6,8 @@ import {
     userByIdSuccess, 
     userCreateSuccess, 
     userUpdateSuccess, 
-    userDeleteSuccess 
+    userDeleteSuccess,
+    availableEmployeesSuccess 
 } 
 from '../slices/userSlice';
 
@@ -46,10 +47,12 @@ export const fetchAvailableEmployees = (day, startTime, endTime) => async (dispa
             params: { day, startTime, endTime }
         });
 
-        console.log("Available Employees for", day, response.data); // ✅ Debugging Log
+        console.log(`API Response for ${day}:`, response.data); // ✅ Debugging Log
 
-        dispatch(usersSuccess({ day, employees: response.data.employees || [] }));
-        return response.data.employees || []; 
+        const employees = response.data?.employees || [];
+        dispatch(availableEmployeesSuccess({ day, employees })); // ✅ Correct action
+
+        return employees; // ✅ Ensures correct return value
     } catch (error) {
         console.error("Error fetching available employees:", error);
         dispatch(usersFailure(error.response?.data?.error || "Error fetching available employees"));
@@ -98,7 +101,6 @@ export const updateUser = (userId, updatedData) => async (dispatch) => {
         });
         console.log(response.data)
         // console.log(response.data)
-
         // Dispatch success with the updated user
         if (response.data) {
             dispatch(userUpdateSuccess(response.data));

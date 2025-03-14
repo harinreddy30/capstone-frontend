@@ -1,43 +1,49 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    users: [], // Stores all users fetched from the backend
-    user: null, // Stores a single user, usually when fetching by ID
-    loading: false, // Stores a single user, usually when fetching by ID
-    error: null, // Stores any error messages that might occur during API calls
-}
+    users: [], // Stores all users
+    availableEmployees: {}, // ✅ Stores available employees per day
+    user: null, 
+    loading: false,
+    error: null, 
+};
 
 const userSlice = createSlice({
     name: "users",
     initialState,
     reducers: {
 
-        // Action to handle when the fetch request is pending
         usersPending: (state) => {
             state.loading = true;
             state.error = null;
         },
-        // Action to handle when the fetch request is successful (fetch all users)
+
         usersSuccess: (state, action) => {
-            state.loading = false; // API req is completed
-            state.users = action.payload; // action.payload contains the list of users
+            state.loading = false;
+            state.users = action.payload; // ✅ Stores all users
         },
-        // Action to handle when the fetch request fails
+
+        availableEmployeesSuccess: (state, action) => {
+            const { day, employees } = action.payload;
+            state.availableEmployees[day] = employees; // ✅ Stores employees by shift day
+            state.loading = false;
+        },
+
         usersFailure: (state, action) => {
             state.loading = false;
-            state.error = action.payload; // Store the error message
+            state.error = action.payload;
         },
-        // Action to handle when fetching a user by ID is successful
+
         userByIdSuccess: (state, action) => {
             state.loading = false;
-            state.user = action.payload; // Store the fetched user by ID
+            state.user = action.payload;
         },
-        // Action to handle when creating a user is successful
+
         userCreateSuccess: (state, action) => {
             state.loading = false;
-            state.users.push(action.payload); // Add the new user to the users array
+            state.users.push(action.payload);
         },
-        // Action to handle when updating a user is successful
+
         userUpdateSuccess: (state, action) => {
             state.loading = false;
             state.users = state.users.map((user) =>
@@ -45,19 +51,17 @@ const userSlice = createSlice({
             );
         },
         
-        // Action to handle when deleting a user is successful
         userDeleteSuccess: (state, action) => {
             state.loading = false;
-            state.users = state.users.filter((user) => user._id !== action.payload); // Remove the deleted user
+            state.users = state.users.filter((user) => user._id !== action.payload);
         },
     }
-})
+});
 
-
-// Export actions to be dispatched
 export const { 
     usersPending, 
     usersSuccess, 
+    availableEmployeesSuccess, // ✅ New action for available employees
     usersFailure, 
     userByIdSuccess, 
     userCreateSuccess, 
@@ -65,5 +69,4 @@ export const {
     userDeleteSuccess 
 } = userSlice.actions;
 
-// Export the reducer to be used in the store
 export default userSlice.reducer;
