@@ -14,6 +14,14 @@ const MySchedule = () => {
     dispatch(fetchSchedule());
   }, [dispatch]);
 
+
+  useEffect(() => {
+    console.log("Redux Store Schedule Data:", schedule);
+  }, [schedule]);
+  
+
+
+
   // Get Monday of the selected week
   function getMondayOfWeek(date) {
     const monday = new Date(date);
@@ -37,16 +45,29 @@ const MySchedule = () => {
   // Handle week selection from calendar
   const handleDateChange = (date) => {
     setCurrentWeek(getMondayOfWeek(date));
+
   };
 
   // Filter shifts for the selected week
-  const filteredSchedule = schedule.filter((item) => {
-    const shiftDate = new Date(item.date);
-    const weekStart = new Date(currentWeek);
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 6);
-    return shiftDate >= weekStart && shiftDate <= weekEnd;
-  });
+  const filteredSchedule = schedule && Array.isArray(schedule) 
+  ? schedule.filter((item) => {
+      const shiftDate = new Date(item.date);
+      const weekStart = new Date(currentWeek);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+
+      // Fix timezone issues by setting time to midnight (00:00:00)
+      shiftDate.setHours(0, 0, 0, 0);
+      weekStart.setHours(0, 0, 0, 0);
+      weekEnd.setHours(23, 59, 59, 999);
+
+      console.log("Checking Shift:", shiftDate, "vs Week Range:", weekStart, "-", weekEnd);
+      return shiftDate >= weekStart && shiftDate <= weekEnd;
+    }) 
+  : [];
+
+
+console.log("Filtered Schedule:", filteredSchedule);
 
   return (
     <div className="max-w-5xl mx-auto p-6 bg-white shadow-lg rounded-lg">
