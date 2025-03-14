@@ -1,246 +1,224 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAllUsers, updateUser } from "../../redux/action/userAction";
+import { updateUser, fetchUserById } from "../../redux/action/userAction";
+import { TextField, Button, MenuItem } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { getUserIdFromToken } from "../../utilis/token";
 import Layout from "../../components/Layout/Layout";
 
 const ProfileEdit = () => {
   const dispatch = useDispatch();
-  const { user, loading, error } = useSelector((state) => state.auth || { 
-    user: null, 
-    loading: false, 
-    error: null 
-  });
+  const navigate = useNavigate();
+  const user = useSelector((state) => state.users);
+  console.log(user);
 
-  const [successMessage, setSuccessMessage] = useState("");
   const [formData, setFormData] = useState({
     fname: "",
     lname: "",
+    dateOfBirth: "",
     email: "",
     phone: "",
-    birthDate: "",
-    pronouns: "",
-    employeeId: "",
-    language: "English",
-    profilePhoto: null,
+    address: {
+      street: "",
+      city: "",
+      province: "",
+      postalCode: "",
+      country: "",
+    },
+    profile: null, // New state for image
   });
-
-  // Load user data
-  useEffect(() => {
-    dispatch(fetchAllUsers());
-  }, [dispatch]);
 
   useEffect(() => {
     if (user) {
       setFormData({
         fname: user.fname || "",
         lname: user.lname || "",
+        dateOfBirth: user.dateOfBirth ? user.dateOfBirth.split("T")[0] : "",
         email: user.email || "",
         phone: user.phone || "",
-        birthDate: user.dateOfBirth || "",
-        pronouns: user.pronouns || "",
-        employeeId: user.employeeId || "",
-        language: user.language || "English",
-        profilePhoto: user.profile || null,
+        address: {
+          street: user.address?.street || "",
+          city: user.address?.city || "",
+          province: user.address?.province || "",
+          postalCode: user.address?.postalCode || "",
+          country: user.address?.country || "",
+        },
+        profile: user.image || null, // Handle existing user image
       });
     }
   }, [user]);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+    const { name, value } = e.target;
 
-  const handlePhotoUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        // Check file size (limit to 1MB)
-        if (file.size > 1024 * 1024) {
-            alert("File is too large. Please select an image under 1MB.");
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setFormData(prev => ({
-                ...prev,
-                profilePhoto: reader.result // This will be a base64 string
-            }));
-        };
-        reader.readAsDataURL(file);
+    if (name.startsWith("address.")) {
+      const field = name.split(".")[1];
+      setFormData((prev) => ({
+        ...prev,
+        address: {
+          ...prev.address,
+          [field]: value,
+        },
+      }));
+    } else if (name === "profile") {
+      // Handle image change
+      const file = e.target.files[0];
+      setFormData((prev) => ({
+        ...prev,
+        profile: file, // Save the file in the form data
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    
-    try {
-        // Create data object for submission
-        const dataToSubmit = {
-            ...formData,
-            dateOfBirth: formData.birthDate,
-            profile: formData.profilePhoto,
-            employeeId: user.employeeId // Make sure we have the employee ID
-        };
 
-        console.log('Submitting data:', dataToSubmit);
-        const updatedUser = await dispatch(updateUser(dataToSubmit));
-        
-        if (updatedUser) {
-            setSuccessMessage("Profile updated successfully!");
-            dispatch(fetchAllUsers());
-        }
-    } catch (error) {
-        console.error('Submit error:', error);
-        alert(error.message || "Failed to update profile");
+    // Get the userId from the token
+    const userId = getUserIdFromToken();
+    console.log(userId);
+
+    if (userId) {
+      const formDataToSubmit = new FormData();
+
+      formDataToSubmit.append("fname", formData.fname);
+      formDataToSubmit.append("lname", formData.lname);
+      formDataToSubmit.append("dateOfBirth", formData.dateOfBirth);
+      formDataToSubmit.append("email", formData.email);
+      formDataToSubmit.append("phone", formData.phone);
+      formDataToSubmit.append("address.street", formData.address.street);
+      formDataToSubmit.append("address.city", formData.address.city);
+      formDataToSubmit.append("address.province", formData.address.province);
+      formDataToSubmit.append("address.postalCode", formData.address.postalCode);
+      formDataToSubmit.append("address.country", formData.address.country);
+
+      if (formData.profile) {
+        formDataToSubmit.append("profile", formData.profile);
+        console.log("Image Name: ", formData.profile.name);  // Logs the image name
+        console.log("Image Type: ", formData.profile.type);  // Logs the image type (e.g., image/jpeg)
+        console.log("Image Size: ", formData.profile.size);  // Logs the image size in bytes
+      }
+
+      // Log the FormData contents
+      // for (let [key, value] of formDataToSubmit.entries()) {
+      //   console.log(key + ": " + value);
+      // }
+      // Dispatch the action with the userId and formData
+      dispatch(updateUser(userId, formDataToSubmit));
+    } else {
+      console.error("User ID missing or invalid token.");
     }
   };
-
-  // Show loading state
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  // Show error state
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-6">My Account</h2>
+      <div className="p-6 max-w-4xl mx-auto bg-white shadow rounded-lg">
+        <h2 className="text-2xl font-semibold mb-4">Edit Profile</h2>
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <TextField
+            label="First Name"
+            name="fname"
+            value={formData.fname}
+            onChange={handleChange}
+            fullWidth
+          />
+          <TextField
+            label="Last Name"
+            name="lname"
+            value={formData.lname}
+            onChange={handleChange}
+            fullWidth
+          />
+          <TextField
+            label="Date of Birth"
+            name="dateOfBirth"
+            type="date"
+            value={formData.dateOfBirth}
+            onChange={handleChange}
+            InputLabelProps={{ shrink: true }}
+            fullWidth
+          />
+          <TextField
+            label="Email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            fullWidth
+          />
+          <TextField
+            label="Phone"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            fullWidth
+          />
 
-        <div className="flex gap-8">
-          {/* Left Section - Form Fields */}
-          <div className="flex-1">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    First Name (required)
-                  </label>
-                  <input
-                    type="text"
-                    name="fname"
-                    value={formData.fname}
-                    onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Last Name (required)
-                  </label>
-                  <input
-                    type="text"
-                    name="lname"
-                    value={formData.lname}
-                    onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    required
-                  />
-                </div>
-              </div>
+          {/* Address fields */}
+          <TextField
+            label="Street"
+            name="address.street"
+            value={formData.address.street}
+            onChange={handleChange}
+            fullWidth
+          />
+          <TextField
+            label="City"
+            name="address.city"
+            value={formData.address.city}
+            onChange={handleChange}
+            fullWidth
+          />
+          <TextField
+            label="Province"
+            name="address.province"
+            value={formData.address.province}
+            onChange={handleChange}
+            fullWidth
+          />
+          <TextField
+            label="Postal Code"
+            name="address.postalCode"
+            value={formData.address.postalCode}
+            onChange={handleChange}
+            fullWidth
+          />
+          <TextField
+            label="Country"
+            name="address.country"
+            value={formData.address.country}
+            onChange={handleChange}
+            fullWidth
+          />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Mobile Number
-                  </label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Birth Date
-                  </label>
-                  <input
-                    type="date"
-                    name="birthDate"
-                    value={formData.birthDate}
-                    onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Pronouns
-                  </label>
-                  <select
-                    name="pronouns"
-                    value={formData.pronouns}
-                    onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                  >
-                    <option value="Prefer not to share">Prefer not to share</option>
-                    <option value="He/Him">He/Him</option>
-                    <option value="She/Her">She/Her</option>
-                    <option value="They/Them">They/Them</option>
-                  </select>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
-              >
-                Save Changes
-              </button>
-            </form>
+          {/* Image upload field */}
+          <div className="md:col-span-2">
+            <input
+              type="file"
+              name="profile"
+              accept="profile/*"
+              onChange={handleChange}
+              className="p-2 border rounded-md"
+            />
+            {formData.profile && (
+              <p className="mt-2 text-sm text-gray-500">
+                Selected file: {formData.profile.name}
+              </p>
+            )}
           </div>
 
-          {/* Right Section - Profile Photo */}
-          <div className="w-80">
-            <div className="mb-6">
-              <h3 className="text-lg font-medium mb-2">Profile Photo</h3>
-              <div className="flex items-center space-x-4">
-                <img
-                  src={formData.profilePhoto || "/default-avatar.png"}
-                  alt="Profile"
-                  className="w-20 h-20 rounded-full object-cover"
-                />
-                <label className="cursor-pointer bg-gray-100 px-4 py-2 rounded-md hover:bg-gray-200">
-                  Upload photo
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handlePhotoUpload}
-                  />
-                </label>
-              </div>
-            </div>
+          <div className="md:col-span-2 flex justify-between">
+            <Button variant="outlined" color="secondary" onClick={() => navigate(-1)}>
+              Back
+            </Button>
+            <Button variant="contained" color="primary" type="submit">
+              Save Changes
+            </Button>
           </div>
-        </div>
-
-        {successMessage && (
-          <p className="text-green-600 text-center mt-4">{successMessage}</p>
-        )}
+        </form>
       </div>
     </Layout>
   );

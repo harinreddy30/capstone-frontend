@@ -37,13 +37,14 @@ const userSlice = createSlice({
             state.loading = false;
             state.users.push(action.payload); // Add the new user to the users array
         },
-         // Action to handle when updating a user is successful
-         userUpdateSuccess: (state, action) => {
+        // Action to handle when updating a user is successful
+        userUpdateSuccess: (state, action) => {
             state.loading = false;
             state.users = state.users.map((user) =>
                 user._id === action.payload._id ? action.payload : user
-            ); // Update the user in the users array
+            );
         },
+        
         // Action to handle when deleting a user is successful
         userDeleteSuccess: (state, action) => {
             state.loading = false;

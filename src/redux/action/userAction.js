@@ -14,6 +14,7 @@ from '../slices/userSlice';
 export const fetchAllUsers = () => async (dispatch) => {
     dispatch(usersPending());
     try {
+
         console.log('Making API request to fetch users...');
         const response = await apiClient.get("/api/v1/users");
         console.log('Users API Response:', response.data);
@@ -37,6 +38,25 @@ export const fetchAllUsers = () => async (dispatch) => {
         throw error;
     }
 };
+
+export const fetchAvailableEmployees = (day, startTime, endTime) => async (dispatch) => {
+    dispatch(usersPending());
+    try {
+        const response = await apiClient.get(`/api/v1/users/employee/available`, {
+            params: { day, startTime, endTime }
+        });
+
+        console.log("Available Employees for", day, response.data); // ✅ Debugging Log
+
+        dispatch(usersSuccess({ day, employees: response.data.employees || [] }));
+        return response.data.employees || []; 
+    } catch (error) {
+        console.error("Error fetching available employees:", error);
+        dispatch(usersFailure(error.response?.data?.error || "Error fetching available employees"));
+        return [];
+    }
+};
+
 
 // Fetch a user by ID (HR, SuperAdmin)
 export const fetchUserById = (userId) => async(dispatch) => {
@@ -65,36 +85,38 @@ export const createUser = (userData) => async (dispatch) => {
     }
 };
 
-// Update a user
-export const updateUser = (updatedData) => async (dispatch) => {
-    dispatch(usersPending());
-    try {
-        const userId = updatedData.employeeId;
-        
-        if (!userId) {
-            throw new Error('No user ID provided for update');
-        }
+
+export const updateUser = (userId, updatedData) => async (dispatch) => {
+    try {        
+        dispatch(usersPending());
 
         // Send the update request with JSON data
-        const response = await apiClient.put(`/api/v1/users/${userId}`, updatedData, {
+        const response = await apiClient.put(`/api/v1/users/update-user/${userId}`, updatedData, {
             headers: {
-                'Content-Type': 'application/json',
-            },
+                "Content-Type": "multipart/form-data",
+            }
         });
-        
-        if (response.data.updatedUser) {
-            dispatch(userUpdateSuccess(response.data.updatedUser));
-            return response.data.updatedUser;
+        console.log(response.data)
+        // console.log(response.data)
+
+        // Dispatch success with the updated user
+        if (response.data) {
+            dispatch(userUpdateSuccess(response.data));
         } else {
-            throw new Error(response.data.message || 'Failed to update user');
+            dispatch(usersFailure('Failed to update user'));
         }
+
     } catch (error) {
         console.error('Update error details:', error);
+        
+        // Extract error message
         const errorMessage = error.response?.data?.message || error.message || 'Error updating user';
         dispatch(usersFailure(errorMessage));
         throw error;
     }
 };
+
+
 
 // Delete a User
 export const DeleteUser = (userId) => async (dispatch) => {

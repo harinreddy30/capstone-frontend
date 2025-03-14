@@ -5,6 +5,7 @@ import {
     scheduleCreateSuccess,
     scheduleUpdateSuccess,
     scheduleDeleteSuccess,
+
 } from "../slices/scheduleSlice";
 import apiClient from "../../api/apiClient";
 
@@ -12,48 +13,36 @@ import apiClient from "../../api/apiClient";
 export const createSchedule = (scheduleData) => async (dispatch) => {
     try {
         dispatch(schedulePending());
-        console.log("Creating schedule with data:", scheduleData);
-        
-        const response = await apiClient.post("/api/v1/schedule", scheduleData);
-        console.log("Schedule creation response:", response.data);
-        
-        if (response.data) {
-            dispatch(scheduleCreateSuccess(response.data));
-            return response.data;
-        } else {
-            throw new Error('No data received from schedule creation');
-        }
+        console.log("Creating schedule:", scheduleData);
+
+        // const userId = getUserIdFromToken();
+        const payload = { ...scheduleData};
+
+        const response = await apiClient.post("/api/v1/schedules", payload);
+        console.log("Schedule created:", response.data);
+
+        dispatch(scheduleCreateSuccess(response.data));
+        return response.data;
     } catch (error) {
-        console.error("Error in createSchedule:", error.response || error);
+        console.error("Error in createSchedule:", error);
         dispatch(scheduleFailure(error.message));
         return null;
     }
 };
 
-// Get All Schedules (for HR/Manager)
-export const getAllSchedules = () => async (dispatch) => {
-    try {
-        dispatch(schedulePending());
-        console.log('Fetching all schedules...');
-        const response = await apiClient.get("/api/v1/schedule");
-        console.log('All schedules response:', response.data);
-        
-        if (!Array.isArray(response.data)) {
-            console.log('Response data is not an array, checking for nested structure...');
-            const scheduleData = response.data.schedule || response.data.schedules || [];
-            console.log('Extracted schedule data:', scheduleData);
-            dispatch(scheduleSuccess(scheduleData));
-            return scheduleData;
-        }
-        
-        dispatch(scheduleSuccess(response.data));
-        return response.data;
-    } catch (error) {
-        console.error("Error in getAllSchedules:", error.response || error);
-        dispatch(scheduleFailure(error.message));
-        return null;
-    }
-};
+// // Get All Schedules (for HR/Manager)
+// export const getAllSchedules = () => async (dispatch) => {
+//     try {
+//         dispatch(schedulePending());
+//         const response = await apiClient.get("/api/v1/schedules");
+//         dispatch(scheduleSuccess(response.data));
+//         return response.data;
+//     } catch (error) {
+//         console.error("Error in getAllSchedules:", error);
+//         dispatch(scheduleFailure(error.message));
+//         return null;
+//     }
+// };
 
 // Get User's Schedules
 // export const getUserSchedules = (userId) => async (dispatch) => {
@@ -80,10 +69,11 @@ export const fetchSchedule = () => async (dispatch) => {
         }
 
         console.log("Dispatching scheduleSuccess...");
-        dispatch(scheduleSuccess(response.data.schedule));
+        dispatch(scheduleSuccess(response.data.schedule)); // Log this before dispatching
     } catch (error) {
         console.error("Error in getUserSchedules:", error);
         dispatch(scheduleFailure(error.message));
+
     }
 };
 
@@ -114,4 +104,4 @@ export const fetchSchedule = () => async (dispatch) => {
 //         dispatch(scheduleFailure(error.message));
 //         return null;
 //     }
-// }; 
+// }

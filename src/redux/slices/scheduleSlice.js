@@ -16,22 +16,25 @@ const scheduleSlice = createSlice({
             state.loading = true;
             state.error = null;
         },
+
+
         scheduleSuccess: (state, action) => {
             console.log("Redux: scheduleSuccess triggered with data:", action.payload);
             state.loading = false;
             state.schedule = action.payload; // Make sure this is correctly modifying the state
         },
+
+
         scheduleFailure: (state, action) => {
             console.log("Redux: scheduleFailure triggered with error:", action.payload);
             state.loading = false;
             state.error = action.payload;
+
         },
 
         // Action to handle when creating a schedule is successful
         scheduleCreateSuccess: (state, action) => {
             state.loading = false;
-            state.schedules = [...state.schedules, action.payload];
-            state.error = null;
             state.schedule = [...state.schedule, action.payload]; // Append new schedule
             localStorage.setItem("schedule", JSON.stringify(state.schedule));
         },
@@ -54,15 +57,22 @@ const scheduleSlice = createSlice({
             localStorage.setItem("schedule", JSON.stringify(state.schedule));
         },
     },
+
+
+
+
+
+
 });
 
 export const {
     schedulePending,
     scheduleSuccess,
     scheduleFailure,
-    scheduleCreateSuccess,
     scheduleUpdateSuccess,
     scheduleDeleteSuccess,
+    scheduleCreateSuccess
+
 } = scheduleSlice.actions;
 
 export default scheduleSlice.reducer;

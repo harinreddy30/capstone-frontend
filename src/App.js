@@ -13,6 +13,7 @@ import AdminDashboard from './Dashboard/AdminDashboard/AdminDashboard'
 
 import ProfileEdit from './pages/Profile/ProfileEdit';
 import ResetPassword from "./pages/Auth/ResetPassword";
+import ProfileView from "./pages/Profile/ProfileView";
 // A private route wrapper to protect routes based on authentication
 // Implement RBAC to implement authentication and authorization
 const ProtectedRoute = ({ children, authorizedRoles }) => {
@@ -52,6 +53,14 @@ function App() {
           {/* Protected Routes */}
 
           {/* Profile Protected Routes */}
+          <Route 
+            path="/profile/view"
+            element={
+              <ProtectedRoute>
+                <ProfileView />
+              </ProtectedRoute>
+          }
+          />
           <Route 
             path="/profile/edit"
             element={
