@@ -90,27 +90,39 @@ export const updateUser = (userId, updatedData) => async (dispatch) => {
     try {        
         dispatch(usersPending());
 
+        // Log the update attempt
+        console.log('Attempting to update user:', userId, 'with data:', updatedData);
+
         // Send the update request with JSON data
-        const response = await apiClient.put(`/api/v1/users/update-user/${userId}`, updatedData, {
+        const response = await apiClient.put(`/api/v1/users/${userId}`, updatedData, {
             headers: {
-                "Content-Type": "multipart/form-data",
+                "Content-Type": "application/json",
             }
         });
-        console.log(response.data)
-        // console.log(response.data)
+
+        // Log successful response
+        console.log('Update response:', response.data);
 
         // Dispatch success with the updated user
-        if (response.data) {
+        if (response.data && response.data.user) {
+            dispatch(userUpdateSuccess(response.data.user));
+            return response.data.user;
+        } else if (response.data) {
             dispatch(userUpdateSuccess(response.data));
+            return response.data;
         } else {
-            dispatch(usersFailure('Failed to update user'));
+            throw new Error('Invalid response format');
         }
 
     } catch (error) {
-        console.error('Update error details:', error);
+        console.error('Update error:', error.response || error);
         
-        // Extract error message
-        const errorMessage = error.response?.data?.message || error.message || 'Error updating user';
+        // Extract detailed error message
+        const errorMessage = error.response?.data?.message 
+            || error.response?.data 
+            || error.message 
+            || 'Error updating user';
+            
         dispatch(usersFailure(errorMessage));
         throw error;
     }

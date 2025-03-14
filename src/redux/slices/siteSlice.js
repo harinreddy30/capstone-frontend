@@ -1,7 +1,17 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const getInitialSites = () => {
+  try {
+    const storedSites = localStorage.getItem("sites");
+    return storedSites ? JSON.parse(storedSites) : [];
+  } catch (error) {
+    console.error("Error parsing sites from localStorage:", error);
+    return [];
+  }
+};
+
 const initialState = {
-  sites: JSON.parse(localStorage.getItem("sites")) || [], // Load from localStorage if available, else use empty array
+  sites: getInitialSites(),
   site: null, // Store a single site
   loading: false, // Used when making an API call to the backend
   error: null,

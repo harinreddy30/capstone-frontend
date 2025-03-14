@@ -15,11 +15,13 @@ export const fetchAllSites = () => async (dispatch) => {
     dispatch(sitePending()); 
     try {
         const response = await apiClient.get("/api/v1/sites")
-        dispatch(siteSuccess(response.data.Sites)) // Dispatch SUcess action
-
+        console.log("Sites response:", response.data); // Debug log
+        const sitesData = response.data.Sites || response.data.sites || response.data || [];
+        console.log("Sites data to be dispatched:", sitesData); // Debug log
+        dispatch(siteSuccess(sitesData)) // Dispatch Success action with sites data
     } catch (error) {
-        dispatch(siteFailure(error.response?.data || 'Error fetching Sites')); // Dispatch failure with error message
-        console.log("Error Fetching sites", error.message)
+        console.error("Error Fetching sites:", error.response || error);
+        dispatch(siteFailure(error.response?.data || 'Error fetching Sites')); 
     }
 }
 
