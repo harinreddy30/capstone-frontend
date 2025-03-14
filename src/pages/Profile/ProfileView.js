@@ -2,11 +2,10 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUserById } from '../../redux/action/userAction';
 import { useNavigate } from 'react-router-dom';
-import { getUserIdFromToken } from "../../utilis/token"
+import { getUserIdFromToken } from "../../utilis/token";
 import { Button } from "@mui/material";
 
 import Layout from "../../components/Layout/Layout";
-
 
 const ProfileView = () => {
     const dispatch = useDispatch();
@@ -15,12 +14,17 @@ const ProfileView = () => {
     const { user, loading, error } = useSelector((state) => state.users);
 
     const userId = getUserIdFromToken();
-    
+
     useEffect(() => {
         if (userId) {
             dispatch(fetchUserById(userId));
         }
     }, [dispatch, userId]);
+
+    // Log the loading, error, and user data
+    console.log("Loading:", loading);
+    console.log("Error:", error);
+    console.log("User Data:", user);
 
     const handleEdit = () => {
         navigate('/profile/edit');
@@ -36,11 +40,23 @@ const ProfileView = () => {
 
             {user ? (
                 <div className="space-y-2">
-                    <p><strong>First Name:</strong> {user.fname}</p>
-                    <p><strong>Last Name:</strong> {user.lname}</p>
-                    <p><strong>Email:</strong> {user.email}</p>
-                    <p><strong>Phone:</strong> {user.phone}</p>
-                    <p><strong>Date of Birth:</strong> {new Date(user.dateOfBirth).toLocaleDateString()}</p>
+                    {/* Display Profile Photo */}
+                    <div className="flex items-center space-x-4">
+                    <img
+                        src={user.profile ? `http://localhost:3000${user.profile}` : '/path/to/default-image.jpg'} 
+                        alt="Profile"
+                        className="w-20 h-20 rounded-full object-cover" 
+                    />
+
+
+                        <div>
+                            <p><strong>First Name:</strong> {user.fname}</p>
+                            <p><strong>Last Name:</strong> {user.lname}</p>
+                            <p><strong>Email:</strong> {user.email}</p>
+                            <p><strong>Phone:</strong> {user.phone}</p>
+                            <p><strong>Date of Birth:</strong> {new Date(user.dateOfBirth).toLocaleDateString()}</p>
+                        </div>
+                    </div>
 
                     <h3 className="mt-4 font-semibold">Address</h3>
                     {user.address ? (
@@ -57,8 +73,6 @@ const ProfileView = () => {
 
                     <p><strong>Hourly Wage:</strong> {user.hourlyWage}</p>
                     <p><strong>Role:</strong> {user.role}</p>
-
-
 
                     <div className="md:col-span-2 flex justify-between">
                         <Button variant="outlined" color="secondary" onClick={() => navigate(-1)}>

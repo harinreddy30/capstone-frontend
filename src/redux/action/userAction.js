@@ -91,8 +91,13 @@ export const updateUser = (userId, updatedData) => async (dispatch) => {
         dispatch(usersPending());
 
         // Send the update request with JSON data
-        const response = await apiClient.put(`/api/v1/users/update-user/${userId}`, updatedData);
+        const response = await apiClient.put(`/api/v1/users/update-user/${userId}`, updatedData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            }
+        });
         console.log(response.data)
+        // console.log(response.data)
 
         // Dispatch success with the updated user
         if (response.data) {
