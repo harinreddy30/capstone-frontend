@@ -3,15 +3,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { updateUser, fetchUserById } from "../../redux/action/userAction";
 import { TextField, Button, MenuItem } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { getUserIdFromToken } from "../../utilis/token"
+import { getUserIdFromToken } from "../../utilis/token";
 import Layout from "../../components/Layout/Layout";
-
 
 const ProfileEdit = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.users);
-  console.log(user)
+  console.log(user);
 
   const [formData, setFormData] = useState({
     fname: "",
@@ -26,6 +25,7 @@ const ProfileEdit = () => {
       postalCode: "",
       country: "",
     },
+    profile: null, // New state for image
   });
 
   useEffect(() => {
@@ -43,6 +43,7 @@ const ProfileEdit = () => {
           postalCode: user.address?.postalCode || "",
           country: user.address?.country || "",
         },
+        profile: user.image || null, // Handle existing user image
       });
     }
   }, [user]);
@@ -59,6 +60,13 @@ const ProfileEdit = () => {
           [field]: value,
         },
       }));
+    } else if (name === "profile") {
+      // Handle image change
+      const file = e.target.files[0];
+      setFormData((prev) => ({
+        ...prev,
+        profile: file, // Save the file in the form data
+      }));
     } else {
       setFormData((prev) => ({
         ...prev,
@@ -69,20 +77,42 @@ const ProfileEdit = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-  
+
     // Get the userId from the token
     const userId = getUserIdFromToken();
-    console.log(userId)
-  
+    console.log(userId);
+
     if (userId) {
-      // Dispatch the action with the userId and form data
-      dispatch(updateUser(userId, formData));
+      const formDataToSubmit = new FormData();
+
+      formDataToSubmit.append("fname", formData.fname);
+      formDataToSubmit.append("lname", formData.lname);
+      formDataToSubmit.append("dateOfBirth", formData.dateOfBirth);
+      formDataToSubmit.append("email", formData.email);
+      formDataToSubmit.append("phone", formData.phone);
+      formDataToSubmit.append("address.street", formData.address.street);
+      formDataToSubmit.append("address.city", formData.address.city);
+      formDataToSubmit.append("address.province", formData.address.province);
+      formDataToSubmit.append("address.postalCode", formData.address.postalCode);
+      formDataToSubmit.append("address.country", formData.address.country);
+
+      if (formData.profile) {
+        formDataToSubmit.append("profile", formData.profile);
+        console.log("Image Name: ", formData.profile.name);  // Logs the image name
+        console.log("Image Type: ", formData.profile.type);  // Logs the image type (e.g., image/jpeg)
+        console.log("Image Size: ", formData.profile.size);  // Logs the image size in bytes
+      }
+
+      // Log the FormData contents
+      // for (let [key, value] of formDataToSubmit.entries()) {
+      //   console.log(key + ": " + value);
+      // }
+      // Dispatch the action with the userId and formData
+      dispatch(updateUser(userId, formDataToSubmit));
     } else {
       console.error("User ID missing or invalid token.");
     }
-};
-  
-
+  };
 
   return (
     <Layout>
@@ -127,7 +157,6 @@ const ProfileEdit = () => {
             fullWidth
           />
 
-
           {/* Address fields */}
           <TextField
             label="Street"
@@ -165,15 +194,30 @@ const ProfileEdit = () => {
             fullWidth
           />
 
-      <div className="md:col-span-2 flex justify-between">
-        <Button variant="outlined" color="secondary" onClick={() => navigate(-1)}>
-          Back
-        </Button>
-        <Button variant="contained" color="primary" type="submit">
-          Save Changes
-        </Button>
-      </div>
+          {/* Image upload field */}
+          <div className="md:col-span-2">
+            <input
+              type="file"
+              name="profile"
+              accept="profile/*"
+              onChange={handleChange}
+              className="p-2 border rounded-md"
+            />
+            {formData.profile && (
+              <p className="mt-2 text-sm text-gray-500">
+                Selected file: {formData.profile.name}
+              </p>
+            )}
+          </div>
 
+          <div className="md:col-span-2 flex justify-between">
+            <Button variant="outlined" color="secondary" onClick={() => navigate(-1)}>
+              Back
+            </Button>
+            <Button variant="contained" color="primary" type="submit">
+              Save Changes
+            </Button>
+          </div>
         </form>
       </div>
     </Layout>
