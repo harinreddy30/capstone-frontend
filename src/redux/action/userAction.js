@@ -39,6 +39,25 @@ export const fetchAllUsers = () => async (dispatch) => {
     }
 };
 
+export const fetchAvailableEmployees = (day, startTime, endTime) => async (dispatch) => {
+    dispatch(usersPending());
+    try {
+        const response = await apiClient.get(`/api/v1/users/employee/available`, {
+            params: { day, startTime, endTime }
+        });
+
+        console.log("Available Employees for", day, response.data); // ✅ Debugging Log
+
+        dispatch(usersSuccess({ day, employees: response.data.employees || [] }));
+        return response.data.employees || []; 
+    } catch (error) {
+        console.error("Error fetching available employees:", error);
+        dispatch(usersFailure(error.response?.data?.error || "Error fetching available employees"));
+        return [];
+    }
+};
+
+
 // Fetch a user by ID (HR, SuperAdmin)
 export const fetchUserById = (userId) => async(dispatch) => {
     dispatch(usersPending()); // Dispatch the 'pending' state before making the request

@@ -15,7 +15,7 @@ export const fetchAllSites = () => async (dispatch) => {
     dispatch(sitePending()); 
     try {
         const response = await apiClient.get("/api/v1/sites")
-        dispatch(siteSuccess(response.data.sites)) // Dispatch SUcess action
+        dispatch(siteSuccess(response.data.Sites)) // Dispatch SUcess action
 
     } catch (error) {
         dispatch(siteFailure(error.response?.data || 'Error fetching Sites')); // Dispatch failure with error message
@@ -78,7 +78,7 @@ export const fetchSitesByManager = () => async (dispatch) => {
     try {
         const response = await apiClient.get(`/api/v1/sites/manager/sites`);
         console.log("Fetched sites:", response.data.sites); // Debugging log
-        dispatch(siteSuccess(response.data.sites || [])); // Ensure array
+        dispatch(siteSuccess(response.data.Sites || [])); // Ensure array
     } catch (error) {
         dispatch(siteFailure(error.response?.data || "Error fetching Sites"));
         console.log("Error Fetching Manager Sites:", error.message);

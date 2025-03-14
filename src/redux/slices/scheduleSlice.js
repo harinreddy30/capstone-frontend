@@ -71,6 +71,7 @@ export const {
     scheduleFailure,
     scheduleUpdateSuccess,
     scheduleDeleteSuccess,
+    scheduleCreateSuccess
 
 } = scheduleSlice.actions;
 

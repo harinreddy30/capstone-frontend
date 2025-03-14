@@ -10,25 +10,25 @@ import {
 import apiClient from "../../api/apiClient";
 
 // Create Schedule
-// export const createSchedule = (scheduleData) => async (dispatch) => {
-//     try {
-//         dispatch(schedulePending());
-//         console.log("Creating schedule:", scheduleData);
+export const createSchedule = (scheduleData) => async (dispatch) => {
+    try {
+        dispatch(schedulePending());
+        console.log("Creating schedule:", scheduleData);
 
-//         // const userId = getUserIdFromToken();
-//         const payload = { ...scheduleData, user_id: userId };
+        // const userId = getUserIdFromToken();
+        const payload = { ...scheduleData};
 
-//         const response = await apiClient.post("/api/v1/schedules", payload);
-//         console.log("Schedule created:", response.data);
+        const response = await apiClient.post("/api/v1/schedules", payload);
+        console.log("Schedule created:", response.data);
 
-//         dispatch(scheduleCreateSuccess(response.data));
-//         return response.data;
-//     } catch (error) {
-//         console.error("Error in createSchedule:", error);
-//         dispatch(scheduleFailure(error.message));
-//         return null;
-//     }
-// };
+        dispatch(scheduleCreateSuccess(response.data));
+        return response.data;
+    } catch (error) {
+        console.error("Error in createSchedule:", error);
+        dispatch(scheduleFailure(error.message));
+        return null;
+    }
+};
 
 // // Get All Schedules (for HR/Manager)
 // export const getAllSchedules = () => async (dispatch) => {

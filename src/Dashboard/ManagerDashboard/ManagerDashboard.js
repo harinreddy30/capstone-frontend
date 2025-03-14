@@ -124,12 +124,12 @@ const ManagerDashboard = () => {
               <Route path="create-group" element={<CreateGroup />} />
               <Route path="chat-group" element={<ChatGroup />} /> 
               <Route path="chat-group/:groupId" element={<GroupChatPage />} />
-              
+              <Route path="assign-shift" element={<AssignShift />} />
               <Route path="group-info/:groupId" element={<AddMember />} /> 
 
 
 
-              {/* <Route path="assign-shift" element={<AssignShift />} />
+              {/*  
               <Route path="view-availability" element={<ViewAvailability />} />
               <Route path="chat-group" element={<ChatGroup />} /> */}
             </Routes>
