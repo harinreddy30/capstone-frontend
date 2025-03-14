@@ -7,7 +7,7 @@ const TopNavBar = ({ toggleSidebar }) => {
   const navigate = useNavigate();  // Access the navigate function for navigation
 
   const handleSettingsClick = () => {
-    navigate('/profile/edit');
+    navigate('/profile/view');
   };
 
   const handleLogout = () => {
