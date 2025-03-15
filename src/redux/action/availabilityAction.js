@@ -39,18 +39,36 @@ export const getAvailability = () => async (dispatch) => {
     try {
         dispatch(availabilityPending());
 
-        const token = localStorage.getItem("token"); // Retrieve token from local storage
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No authentication token found");
+        }
+
+        console.log('Fetching availability with token:', token);
+        
         const response = await apiClient.get("/api/v1/availability", {
             headers: {
-                Authorization: `Bearer ${token}`, // Send token with request
+                Authorization: `Bearer ${token}`,
             },
         });
-        console.log(response.data)
+        
+        if (!response.data) {
+            throw new Error("No availability data received from server");
+        }
+
+        console.log('Availability data received:', response.data);
         dispatch(availabilitySuccess(response.data));
         return response.data;
     } catch (error) {
         console.error("Error in getAvailability:", error);
-        dispatch(availabilityFailure(error.message));
+        // Check if the error is due to unauthorized access
+        if (error.response?.status === 403) {
+            dispatch(availabilityFailure("Access denied. Only managers can view all employee availability."));
+        } else if (error.response?.status === 404) {
+            dispatch(availabilityFailure("No availability data found for any employees"));
+        } else {
+            dispatch(availabilityFailure(error.response?.data?.message || "Failed to fetch availability data"));
+        }
         return null;
     }
 };

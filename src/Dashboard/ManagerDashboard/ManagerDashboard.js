@@ -7,7 +7,7 @@ import '../Dashboard.css';
 const ManagerSites = React.lazy(() => import('../../pages/Manager/ManagerSites'));
 const AssignShift = React.lazy(() => import('../../pages/Manager/AssignShift'));
 const ManagerReports = React.lazy(() => import('../../pages/Manager/ManagerReports'));
-// const ViewAvailability = React.lazy(() => import('../../pages/Manager/ViewAvailability'));
+const ViewAvailability = React.lazy(() => import('../../pages/Manager/ViewAvailability'));
 const LeaveRequests = React.lazy(() => import('../../pages/Manager/LeaveRequests'));
 const ChatGroup = React.lazy(() => import('../../components/ChatGroup/ChatGroup'));
 const GroupChatPage = React.lazy(() => import('../../components/ChatGroup/GroupChatPage'));
@@ -126,11 +126,11 @@ const ManagerDashboard = () => {
               <Route path="chat-group/:groupId" element={<GroupChatPage />} />
               <Route path="assign-shift" element={<AssignShift />} />
               <Route path="group-info/:groupId" element={<AddMember />} /> 
+              <Route path="view-availability" element={<ViewAvailability />} />
 
 
 
               {/*  
-              <Route path="view-availability" element={<ViewAvailability />} />
               <Route path="chat-group" element={<ChatGroup />} /> */}
             </Routes>
           </React.Suspense>
