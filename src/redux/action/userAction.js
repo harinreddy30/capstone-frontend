@@ -97,11 +97,11 @@ export const updateUser = (userId, updatedData) => async (dispatch) => {
         console.log('Attempting to update user:', userId, 'with data:', updatedData);
 
         // Send the update request with JSON data
-        const response = await apiClient.put(`/api/v1/users/${userId}`, updatedData, {
+        const response = await apiClient.put(`/api/v1/users/update-user/${userId}`, updatedData, {
             headers: {
-                "Content-Type": "application/json",
-            }
-        });
+              'Content-Type': 'multipart/form-data', // Ensure the correct header is set
+            },
+          });
         console.log(response.data)
         // console.log(response.data)
         // Dispatch success with the updated user
