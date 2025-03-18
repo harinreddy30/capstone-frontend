@@ -29,6 +29,8 @@ const ProfileEdit = () => {
   });
 
   useEffect(() => {
+    console.log("User from Redux state: ", user); // Add this log to check the state
+
     if (user) {
       setFormData({
         fname: user.fname || "",
@@ -43,7 +45,7 @@ const ProfileEdit = () => {
           postalCode: user.address?.postalCode || "",
           country: user.address?.country || "",
         },
-        profile: user.image || null, // Handle existing user image
+        profile: user.profile  || null, // Handle existing user image
       });
     }
   }, [user]);
@@ -108,6 +110,8 @@ const ProfileEdit = () => {
       //   console.log(key + ": " + value);
       // }
       // Dispatch the action with the userId and formData
+      console.log('FormData before sending:', formDataToSubmit);
+
       dispatch(updateUser(userId, formDataToSubmit));
     } else {
       console.error("User ID missing or invalid token.");
@@ -196,10 +200,12 @@ const ProfileEdit = () => {
 
           {/* Image upload field */}
           <div className="md:col-span-2">
+          <p><strong>Upload Image: </strong></p>
+
             <input
               type="file"
               name="profile"
-              accept="profile/*"
+              accept="image/*"
               onChange={handleChange}
               className="p-2 border rounded-md"
             />
