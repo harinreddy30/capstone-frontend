@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import TopNavBar from '../../components/NavBar/TopNavBar';
 import '../Dashboard.css';
+// import { Dashboard } from '@mui/icons-material';
 
 // Lazy load components to improve performance
 const PayrollGenerator = React.lazy(() => import('../../pages/Payroll/PayrollGenerator'));
 const PayrollManagement = React.lazy(() => import('../../pages/Payroll/PayrollManagement'));
 const EmployeeList = React.lazy(() => import('../../pages/Payroll/EmployeeList'));
+const Dashboard = React.lazy(() => import('../../pages/Payroll/Dashboard'));
+const GeneratePayroll = React.lazy(() => import('../../pages/Payroll/GeneratePayrollPage'));
 // const ChatGroup = React.lazy(() => import('../../components/ChatGroup/ChatGroup'));
 // const GroupChatPage = React.lazy(() => import('../../components/ChatGroup/GroupChatPage'));
 
@@ -19,6 +22,8 @@ const SideBar = ({ isCollapsed, isModalOpen }) => {
     { path: 'management', label: 'Management', icon: '💼' },
     { path: 'employee-list', label: 'Employee List', icon: '👥' },
     { path: 'generator', label: 'Payroll & History', icon: '💰' },
+    { path: 'dashboard', label: 'Dashboard', icon: '💰' },
+
     // { path: 'chat-group', label: 'Chat Group', icon: '💬' },
 
   ];
@@ -93,6 +98,15 @@ const PayrollDashboard = () => {
         <div className={`main-content ${isModalOpen ? 'modal-open' : ''}`}>
           <React.Suspense fallback={<p>Loading...</p>}>
             <Routes>
+            <Route 
+                path="dashboard" 
+                element={
+                  <Dashboard 
+                    onModalOpen={handleModalOpen}
+                    onModalClose={handleModalClose}
+                  />
+                } 
+              />
               <Route 
                 path="management" 
                 element={
@@ -115,6 +129,15 @@ const PayrollDashboard = () => {
                 path="generator" 
                 element={
                   <PayrollGenerator 
+                    onModalOpen={handleModalOpen}
+                    onModalClose={handleModalClose}
+                  />
+                } 
+              />
+              <Route 
+                path="generatePayroll" 
+                element={
+                  <GeneratePayroll 
                     onModalOpen={handleModalOpen}
                     onModalClose={handleModalClose}
                   />

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllPayrolls, finalizePayroll } from "../../redux/action/payrollAction";
-
 const PayrollManagement = () => {
   const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState("");
@@ -10,24 +9,13 @@ const PayrollManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedPayroll, setSelectedPayroll] = useState(null);
   
-  // Get payroll data from Redux store with default values
-  const { payrolls = [], loading = false, error = null } = useSelector((state) => {
-    console.log('Full Redux State:', state);
-    console.log('Payroll State:', state.payroll);
-    return state.payroll || {};
-  });
+  // Get payroll data from Redux store
+  const { payrolls = [], loading = false, error = null } = useSelector((state) => state.payroll || {});
 
-  console.log('Payrolls array:', payrolls);
-  console.log('Loading:', loading);
-  console.log('Error:', error);
-
-  // Fetch payrolls on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log('Starting to fetch payrolls...');
-        const result = await dispatch(fetchAllPayrolls());
-        console.log('API Response:', result);
+        await dispatch(fetchAllPayrolls());
       } catch (err) {
         console.error('Error fetching payrolls:', err);
       }
@@ -64,37 +52,35 @@ const PayrollManagement = () => {
     }
   };
 
-  // Calculate total deductions
-  const calculateTotalDeductions = (deductions) => {
-    if (!deductions) return 0;
-    return (
-      Number(deductions.taxes || 0) +
-      Number(deductions.CPP || 0) +
-      Number(deductions.EI || 0) +
-      Number(deductions.otherDeductions || 0)
-    ).toFixed(2);
-  };
-
   // Filter payrolls based on search term and date range
   const filteredPayrolls = payrolls.filter(payroll => {
-    // Skip payrolls with null userId
     if (!payroll?.userId) return false;
     
+    // Check for search term match in fname, lname, or email
     const matchesSearch = 
-        (payroll.userId.fname || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (payroll.userId.lname || '').toLowerCase().includes(searchTerm.toLowerCase());
-    
+      (payroll.userId.fname || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (payroll.userId.lname || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (payroll.userId.email || '').toLowerCase().includes(searchTerm.toLowerCase());
+
     if (!payroll.payPeriod?.start) return false;
     
     const payrollDate = new Date(payroll.payPeriod.start);
     const matchesDateRange = (!startDate || payrollDate >= new Date(startDate)) &&
-                         (!endDate || payrollDate <= new Date(endDate));
+                             (!endDate || payrollDate <= new Date(endDate));
 
     return matchesSearch && matchesDateRange;
   });
 
-  // Add this before the return statement to see what's being filtered
-  console.log('Filtered Payrolls:', filteredPayrolls);
+  const calculateTotalDeductions = (deductions) => {
+    if (!deductions) return 0;
+  
+    const taxes = deductions.taxes || 0;
+    const CPP = deductions.CPP || 0;
+    const EI = deductions.EI || 0;
+    const otherDeductions = deductions.otherDeductions || 0;
+  
+    return (taxes + CPP + EI + otherDeductions).toFixed(2);
+  };
 
   // Calculate total employer cost
   const totalEmployerCost = filteredPayrolls.reduce((total, payroll) => 
@@ -158,6 +144,7 @@ const PayrollManagement = () => {
               <th className="p-4 text-left text-gray-600">Gross Pay</th>
               <th className="p-4 text-left text-gray-600">Net Pay</th>
               <th className="p-4 text-left text-gray-600">Status</th>
+              <th className="p-4 text-left text-gray-600">Email</th>
               <th className="p-4 text-left text-gray-600">Actions</th>
             </tr>
           </thead>
@@ -181,6 +168,9 @@ const PayrollManagement = () => {
                   }`}>
                     {payroll.status}
                   </span>
+                </td>
+                <td className="p-4 text-gray-700">
+                  {payroll.userId.email}
                 </td>
                 <td className="p-4">
                   <button 
@@ -254,7 +244,7 @@ const PayrollManagement = () => {
                 Close
               </button>
               {selectedPayroll.status !== "Finalized" && (
-                <button 
+                <button
                   onClick={() => handleFinalize(selectedPayroll._id)}
                   className="bg-blue-500 text-white px-4 py-2 rounded"
                 >
