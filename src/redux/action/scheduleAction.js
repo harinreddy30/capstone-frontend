@@ -30,6 +30,22 @@ export const createSchedule = (scheduleData) => async (dispatch) => {
     }
 };
 
+export const fetchSchedulesBySite = (siteId) => async (dispatch) => {
+    try {
+      dispatch(schedulePending());
+      const response = await apiClient.get(`/api/v1/schedule/site/${siteId}`);
+      // If your backend returns an array at the top level, use response.data directly.
+      const schedulesArray = response.data;
+      dispatch(scheduleSuccess(schedulesArray));
+      return schedulesArray;
+    } catch (error) {
+      console.error("Error fetching schedules by site:", error);
+      dispatch(scheduleFailure(error.message));
+      return [];
+    }
+  };
+  
+
 // // Get All Schedules (for HR/Manager)
 // export const getAllSchedules = () => async (dispatch) => {
 //     try {
@@ -78,30 +94,31 @@ export const fetchSchedule = () => async (dispatch) => {
 };
 
 
-// // Update Schedule
-// export const updateSchedule = (scheduleId, updateData) => async (dispatch) => {
-//     try {
-//         dispatch(schedulePending());
-//         const response = await apiClient.put(`/api/v1/schedules/${scheduleId}`, updateData);
-//         dispatch(scheduleUpdateSuccess(response.data));
-//         return response.data;
-//     } catch (error) {
-//         console.error("Error in updateSchedule:", error);
-//         dispatch(scheduleFailure(error.message));
-//         return null;
-//     }
-// };
+// Update Schedule (including unassigning an employee by setting userId to null)
+export const updateSchedule = (scheduleId, updateData) => async (dispatch) => {
+    try {
+        dispatch(schedulePending());
+        const response = await apiClient.put(`/api/v1/schedules/${scheduleId}`, updateData);
+        dispatch(scheduleUpdateSuccess(response.data));
+        return response.data;
+    } catch (error) {
+        console.error("Error in updateSchedule:", error);
+        dispatch(scheduleFailure(error.message));
+        return null;
+    }
+};
 
-// // Delete Schedule
-// export const deleteSchedule = (scheduleId) => async (dispatch) => {
-//     try {
-//         dispatch(schedulePending());
-//         await apiClient.delete(`/api/v1/schedules/${scheduleId}`);
-//         dispatch(scheduleDeleteSuccess(scheduleId));
-//         return true;
-//     } catch (error) {
-//         console.error("Error in deleteSchedule:", error);
-//         dispatch(scheduleFailure(error.message));
-//         return null;
-//     }
-// }
+
+// Delete Schedule
+export const deleteSchedule = (scheduleId) => async (dispatch) => {
+    try {
+        dispatch(schedulePending());
+        await apiClient.delete(`/api/v1/schedules/${scheduleId}`);
+        dispatch(scheduleDeleteSuccess(scheduleId));
+        return true;
+    } catch (error) {
+        console.error("Error in deleteSchedule:", error);
+        dispatch(scheduleFailure(error.message));
+        return null;
+    }
+};

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  fetchAllSites,
   fetchSitesByManager
-} from '../../redux/action/siteAction'
+} from '../../redux/action/siteAction';
 import { createShift, updateShift, fetchShifts, deleteShift, clearShiftsAction } from "../../redux/action/shiftAction";
 
 // Helper function to format time for display
@@ -21,7 +20,6 @@ const ManagerSites = ({ onModalOpen, onModalClose }) => {
   const [showShiftsModal, setShowShiftsModal] = useState(false); 
   const [editMode, setEditMode] = useState(false);
   const [selectedSite, setSelectedSite] = useState(null);
-  // const [shifts, setShifts] = useState([]); 
   const [shiftForm, setShiftForm] = useState({
     shiftName: "",
     startTime: "",
@@ -46,9 +44,6 @@ const ManagerSites = ({ onModalOpen, onModalClose }) => {
     }
   }, [dispatch, sites.length]);
   
-  
-  
-
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
@@ -101,7 +96,8 @@ const ManagerSites = ({ onModalOpen, onModalClose }) => {
       endTime: shift.endTime,
       hours: shift.hours,
       jobDescription: shift.jobDescription,
-      applyToDays: shift.days.map(day => daysMapReverse[day] || day),
+      // Since each shift now only has one day, we set the applyToDays array with that day
+      applyToDays: [daysMapReverse[shift.day] || shift.day],
       siteId: shift.site._id,
       selectedShiftId: shift._id,
     });
@@ -111,7 +107,6 @@ const ManagerSites = ({ onModalOpen, onModalClose }) => {
     onModalOpen();
   };
   
-
   const calculateHours = (name, value) => {
     let { startTime, endTime } = shiftForm;
     if (name === "startTime") startTime = value;
@@ -130,8 +125,6 @@ const ManagerSites = ({ onModalOpen, onModalClose }) => {
     }
   };
   
-  
-
   const handleDaySelection = (day) => {
     setShiftForm((prev) => ({
       ...prev,
@@ -141,7 +134,6 @@ const ManagerSites = ({ onModalOpen, onModalClose }) => {
     }));
   };
   
-
   const openShiftModal = (site) => {
     setSelectedSite(site);
     setEditMode(false); // Reset edit mode when opening for new shift
@@ -185,6 +177,7 @@ const ManagerSites = ({ onModalOpen, onModalClose }) => {
     }
   };
 
+  // Updated handleAddShift: Create a shift for each selected day when not editing.
   const handleAddShift = async (event) => {
     event.preventDefault();
   
@@ -210,22 +203,34 @@ const ManagerSites = ({ onModalOpen, onModalClose }) => {
       Sun: "Sunday",
     };
     
-    const formattedShift = {
-      position: shiftForm.shiftName,  
-      site: selectedSite._id,
-      startTime: shiftForm.startTime, 
-      endTime: shiftForm.endTime,
-      jobDescription: shiftForm.jobDescription,
-      days: shiftForm.applyToDays.map((day) => daysMap[day]), 
-    };
-  
     try {
-      if (shiftForm.selectedShiftId) {
+      if (editMode && shiftForm.selectedShiftId) {
+        // For editing, update the existing shift using the first selected day.
+        const formattedShift = {
+          position: shiftForm.shiftName,  
+          site: selectedSite._id,
+          startTime: shiftForm.startTime, 
+          endTime: shiftForm.endTime,
+          jobDescription: shiftForm.jobDescription,
+          day: daysMap[shiftForm.applyToDays[0]],
+        };
         await dispatch(updateShift(shiftForm.selectedShiftId, formattedShift)); 
         setSuccessMessage("Shift updated successfully!");
       } else {
-        await dispatch(createShift(formattedShift)); 
-        setSuccessMessage("Shift added successfully!");
+        // For creation, create a separate shift for each selected day.
+        const shiftCreationPromises = shiftForm.applyToDays.map(day => {
+          const formattedShift = {
+            position: shiftForm.shiftName,  
+            site: selectedSite._id,
+            startTime: shiftForm.startTime, 
+            endTime: shiftForm.endTime,
+            jobDescription: shiftForm.jobDescription,
+            day: daysMap[day],
+          };
+          return dispatch(createShift(formattedShift)); 
+        });
+        await Promise.all(shiftCreationPromises);
+        setSuccessMessage("Shifts added successfully!");
       }
       
       setShowSuccessModal(true);
@@ -241,7 +246,6 @@ const ManagerSites = ({ onModalOpen, onModalClose }) => {
     }
   };
   
-
   return (
     <div className="max-w-6xl mx-auto p-8">
       {/* Header section */}
@@ -315,7 +319,7 @@ const ManagerSites = ({ onModalOpen, onModalClose }) => {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
               </div>
             ) : shifts && shifts.length > 0 ? (
-              <div className="overflow-x-auto">
+              <div className="max-h-96 overflow-y-auto">
                 <div className="grid grid-cols-1 gap-4">
                   {shifts.map((shift) => (
                     <div key={shift._id} className="bg-gray-50 hover:bg-gray-100 rounded-lg p-4 transition-colors duration-200">
@@ -333,7 +337,7 @@ const ManagerSites = ({ onModalOpen, onModalClose }) => {
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                               </svg>
-                              <p>Days: {shift.days.join(", ")}</p>
+                              <p>Day: {shift.day}</p>
                             </div>
                             {shift.jobDescription && (
                               <div className="mt-2 p-2 bg-white rounded-md">
