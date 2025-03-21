@@ -7,10 +7,17 @@ const GeneratePayroll = () => {
   const { state } = useLocation();
   const { user, startDate, endDate } = state;
 
-  console.log(user)
+  // Constants
+  const regularHours = 40; // Assuming regular hours in a workweek
+  const overtimeRate = 1.5; // Overtime pay rate (1.5 times regular hourly wage)
 
-  // Calculate gross pay
-  const grossPay = user.totalHoursWorked * user.HourlyWage;
+  // Calculate gross pay with overtime
+  const regularHoursWorked = user.totalHoursWorked > regularHours ? regularHours : user.totalHoursWorked;
+  const overtimeHoursWorked = user.totalHoursWorked > regularHours ? user.totalHoursWorked - regularHours : 0;
+
+  const regularPay = regularHoursWorked * user.HourlyWage;
+  const overtimePay = overtimeHoursWorked * user.HourlyWage * overtimeRate;
+  const grossPay = regularPay + overtimePay;
 
   // Calculate deductions
   const taxes = grossPay * 0.15; // Example tax rate: 15%
@@ -24,14 +31,14 @@ const GeneratePayroll = () => {
   const dispatch = useDispatch();
 
   const handleGeneratePayroll = () => {
-
-const payrollData = {
-        userId: user.userId, // Assuming the user has an 'id' field
-        payPeriodStart: startDate,
-        payPeriodEnd: endDate,
-        hoursWorked: user.totalHoursWorked, 
-        hourlyWage: user.HourlyWage,
-
+    const payrollData = {
+      userId: user.userId, // Assuming the user has an 'id' field
+      payPeriodStart: startDate,
+      payPeriodEnd: endDate,
+      hoursWorked: user.totalHoursWorked, 
+      hourlyWage: user.HourlyWage,
+      overtimeHours: overtimeHoursWorked,  // Include overtime hours in the data
+      overtimeRate: overtimeRate,         // Include overtime rate
     };
 
     console.log(payrollData);
@@ -60,6 +67,8 @@ const payrollData = {
         <p><strong>Week End Date:</strong> {endDate}</p>
         <p><strong>Total Hours Worked:</strong> {user.totalHoursWorked}</p>
         <p><strong>Hourly Wage:</strong> ${user.HourlyWage}</p>
+        <p><strong>Regular Pay:</strong> ${regularPay.toFixed(2)}</p>
+        <p><strong>Overtime Pay:</strong> ${overtimePay.toFixed(2)}</p>
         <p><strong>Gross Pay:</strong> ${grossPay.toFixed(2)}</p>
       </div>
 

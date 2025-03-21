@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
-import { fetchAllPayrolls, finalizePayroll } from "../../redux/action/payrollAction";
+import { fetchAllPayrolls, finalizePayroll, deletePayroll } from "../../redux/action/payrollAction";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+
 
 const PayrollManagement = () => {
   const dispatch = useDispatch();
@@ -11,6 +13,9 @@ const PayrollManagement = () => {
   const [endDate, setEndDate] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [selectedPayroll, setSelectedPayroll] = useState(null);
+
+    const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
+    const [payrollToDelete, setPayrollToDelete] = React.useState(null);
 
   const { payrolls = [], loading = false, error = null } = useSelector((state) => state.payroll || {});
 
@@ -49,6 +54,12 @@ const PayrollManagement = () => {
   const handleFinalize = async (payrollId) => {
     try {
       console.log("Finalizing payroll with ID:", payrollId);
+
+      // Check if the selectedPayroll exists and has userId
+      if (!selectedPayroll || !selectedPayroll.userId || !selectedPayroll.userId._id) {
+        throw new Error("User data is incomplete.");
+      }
+
       const userId = selectedPayroll.userId._id;
       await dispatch(finalizePayroll(payrollId, userId));
       console.log("Payroll finalized successfully");
@@ -75,7 +86,7 @@ const PayrollManagement = () => {
     return matchesSearch && matchesDateRange;
   });
 
-  console.log("Filtered payrolls:", filteredPayrolls); // Log filtered payrolls
+  // console.log("Filtered payrolls:", filteredPayrolls); // Log filtered payrolls
 
   const totalEmployerCost = filteredPayrolls
     .reduce((total, payroll) => total + (Number(payroll.grossPay) || 0), 0)
@@ -83,6 +94,23 @@ const PayrollManagement = () => {
 
   if (loading) return <div className="p-6">Loading...</div>;
   if (error) return <div className="p-6 text-red-500">{error}</div>;
+
+  const handleDelete = (payrollId) => {
+      // Open the confirmation dialog to delete the payroll
+      setPayrollToDelete(payrollId);
+      setOpenDeleteDialog(true);
+    };
+  
+  const confirmDelete = () => {
+      if (payrollToDelete) {
+        dispatch(deletePayroll(payrollToDelete)); // Assuming you have a deletePayroll action
+        setOpenDeleteDialog(false); // Close the dialog after deleting
+      }
+    };
+  
+  const cancelDelete = () => {
+      setOpenDeleteDialog(false); // Close the dialog if user cancels
+    };
 
   return (
     <div className="p-6">
@@ -192,6 +220,12 @@ const PayrollManagement = () => {
                   >
                     Edit
                   </button>
+                  <button
+                    className="text-blue-500 hover:text-blue-600"
+                    onClick={() => handleDelete(payroll._id)}
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
@@ -214,6 +248,14 @@ const PayrollManagement = () => {
               <div>
                 <p className="text-gray-600">Hours Worked</p>
                 <p className="font-semibold">{selectedPayroll.hoursWorked}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">Overtime Hours</p>
+                <p className="font-semibold">{selectedPayroll.overtimeHours || 0}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">Overtime Rate</p>
+                <p className="font-semibold">${selectedPayroll.overtimeRate || 0.00}</p>
               </div>
               <div>
                 <p className="text-gray-600">Pay Period</p>
@@ -241,6 +283,8 @@ const PayrollManagement = () => {
                 <p className="font-semibold">${Number(selectedPayroll.netPay).toFixed(2)}</p>
               </div>
               <div className="flex justify-end gap-4 pt-4">
+
+                
                 <button
                   onClick={closeModal}
                   className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-800"
@@ -260,6 +304,23 @@ const PayrollManagement = () => {
           </div>
         </div>
       )}
+
+      {/* Confirmation Dialog for Deletion */}
+      <Dialog open={openDeleteDialog} onClose={cancelDelete}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <p>Are you sure you want to delete this payroll record?</p>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelDelete} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={confirmDelete} color="secondary">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
     </div>
   );
 };
