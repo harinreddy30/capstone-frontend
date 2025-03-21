@@ -6,7 +6,8 @@ import {
     payrollGenerateSuccess,
     payrollUpdateSuccess,
     payrollDeleteSuccess,
-    setCurrentPayroll
+    setCurrentPayroll,
+    setTotalHoursWorked
 } from '../slices/payrollSlice';
 
 // Generate new payroll
@@ -107,3 +108,24 @@ export const finalizePayroll = (payrollId, userId) => async (dispatch) => {
         console.error('Error finalizing payroll:', error);
     }
 }; 
+
+// Fetch total hours worked by users for a given pay period
+export const fetchTotalHoursForPayPeriod = (payPeriodStart, payPeriodEnd) => async (dispatch) => {
+    dispatch(payrollPending());
+    try {
+        // Send payPeriodStart and payPeriodEnd as query parameters in the GET request
+        const response = await apiClient.get('/api/v1/payroll/get-payroll', {
+            params: {
+                payPeriodStart,
+                payPeriodEnd
+            }
+        });
+
+        // If the response is successful, dispatch the data to Redux state
+        dispatch(setTotalHoursWorked(response.data));
+        return response.data;
+    } catch (error) {
+        dispatch(payrollFailure(error.response?.data?.message || 'Error fetching total hours'));
+        console.error('Error fetching total hours:', error);
+    }
+};

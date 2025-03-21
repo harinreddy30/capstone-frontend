@@ -11,7 +11,7 @@ import groupReducer from "../redux/slices/groupSlice";
 import messageReducer from "../redux/slices/messageSlice";
 import scheduleReducer from "../redux/slices/scheduleSlice";
 
-// import profileReducer from '../redux/slices/profileSlice';
+import payrollReducer from '../redux/slices/payrollSlice';
 
 // import logger from 'redux-logger';
 
@@ -30,9 +30,7 @@ const store = configureStore({
         groups: groupReducer,
         messages: messageReducer,
         schedule: scheduleReducer,
-
-
-        // payroll: payrollReducer,
+        payroll: payrollReducer,
     },
     // This will print every dispatched action and the state changes in the browser's console
     // middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger), // 

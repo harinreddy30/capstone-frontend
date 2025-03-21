@@ -7,20 +7,19 @@ import '../Dashboard.css';
 const PayrollGenerator = React.lazy(() => import('../../pages/Payroll/PayrollGenerator'));
 const PayrollManagement = React.lazy(() => import('../../pages/Payroll/PayrollManagement'));
 const EmployeeList = React.lazy(() => import('../../pages/Payroll/EmployeeList'));
-// const ChatGroup = React.lazy(() => import('../../components/ChatGroup/ChatGroup'));
-// const GroupChatPage = React.lazy(() => import('../../components/ChatGroup/GroupChatPage'));
+const Dashboard = React.lazy(() => import('../../pages/Payroll/Dashboard'));
+const GeneratePayroll = React.lazy(() => import('../../pages/Payroll/GeneratePayrollPage'));
+const EditPayroll = React.lazy(() => import('../../pages/Payroll/EditPayrollPage'));
 
 // Sidebar Component with consistent styling
 const SideBar = ({ isCollapsed, isModalOpen }) => {
-  // If modal is open, don't render the sidebar
-  if (isModalOpen) return null;
+  if (isModalOpen) return null; // Don't render the sidebar when modal is open
 
   const navLinks = [
     { path: 'management', label: 'Management', icon: '💼' },
     { path: 'employee-list', label: 'Employee List', icon: '👥' },
     { path: 'generator', label: 'Payroll & History', icon: '💰' },
-    // { path: 'chat-group', label: 'Chat Group', icon: '💬' },
-
+    { path: 'dashboard', label: 'Dashboard', icon: '💰' },
   ];
 
   return (
@@ -28,7 +27,7 @@ const SideBar = ({ isCollapsed, isModalOpen }) => {
       <div className="flex items-center mb-6">
         {!isCollapsed && <span className="ml-3 font-semibold text-gray-800">Payroll Dashboard</span>}
       </div>
-      
+
       <nav className="nav-links">
         {navLinks.map((link) => (
           <Link
@@ -46,7 +45,6 @@ const SideBar = ({ isCollapsed, isModalOpen }) => {
 };
 
 const PayrollDashboard = () => {
-  // Add state management for sidebar and modal
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -94,6 +92,15 @@ const PayrollDashboard = () => {
           <React.Suspense fallback={<p>Loading...</p>}>
             <Routes>
               <Route 
+                path="dashboard" 
+                element={
+                  <Dashboard 
+                    onModalOpen={handleModalOpen}
+                    onModalClose={handleModalClose}
+                  />
+                } 
+              />
+              <Route 
                 path="management" 
                 element={
                   <PayrollManagement 
@@ -115,6 +122,25 @@ const PayrollDashboard = () => {
                 path="generator" 
                 element={
                   <PayrollGenerator 
+                    onModalOpen={handleModalOpen}
+                    onModalClose={handleModalClose}
+                  />
+                } 
+              />
+              <Route 
+                path="generatePayroll" 
+                element={
+                  <GeneratePayroll 
+                    onModalOpen={handleModalOpen}
+                    onModalClose={handleModalClose}
+                  />
+                } 
+              />
+              {/* Update the route to expect the payroll ID */}
+              <Route 
+                path="edit/:payrollId" 
+                element={
+                  <EditPayroll 
                     onModalOpen={handleModalOpen}
                     onModalClose={handleModalClose}
                   />
