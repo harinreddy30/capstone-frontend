@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import TopNavBar from '../../components/NavBar/TopNavBar';
 import '../Dashboard.css';
-// import { Dashboard } from '@mui/icons-material';
 
 // Lazy load components to improve performance
 const PayrollGenerator = React.lazy(() => import('../../pages/Payroll/PayrollGenerator'));
@@ -10,22 +9,17 @@ const PayrollManagement = React.lazy(() => import('../../pages/Payroll/PayrollMa
 const EmployeeList = React.lazy(() => import('../../pages/Payroll/EmployeeList'));
 const Dashboard = React.lazy(() => import('../../pages/Payroll/Dashboard'));
 const GeneratePayroll = React.lazy(() => import('../../pages/Payroll/GeneratePayrollPage'));
-// const ChatGroup = React.lazy(() => import('../../components/ChatGroup/ChatGroup'));
-// const GroupChatPage = React.lazy(() => import('../../components/ChatGroup/GroupChatPage'));
+const EditPayroll = React.lazy(() => import('../../pages/Payroll/EditPayrollPage'));
 
 // Sidebar Component with consistent styling
 const SideBar = ({ isCollapsed, isModalOpen }) => {
-  // If modal is open, don't render the sidebar
-  if (isModalOpen) return null;
+  if (isModalOpen) return null; // Don't render the sidebar when modal is open
 
   const navLinks = [
     { path: 'management', label: 'Management', icon: '💼' },
     { path: 'employee-list', label: 'Employee List', icon: '👥' },
     { path: 'generator', label: 'Payroll & History', icon: '💰' },
     { path: 'dashboard', label: 'Dashboard', icon: '💰' },
-
-    // { path: 'chat-group', label: 'Chat Group', icon: '💬' },
-
   ];
 
   return (
@@ -33,7 +27,7 @@ const SideBar = ({ isCollapsed, isModalOpen }) => {
       <div className="flex items-center mb-6">
         {!isCollapsed && <span className="ml-3 font-semibold text-gray-800">Payroll Dashboard</span>}
       </div>
-      
+
       <nav className="nav-links">
         {navLinks.map((link) => (
           <Link
@@ -51,7 +45,6 @@ const SideBar = ({ isCollapsed, isModalOpen }) => {
 };
 
 const PayrollDashboard = () => {
-  // Add state management for sidebar and modal
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -98,7 +91,7 @@ const PayrollDashboard = () => {
         <div className={`main-content ${isModalOpen ? 'modal-open' : ''}`}>
           <React.Suspense fallback={<p>Loading...</p>}>
             <Routes>
-            <Route 
+              <Route 
                 path="dashboard" 
                 element={
                   <Dashboard 
@@ -138,6 +131,16 @@ const PayrollDashboard = () => {
                 path="generatePayroll" 
                 element={
                   <GeneratePayroll 
+                    onModalOpen={handleModalOpen}
+                    onModalClose={handleModalClose}
+                  />
+                } 
+              />
+              {/* Update the route to expect the payroll ID */}
+              <Route 
+                path="edit/:payrollId" 
+                element={
+                  <EditPayroll 
                     onModalOpen={handleModalOpen}
                     onModalClose={handleModalClose}
                   />
