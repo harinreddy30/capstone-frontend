@@ -7,6 +7,8 @@ const GeneratePayroll = () => {
   const { state } = useLocation();
   const { user, startDate, endDate } = state;
 
+  console.log(user)
+
   // Calculate gross pay
   const grossPay = user.totalHoursWorked * user.HourlyWage;
 
@@ -22,17 +24,17 @@ const GeneratePayroll = () => {
   const dispatch = useDispatch();
 
   const handleGeneratePayroll = () => {
-    const payrollData = {
-      userId: user.id, // Assuming the user has an 'id' field
-      payPeriodStart: startDate,
-      payPeriodEnd: endDate,
-      grossPay,
-      netPay,
-      totalDeductions,
-      taxes,
-      cpp,
-      ei,
+
+const payrollData = {
+        userId: user.userId, // Assuming the user has an 'id' field
+        payPeriodStart: startDate,
+        payPeriodEnd: endDate,
+        hoursWorked: user.totalHoursWorked, 
+        hourlyWage: user.HourlyWage,
+
     };
+
+    console.log(payrollData);
 
     // Call Redux action to generate payroll
     dispatch(generatePayroll(payrollData))

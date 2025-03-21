@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllPayrolls, finalizePayroll } from "../../redux/action/payrollAction";
+
 const PayrollManagement = () => {
   const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState("");
@@ -143,8 +144,8 @@ const PayrollManagement = () => {
               <th className="p-4 text-left text-gray-600">Pay Period</th>
               <th className="p-4 text-left text-gray-600">Gross Pay</th>
               <th className="p-4 text-left text-gray-600">Net Pay</th>
+              <th className="p-4 text-left text-gray-600">Deductions</th>
               <th className="p-4 text-left text-gray-600">Status</th>
-              <th className="p-4 text-left text-gray-600">Email</th>
               <th className="p-4 text-left text-gray-600">Actions</th>
             </tr>
           </thead>
@@ -160,6 +161,7 @@ const PayrollManagement = () => {
                 </td>
                 <td className="p-4 text-gray-700">${Number(payroll.grossPay).toFixed(2)}</td>
                 <td className="p-4 text-gray-700">${Number(payroll.netPay).toFixed(2)}</td>
+                <td className="p-4 text-gray-700">${Number(payroll.deductions).toFixed(2)}</td>
                 <td className="p-4">
                   <span className={`px-3 py-1 rounded-full text-sm ${
                     payroll.status === "Finalized" 
@@ -169,9 +171,7 @@ const PayrollManagement = () => {
                     {payroll.status}
                   </span>
                 </td>
-                <td className="p-4 text-gray-700">
-                  {payroll.userId.email}
-                </td>
+                
                 <td className="p-4">
                   <button 
                     className="text-blue-500 hover:text-blue-600"
