@@ -41,9 +41,46 @@ const Availability = () => {
     dispatch(getAvailability());
   }, [dispatch]);
 
+  // Update formData when availability data is received
   useEffect(() => {
     if (availability) {
-      setFormData(availability);
+      // Convert the availability data format to match the form's format
+      const formattedData = {
+        Monday: [],
+        Tuesday: [],
+        Wednesday: [],
+        Thursday: [],
+        Friday: [],
+        Saturday: [],
+        Sunday: [],
+      };
+
+      // Check if availability is an array (multiple days) or object (single day)
+      if (Array.isArray(availability)) {
+        // If it's an array of availability slots
+        availability.forEach(slot => {
+          if (slot.day && slot.start_time && slot.end_time) {
+            formattedData[slot.day].push({
+              startTime: slot.start_time,
+              endTime: slot.end_time,
+              available: slot.available
+            });
+          }
+        });
+      } else {
+        // If it's an object with days as keys
+        Object.keys(availability).forEach(day => {
+          if (Array.isArray(availability[day])) {
+            formattedData[day] = availability[day].map(slot => ({
+              startTime: slot.start_time,
+              endTime: slot.end_time,
+              available: slot.available !== false // default to true if not specified
+            }));
+          }
+        });
+      }
+
+      setFormData(formattedData);
     }
   }, [availability]);
 
@@ -74,24 +111,33 @@ const Availability = () => {
 
   // New function to handle actual submission after confirmation
   const confirmSubmit = async () => {
-    const formattedAvailability = { availability: {} };
+    const formattedAvailability = [];
 
+    // Convert the form data to the API's expected format
     Object.keys(formData).forEach((day) => {
       if (formData[day].length > 0) {
-        formattedAvailability.availability[day] = formData[day].map((slot) => ({
-          start_time: slot.startTime,
-          end_time: slot.endTime,
-          available: true,
-        }));
+        formData[day].forEach((slot) => {
+          if (slot.startTime && slot.endTime) {
+            formattedAvailability.push({
+              day: day,
+              start_time: slot.startTime,
+              end_time: slot.endTime,
+              available: true
+            });
+          }
+        });
       }
     });
 
-    const response = await dispatch(updateAvailability(formattedAvailability));
+    const response = await dispatch(updateAvailability({ availability: formattedAvailability }));
     setShowConfirmModal(false);
 
     if (response) {
       setSuccessMessage("Your availability has been updated successfully!");
       setShowSuccessModal(true);
+      
+      // Refresh the availability data
+      dispatch(getAvailability());
     }
   };
 

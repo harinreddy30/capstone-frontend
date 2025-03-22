@@ -96,7 +96,7 @@ const ProfileView = () => {
                                         {!imageError ? (
                                             <img
                                                 src={user?.profile ? `http://localhost:3000${user.profile}` : null}
-                                                alt="Profile"
+                        alt="Profile"
                                                 onError={() => setImageError(true)}
                                                 className="w-40 h-40 rounded-2xl border-4 border-white shadow-xl object-cover transition-transform duration-300 group-hover:scale-105"
                                             />
@@ -261,8 +261,8 @@ const ProfileView = () => {
                                             <p className="text-lg text-gray-900">{user.address.country}</p>
                                         </div>
                                     </div>
-                                </div>
-                            ) : (
+                        </div>
+                    ) : (
                                 <p className="text-gray-500 italic text-center py-8">No address information available</p>
                             )}
                         </div>
@@ -277,12 +277,12 @@ const ProfileView = () => {
                             onClick={() => navigate(-1)}
                             className="hover:bg-blue-50 transition-all duration-300"
                         >
-                            Back
+                          Back
                         </Button>
                     </div>
                 </div>
-            </div>
-        </Layout>
+        </div>
+    </Layout>
     );
 };
 

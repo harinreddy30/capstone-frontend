@@ -7,7 +7,10 @@ import {
     payrollUpdateSuccess,
     payrollDeleteSuccess,
     setCurrentPayroll,
-    setTotalHoursWorked
+    setTotalHoursWorked,
+    payrollByIdPending,
+    payrollByIdSuccess,
+    payrollByIdFailure
 } from '../slices/payrollSlice';
 
 // Generate new payroll
@@ -48,25 +51,32 @@ export const fetchAllPayrolls = () => async (dispatch) => {
 export const fetchUserPayrolls = () => async (dispatch) => {
     dispatch(payrollPending());
     try {
+        console.log('Fetching user payrolls...');
         const response = await apiClient.get('/api/v1/payroll/user');
-        const payrollsData = Array.isArray(response.data) ? response.data : [];
+        console.log('User payrolls response:', response);
+        
+        // Handle the response data structure
+        const payrollsData = response.data.payrolls.payrolls || [];
+        console.log('Processed user payrolls:', payrollsData);
+        
         dispatch(payrollSuccess(payrollsData));
         return payrollsData;
     } catch (error) {
-        dispatch(payrollFailure(error.response?.data?.message || 'Error fetching user payrolls'));
         console.error('Error fetching user payrolls:', error);
+        dispatch(payrollFailure(error.response?.data?.message || 'Error fetching user payrolls'));
+        throw error;
     }
 };
 
 // Get single payroll by ID
 export const fetchPayrollById = (payrollId) => async (dispatch) => {
-    dispatch(payrollPending());
+    dispatch(payrollByIdPending());
     try {
         const response = await apiClient.get(`/api/v1/payroll/review/${payrollId}`);
-        dispatch(setCurrentPayroll(response.data));
+        dispatch(payrollByIdSuccess(response.data));
         return response.data;
     } catch (error) {
-        dispatch(payrollFailure(error.response?.data?.message || 'Error fetching payroll'));
+        dispatch(payrollByIdFailure(error.response?.data?.message || 'Error fetching payroll'));
         console.error('Error fetching payroll:', error);
     }
 };
