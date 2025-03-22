@@ -7,244 +7,217 @@ import { createSchedule, fetchSchedulesBySite } from "../../redux/action/schedul
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { format, addDays, startOfWeek } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 
-/**
- * Helper to check if two shifts overlap in time.
- * Adjust as needed for exact boundary conditions.
- */
+// Overlap
 function doShiftsOverlap(startA, endA, startB, endB) {
-  // Convert "HH:mm" strings to minutes since midnight
-  const toMinutes = (timeStr) => {
-    const [hh, mm] = timeStr.split(":");
-    return parseInt(hh, 10) * 60 + parseInt(mm, 10);
+  const toMin = (t) => {
+    const [h, m] = t.split(":");
+    return parseInt(h, 10) * 60 + parseInt(m, 10);
   };
-
-  const shiftAStart = toMinutes(startA);
-  const shiftAEnd = toMinutes(endA);
-  const shiftBStart = toMinutes(startB);
-  const shiftBEnd = toMinutes(endB);
-
-  return shiftAStart < shiftBEnd && shiftBStart < shiftAEnd;
+  return toMin(startA) < toMin(endB) && toMin(startB) < toMin(endA);
 }
 
+const formatUTC = (date) => {
+  const zonedDate = toZonedTime(date, 'UTC'); 
+  const dateKey = format(zonedDate, "yyyy-MM-dd");
+  return dateKey;
+};
+
 const AssignShift = () => {
-  // Start week on Monday
   const initialWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
   const [searchTerm, setSearchTerm] = useState("");
   const [showShiftsModal, setShowShiftsModal] = useState(false);
   const [selectedSite, setSelectedSite] = useState(null);
   const [weekStartDate, setWeekStartDate] = useState(initialWeekStart);
 
-  // assignments: { "yyyy-MM-dd": { [shiftId]: employeeId } }
   const [assignments, setAssignments] = useState({});
-  // availableEmployees: { "yyyy-MM-dd_shiftId": [employees] }
   const [availableEmployees, setAvailableEmployees] = useState({});
 
   const dispatch = useDispatch();
   const { sites } = useSelector((state) => state.sites);
   const { shifts } = useSelector((state) => state.shifts || { shifts: [] });
-  // Safely select schedules; default to an empty array if undefined.
   const allSchedules = useSelector((state) => state.schedule?.schedule) || [];
 
+  // 1) load assignments from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem("assignments");
+    if (stored) {
+      setAssignments(JSON.parse(stored));
+    }
+  }, []);
+
+  // 2) persist assignments
+  useEffect(() => {
+    localStorage.setItem("assignments", JSON.stringify(assignments));
+  }, [assignments]);
+
+  // fetch sites
   useEffect(() => {
     if (sites.length === 0) {
       dispatch(fetchSitesByManager());
     }
   }, [dispatch, sites.length]);
 
-  /**
-   * Opens the modal for a specific site, fetching that site’s shifts
-   * and schedules.
-   */
+  // whenever selectedSite changes, fetch schedules
+  useEffect(() => {
+    if (selectedSite) {
+      dispatch(fetchSchedulesBySite(selectedSite._id));
+    }
+  }, [selectedSite, dispatch]);
+
   const openShiftsModal = (site) => {
     dispatch(clearShiftsAction());
     setSelectedSite(site);
     dispatch(fetchShifts(site._id));
-    // Fetch schedules for the site using our action:
     dispatch(fetchSchedulesBySite(site._id));
     setShowShiftsModal(true);
   };
 
-  /**
-   * Closes the modal and clears local state.
-   */
   const closeModal = () => {
     setShowShiftsModal(false);
     setAssignments({});
     setAvailableEmployees({});
+    localStorage.removeItem("assignments");
   };
 
-  /**
-   * Generate 7 days of the week, starting from weekStartDate (Monday).
-   */
   const weekDates = Array.from({ length: 7 }, (_, i) => addDays(weekStartDate, i));
 
-  /**
-   * Fetches the list of employees available for a given date and shift.
-   */
-  const fetchEmployeesForShift = async (date, shift) => {
-    const formattedDate = format(date, "yyyy-MM-dd");
-    const shiftDay = format(date, "EEEE");
-    try {
-      const employees = await dispatch(
-        fetchAvailableEmployees(shiftDay, shift.startTime, shift.endTime)
-      );
-      setAvailableEmployees((prev) => ({
-        ...prev,
-        [`${formattedDate}_${shift._id}`]: employees,
-      }));
-    } catch (error) {
-      console.error("Error fetching available employees:", error);
-    }
-  };
-
-  /**
-   * Whenever shifts or the week changes (and the modal is open),
-   * fetch employees for each shift that matches the day.
-   */
+  // 3) Only fetch employees once if not present
   useEffect(() => {
-    if (shifts.length > 0 && showShiftsModal) {
-      weekDates.forEach((date) => {
-        const dayName = format(date, "EEEE");
-        shifts.forEach((shift) => {
-          if (shift.day === dayName) {
-            fetchEmployeesForShift(date, shift);
-          }
-        });
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shifts, weekStartDate, showShiftsModal]);
+    if (!showShiftsModal) return;
 
-  /**
-   * Build local assignments from the fetched schedules.
-   * We filter the schedules to only include those in the current week.
-   */
+    weekDates.forEach((date) => {
+      const dayName = format(date, "EEEE");
+      shifts.forEach((shift) => {
+        if (shift.day === dayName) {
+          const dateKey = format(date, "yyyy-MM-dd");
+          const uniqueKey = `${dateKey}_${shift._id}`;
+
+          if (!availableEmployees[uniqueKey]) {
+            // fetch once
+            dispatch(
+              fetchAvailableEmployees(dayName, shift.startTime, shift.endTime)
+            ).then((emps) => {
+              setAvailableEmployees((prev) => ({
+                ...prev,
+                [uniqueKey]: emps,
+              }));
+            });
+          }
+        }
+      });
+    });
+    // DO NOT add availableEmployees here or it re-runs each time we do setAvailableEmployees
+  }, [showShiftsModal, weekDates, shifts, dispatch]);
+
+  // 4) rebuild assignments from schedules
   useEffect(() => {
     if (showShiftsModal && selectedSite && allSchedules.length > 0) {
       const weekEndDate = addDays(weekStartDate, 6);
-      const filteredSchedules = allSchedules.filter((sched) => {
-        const schedDate = new Date(sched.date);
+      const filtered = allSchedules.filter((sched) => {
+        const rawDate = new Date(sched.date);
+        if (isNaN(rawDate.getTime())) return false;
+        const schedKey = formatUTC(sched.date);
+        const schedDate = new Date(schedKey);
         return schedDate >= weekStartDate && schedDate <= weekEndDate;
       });
-  
+
       const newAssignments = {};
-      filteredSchedules.forEach((sched) => {
-        // Skip if shiftId is null or missing an _id
-        if (!sched.shiftId || !sched.shiftId._id) {
-          console.log("Skipping schedule with null or invalid shiftId:", sched);
-          return;
-        }
-        // Also skip if userId is missing
-        if (!sched.userId || !sched.userId._id) {
-          console.log("Skipping schedule with null or invalid userId:", sched);
-          return;
-        }
-  
-        const dateKey = format(new Date(sched.date), "yyyy-MM-dd");
+      filtered.forEach((sched) => {
+        if (!sched.shiftId?._id || !sched.userId?._id) return;
+        const dateKey = formatUTC(sched.date);
         if (!newAssignments[dateKey]) {
           newAssignments[dateKey] = {};
         }
-        // Use shiftId._id as the key, userId._id as the value
         newAssignments[dateKey][sched.shiftId._id] = sched.userId._id;
       });
-  
-      console.log("Filtered Schedules:", filteredSchedules);
-      console.log("New Assignments Object:", newAssignments);
-  
-      setAssignments(newAssignments);
+      if (JSON.stringify(newAssignments) !== JSON.stringify(assignments)) {
+        setAssignments(newAssignments);
+      }
     }
+    // omit assignments from deps
   }, [showShiftsModal, selectedSite, weekStartDate, allSchedules]);
-  
 
-  /**
-   * Assigns an employee to a given shift on a given date.
-   */
-  const handleAssignment = (date, shiftId, employeeId) => {
-    const formattedDate = format(date, "yyyy-MM-dd");
+  const handleAssignment = (date, shiftId, empId) => {
+    const dateKey = formatUTC(date);
     setAssignments((prev) => ({
       ...prev,
-      [formattedDate]: {
-        ...prev[formattedDate],
-        [shiftId]: employeeId,
+      [dateKey]: {
+        ...prev[dateKey],
+        [shiftId]: empId,
       },
     }));
   };
 
-  /**
-   * Unassign an employee for a given date and shift.
-   */
   const handleUnassign = (date, shiftId) => {
-    const formattedDate = format(date, "yyyy-MM-dd");
+    const dateKey = formatUTC(date);
     setAssignments((prev) => {
-      const dayAssignments = { ...(prev[formattedDate] || {}) };
+      const dayAssignments = { ...(prev[dateKey] || {}) };
       delete dayAssignments[shiftId];
       return {
         ...prev,
-        [formattedDate]: dayAssignments,
+        [dateKey]: dayAssignments,
       };
     });
   };
 
-  /**
-   * Confirm assignments by dispatching createSchedule for each assignment.
-   * Also checks for duplicate assignments on the same day.
-   */
   const handleConfirmAssignments = async () => {
+    // local duplicate check
     for (const date in assignments) {
-      const dayAssignments = assignments[date];
-      const assignedEmployees = Object.values(dayAssignments).filter(Boolean);
-      if (assignedEmployees.length !== new Set(assignedEmployees).size) {
-        alert(
-          `Duplicate assignment detected on ${date}. Please ensure the same employee isn't scheduled twice in one day.`
-        );
+      const assigned = Object.values(assignments[date]).filter(Boolean);
+      if (assigned.length !== new Set(assigned).size) {
+        alert(`Duplicate assignment on ${date}`);
         return;
       }
     }
-
-    const allAssignments = [];
+    // build
+    const allAssign = [];
     for (const date in assignments) {
       for (const shiftId in assignments[date]) {
-        const employeeId = assignments[date][shiftId];
-        if (employeeId) {
-          allAssignments.push({
-            userId: employeeId,
-            shiftId,
-            date,
-          });
+        const empId = assignments[date][shiftId];
+        if (empId) {
+          allAssign.push({ userId: empId, shiftId, date });
         }
       }
     }
-
-    if (allAssignments.length === 0) {
-      alert("No employees assigned. Nothing to save.");
+    if (allAssign.length === 0) {
+      alert("No employees assigned.");
       return;
     }
-
-    try {
-      for (const assignment of allAssignments) {
-        await dispatch(createSchedule(assignment));
+    // check backend duplicates
+    for (const a of allAssign) {
+      const dupe = allSchedules.find(
+        (s) =>
+          s.shiftId?._id === a.shiftId &&
+          formatUTC(s.date) === a.date &&
+          s.userId?._id === a.userId
+      );
+      if (dupe) {
+        alert("Duplicate schedule exists in backend.");
+        return;
       }
-      alert(`Employees assigned successfully for ${allAssignments.length} shifts!`);
-
-      weekDates.forEach((date) => {
-        const dayName = format(date, "EEEE");
-        shifts.forEach((shift) => {
-          if (shift.day === dayName) {
-            fetchEmployeesForShift(date, shift);
-          }
-        });
-      });
-
+    }
+    try {
+      let count = 0;
+      for (const a of allAssign) {
+        const result = await dispatch(createSchedule(a));
+        if (!result) return;
+        count++;
+      }
+      alert(`Employees assigned for ${count} shifts!`);
+      if (selectedSite) {
+        await dispatch(fetchSchedulesBySite(selectedSite._id));
+      }
       setAssignments({});
-    } catch (error) {
-      console.error("Error assigning shifts:", error);
+      localStorage.removeItem("assignments");
+    } catch (err) {
+      console.error("Error creating schedules:", err);
     }
   };
 
   return (
     <div className="p-6">
-      {/* Top Bar */}
       <div className="flex flex-col sm:flex-row justify-between mb-4">
         <input
           type="text"
@@ -255,16 +228,13 @@ const AssignShift = () => {
         />
         <DatePicker
           selected={weekStartDate}
-          onChange={(date) =>
-            setWeekStartDate(startOfWeek(date, { weekStartsOn: 1 }))
-          }
+          onChange={(date) => setWeekStartDate(startOfWeek(date, { weekStartsOn: 1 }))}
           dateFormat="MMMM d, yyyy"
           className="border border-gray-300 p-2 rounded"
           showWeekNumbers
         />
       </div>
 
-      {/* Sites Table */}
       <table className="min-w-full border-collapse">
         <thead>
           <tr className="bg-gray-200">
@@ -297,11 +267,9 @@ const AssignShift = () => {
         </tbody>
       </table>
 
-      {/* Modal */}
       {showShiftsModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="relative bg-white p-6 rounded shadow-lg w-full sm:w-3/4 md:w-2/3 lg:w-1/2 max-h-[80vh] overflow-y-auto">
-            {/* Close Button */}
             <button
               onClick={closeModal}
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
@@ -312,11 +280,12 @@ const AssignShift = () => {
               Shifts for {selectedSite?.name}
             </h2>
             {weekDates.map((date) => {
-              const formattedDate = format(date, "yyyy-MM-dd");
+              const dateKey = formatUTC(date);
               const dayName = format(date, "EEEE");
               const shiftsForDay = shifts.filter((shift) => shift.day === dayName);
+
               return (
-                <div key={formattedDate} className="mb-6 border-b pb-4">
+                <div key={dateKey} className="mb-6 border-b pb-4">
                   <h3 className="text-xl font-medium mb-2">
                     {dayName}, {format(date, "MMM d, yyyy")}
                   </h3>
@@ -325,10 +294,34 @@ const AssignShift = () => {
                   ) : (
                     <div className="flex flex-wrap gap-4">
                       {shiftsForDay.map((shift) => {
-                        const dateAssignments = assignments[formattedDate] || {};
-                        const overlappingEmployeeIds = new Set();
+                        const localAssign = assignments[dateKey]?.[shift._id] || "";
+                        const schedule = allSchedules.find(
+                          (s) =>
+                            s.shiftId?._id === shift._id &&
+                            formatUTC(s.date) === dateKey
+                        );
+                        const currentAssign =
+                          localAssign || (schedule ? schedule.userId._id : "");
+                        const isScheduled = Boolean(currentAssign);
 
-                        Object.entries(dateAssignments).forEach(([otherShiftId, assignedEmpId]) => {
+                        // find employees
+                        const employeesKey = `${format(date, "yyyy-MM-dd")}_${shift._id}`;
+                        const rawEmployees = availableEmployees[employeesKey] || [];
+                        let finalEmployees = [...rawEmployees];
+                        if (
+                          isScheduled &&
+                          !rawEmployees.some((emp) => emp._id === currentAssign)
+                        ) {
+                          const assignedEmp = schedule?.userId;
+                          if (assignedEmp) {
+                            finalEmployees.push(assignedEmp);
+                          }
+                        }
+
+                        // Overlap filtering
+                        const overlappingIds = new Set();
+                        const dayAssigns = assignments[dateKey] || {};
+                        Object.entries(dayAssigns).forEach(([otherShiftId, assignedEmpId]) => {
                           if (!assignedEmpId || otherShiftId === shift._id) return;
                           const otherShift = shifts.find((s) => s._id === otherShiftId);
                           if (!otherShift) return;
@@ -340,15 +333,43 @@ const AssignShift = () => {
                               otherShift.endTime
                             )
                           ) {
-                            overlappingEmployeeIds.add(assignedEmpId);
+                            overlappingIds.add(assignedEmpId);
                           }
                         });
 
-                        const rawEmployees = availableEmployees[`${formattedDate}_${shift._id}`] || [];
-                        const filteredEmployees = rawEmployees.filter(
-                          (emp) => !overlappingEmployeeIds.has(emp._id)
+                        const filteredEmployees = finalEmployees.filter((emp) =>
+                          emp._id === currentAssign || !overlappingIds.has(emp._id)
                         );
 
+                        if (isScheduled) {
+                          const assignedEmp =
+                            filteredEmployees.find((emp) => emp._id === currentAssign) ||
+                            schedule?.userId;
+                          return (
+                            <div
+                              key={shift._id}
+                              className="flex-1 min-w-[200px] border p-4 rounded shadow bg-gray-200 cursor-not-allowed"
+                            >
+                              <p className="font-semibold">
+                                {shift.position} ({shift.startTime} - {shift.endTime})
+                              </p>
+                              <p className="mt-2">
+                                {assignedEmp
+                                  ? `${assignedEmp.fname} ${assignedEmp.lname}`
+                                  : "Scheduled"}
+                              </p>
+                              <button
+                                onClick={() => handleUnassign(date, shift._id)}
+                                className="mt-2 text-red-500 text-sm"
+                                style={{ pointerEvents: "auto" }}
+                              >
+                                Clear Assignment
+                              </button>
+                            </div>
+                          );
+                        }
+
+                        // otherwise => dropdown
                         return (
                           <div
                             key={shift._id}
@@ -358,7 +379,7 @@ const AssignShift = () => {
                               {shift.position} ({shift.startTime} - {shift.endTime})
                             </p>
                             <select
-                              value={dateAssignments[shift._id] || ""}
+                              value={currentAssign}
                               onChange={(e) => handleAssignment(date, shift._id, e.target.value)}
                               className="border border-gray-300 p-2 rounded w-full mt-2"
                             >
@@ -369,14 +390,6 @@ const AssignShift = () => {
                                 </option>
                               ))}
                             </select>
-                            {dateAssignments[shift._id] && (
-                              <button
-                                onClick={() => handleUnassign(date, shift._id)}
-                                className="mt-2 text-red-500 text-sm"
-                              >
-                                Clear Assignment
-                              </button>
-                            )}
                           </div>
                         );
                       })}
