@@ -18,6 +18,7 @@ const PayrollManagement = () => {
     const [payrollToDelete, setPayrollToDelete] = React.useState(null);
 
   const { payrolls = [], loading = false, error = null } = useSelector((state) => state.payroll || {});
+  console.log(payrolls)
 
   useEffect(() => {
     const fetchData = async () => {
