@@ -7,7 +7,10 @@ import {
     payrollUpdateSuccess,
     payrollDeleteSuccess,
     setCurrentPayroll,
-    setTotalHoursWorked
+    setTotalHoursWorked,
+    payrollByIdPending,
+    payrollByIdSuccess,
+    payrollByIdFailure
 } from '../slices/payrollSlice';
 
 // Generate new payroll
@@ -60,13 +63,13 @@ export const fetchUserPayrolls = () => async (dispatch) => {
 
 // Get single payroll by ID
 export const fetchPayrollById = (payrollId) => async (dispatch) => {
-    dispatch(payrollPending());
+    dispatch(payrollByIdPending());
     try {
         const response = await apiClient.get(`/api/v1/payroll/review/${payrollId}`);
-        dispatch(setCurrentPayroll(response.data));
+        dispatch(payrollByIdSuccess(response.data));
         return response.data;
     } catch (error) {
-        dispatch(payrollFailure(error.response?.data?.message || 'Error fetching payroll'));
+        dispatch(payrollByIdFailure(error.response?.data?.message || 'Error fetching payroll'));
         console.error('Error fetching payroll:', error);
     }
 };

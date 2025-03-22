@@ -7,7 +7,11 @@ const initialState = {
     error: null,
     currentPayroll: null,  // To store details for the currently selected payroll (if any)
     totalHoursWorked: [],  // Store the total hours data
-
+    payrollById: {
+        data: null,
+        loading: false,
+        error: null
+    }
 };
 
 const payrollSlice = createSlice({
@@ -48,7 +52,11 @@ const payrollSlice = createSlice({
 
         // Actions for managing the current payroll being viewed
         setCurrentPayroll: (state, action) => {
-            state.currentPayroll = action.payload;  // Setting the currently selected payroll
+            state.payrollById = {
+                data: action.payload,
+                loading: false,
+                error: null
+            };
         },
         resetCurrentPayroll: (state) => {
             state.currentPayroll = null;  // Resetting the current payroll when needed
@@ -67,7 +75,24 @@ const payrollSlice = createSlice({
             state.error = action.payload;
             state.totalHoursWorked = [];
         },
-        
+
+        // Add specific reducers for payrollById
+        payrollByIdPending: (state) => {
+            state.payrollById.loading = true;
+            state.payrollById.error = null;
+        },
+
+        payrollByIdSuccess: (state, action) => {
+            state.payrollById.loading = false;
+            state.payrollById.data = action.payload;
+            state.payrollById.error = null;
+        },
+
+        payrollByIdFailure: (state, action) => {
+            state.payrollById.loading = false;
+            state.payrollById.error = action.payload;
+            state.payrollById.data = null;
+        },
     }
 });
 
@@ -83,7 +108,10 @@ export const {
     resetCurrentPayroll,
     totalHoursPending,
     setTotalHoursWorked,
-    setTotalHoursFailed
+    setTotalHoursFailed,
+    payrollByIdPending,
+    payrollByIdSuccess,
+    payrollByIdFailure
 } = payrollSlice.actions;
 
 export default payrollSlice.reducer;

@@ -205,27 +205,39 @@ const PayrollManagement = () => {
                   </span>
                 </td>
                 <td className="p-4">
-                  <button
-                    className="text-blue-500 hover:text-blue-600"
-                    onClick={() => handleReview(payroll)}
-                  >
-                    Review
-                  </button>
-                  <button
-                    className="ml-4 text-blue-500 hover:text-blue-600"
-                    onClick={() => {
-                      console.log(`Navigating to edit page for payroll ID: ${payroll._id}`);
-                      navigate(`/payroll/edit/${payroll._id}`); // Navigate to edit page
-                    }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="text-blue-500 hover:text-blue-600"
-                    onClick={() => handleDelete(payroll._id)}
-                  >
-                    Delete
-                  </button>
+                  <div className="flex items-center space-x-4">
+                    <button
+                      className="px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200 flex items-center"
+                      onClick={() => handleReview(payroll)}
+                    >
+                      <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      Review
+                    </button>
+                    <button
+                      className="px-3 py-1.5 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-200 flex items-center"
+                      onClick={() => {
+                        console.log(`Navigating to edit page for payroll ID: ${payroll._id}`);
+                        navigate(`/payroll/edit/${payroll._id}`);
+                      }}
+                    >
+                      <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit
+                    </button>
+                    <button
+                      className="px-3 py-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 flex items-center"
+                      onClick={() => handleDelete(payroll._id)}
+                    >
+                      <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -236,86 +248,123 @@ const PayrollManagement = () => {
       {/* Modal */}
       {showModal && selectedPayroll && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg w-96 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-semibold mb-4">Review Payment</h3>
-            <div className="space-y-4">
-              <div>
-                <p className="text-gray-600">Employee</p>
-                <p className="font-semibold">
-                  {selectedPayroll.userId.fname} {selectedPayroll.userId.lname}
-                </p>
-              </div>
-              <div>
-                <p className="text-gray-600">Hours Worked</p>
-                <p className="font-semibold">{selectedPayroll.hoursWorked}</p>
-              </div>
-              <div>
-                <p className="text-gray-600">Overtime Hours</p>
-                <p className="font-semibold">{selectedPayroll.overtimeHours || 0}</p>
-              </div>
-              <div>
-                <p className="text-gray-600">Overtime Rate</p>
-                <p className="font-semibold">${selectedPayroll.overtimeRate || 0.00}</p>
-              </div>
-              <div>
-                <p className="text-gray-600">Pay Period</p>
-                <p className="font-semibold">
-                  {new Date(selectedPayroll.payPeriod.start).toLocaleDateString()} -{" "}
-                  {new Date(selectedPayroll.payPeriod.end).toLocaleDateString()}
-                </p>
-              </div>
-              <div>
-                <p className="text-gray-600">Gross Pay</p>
-                <p className="font-semibold">${Number(selectedPayroll.grossPay).toFixed(2)}</p>
-              </div>
-              <div>
-                <p className="text-gray-600">Deductions</p>
-                <div className="pl-4">
-                <p>Taxes: ${selectedPayroll.deductions?.taxes ? selectedPayroll.deductions.taxes.toFixed(2) : "0.00"}</p>
-                <p>CPP: ${selectedPayroll.deductions?.CPP ? selectedPayroll.deductions.CPP.toFixed(2) : "0.00"}</p>
-                <p>EI: ${selectedPayroll.deductions?.EI ? selectedPayroll.deductions.EI.toFixed(2) : "0.00"}</p>
-                <p>Other: ${selectedPayroll.deductions?.otherDeductions ? selectedPayroll.deductions.otherDeductions.toFixed(2) : "0.00"}</p>
-
+          <div className="bg-white p-8 rounded-lg w-[600px] max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-semibold text-gray-900">Review Payment</h3>
+              <button
+                onClick={closeModal}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Employee</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {selectedPayroll.userId.fname} {selectedPayroll.userId.lname}
+                  </p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Hours Worked</p>
+                  <p className="text-lg font-semibold text-gray-900">{selectedPayroll.hoursWorked}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Overtime Hours</p>
+                  <p className="text-lg font-semibold text-gray-900">{selectedPayroll.overtimeHours || 0}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Overtime Rate</p>
+                  <p className="text-lg font-semibold text-gray-900">${selectedPayroll.overtimeRate || 0.00}</p>
                 </div>
               </div>
-              <div>
-                <p className="text-gray-600">Net Pay</p>
-                <p className="font-semibold">${Number(selectedPayroll.netPay).toFixed(2)}</p>
+              
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Pay Period</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {new Date(selectedPayroll.payPeriod.start).toLocaleDateString()} -{" "}
+                    {new Date(selectedPayroll.payPeriod.end).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Gross Pay</p>
+                  <p className="text-lg font-semibold text-gray-900">${Number(selectedPayroll.grossPay).toFixed(2)}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Net Pay</p>
+                  <p className="text-lg font-semibold text-gray-900">${Number(selectedPayroll.netPay).toFixed(2)}</p>
+                </div>
               </div>
-              <div className="flex justify-end gap-4 pt-4">
+            </div>
 
-                
-                <button
-                  onClick={closeModal}
-                  className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-800"
-                >
-                  Close
-                </button>
-                {selectedPayroll.status !== "Finalized" && (
-                  <button
-                    onClick={() => handleFinalize(selectedPayroll._id)}
-                    className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    Finalize
-                  </button>
-                )}
+            <div className="mt-6 bg-gray-50 p-4 rounded-lg">
+              <p className="text-sm text-gray-600 mb-2">Deductions</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm">Taxes: <span className="font-semibold">${selectedPayroll.deductions?.taxes ? selectedPayroll.deductions.taxes.toFixed(2) : "0.00"}</span></p>
+                  <p className="text-sm">CPP: <span className="font-semibold">${selectedPayroll.deductions?.CPP ? selectedPayroll.deductions.CPP.toFixed(2) : "0.00"}</span></p>
+                </div>
+                <div>
+                  <p className="text-sm">EI: <span className="font-semibold">${selectedPayroll.deductions?.EI ? selectedPayroll.deductions.EI.toFixed(2) : "0.00"}</span></p>
+                  <p className="text-sm">Other: <span className="font-semibold">${selectedPayroll.deductions?.otherDeductions ? selectedPayroll.deductions.otherDeductions.toFixed(2) : "0.00"}</span></p>
+                </div>
               </div>
+            </div>
+
+            <div className="flex justify-end gap-4 mt-8">
+              <button
+                onClick={closeModal}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors duration-200"
+              >
+                Close
+              </button>
+              {selectedPayroll.status !== "Finalized" && (
+                <button
+                  onClick={() => handleFinalize(selectedPayroll._id)}
+                  className="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 transition-colors duration-200"
+                >
+                  Finalize
+                </button>
+              )}
             </div>
           </div>
         </div>
       )}
 
       {/* Confirmation Dialog for Deletion */}
-      <Dialog open={openDeleteDialog} onClose={cancelDelete}>
-        <DialogTitle>Confirm Deletion</DialogTitle>
+      <Dialog 
+        open={openDeleteDialog} 
+        onClose={cancelDelete}
+        className="rounded-lg"
+        PaperProps={{
+          style: {
+            borderRadius: '0.5rem',
+            padding: '1.5rem',
+          },
+        }}
+      >
+        <DialogTitle className="text-xl font-semibold">Confirm Deletion</DialogTitle>
         <DialogContent>
-          <p>Are you sure you want to delete this payroll record?</p>
+          <div className="mt-2">
+            <p className="text-gray-500">Are you sure you want to delete this payroll record? This action cannot be undone.</p>
+          </div>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={cancelDelete} color="primary">
+        <DialogActions className="p-4">
+          <Button 
+            onClick={cancelDelete} 
+            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+          >
             Cancel
           </Button>
-          <Button onClick={confirmDelete} color="secondary">
+          <Button 
+            onClick={confirmDelete} 
+            className="px-4 py-2 text-white bg-red-500 rounded-md hover:bg-red-600 ml-4"
+          >
             Delete
           </Button>
         </DialogActions>
