@@ -138,7 +138,7 @@ const Availability = () => {
       
       // Refresh the availability data
       dispatch(getAvailability());
-``    }
+    }
   };
 
   // Modified to show reset confirmation modal first
