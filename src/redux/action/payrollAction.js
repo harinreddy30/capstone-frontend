@@ -51,13 +51,20 @@ export const fetchAllPayrolls = () => async (dispatch) => {
 export const fetchUserPayrolls = () => async (dispatch) => {
     dispatch(payrollPending());
     try {
+        console.log('Fetching user payrolls...');
         const response = await apiClient.get('/api/v1/payroll/user');
-        const payrollsData = Array.isArray(response.data) ? response.data : [];
+        console.log('User payrolls response:', response);
+        
+        // Handle the response data structure
+        const payrollsData = response.data.payrolls.payrolls || [];
+        console.log('Processed user payrolls:', payrollsData);
+        
         dispatch(payrollSuccess(payrollsData));
         return payrollsData;
     } catch (error) {
-        dispatch(payrollFailure(error.response?.data?.message || 'Error fetching user payrolls'));
         console.error('Error fetching user payrolls:', error);
+        dispatch(payrollFailure(error.response?.data?.message || 'Error fetching user payrolls'));
+        throw error;
     }
 };
 

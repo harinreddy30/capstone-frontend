@@ -16,6 +16,7 @@
     "date-fns": "^3.3.1",
     "dayjs": "^1.11.10",
     "dotenv": "^16.4.4",
+    "jspdf": "^3.0.1",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.330.0",
     "nodemon": "^3.0.3",
