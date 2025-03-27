@@ -85,6 +85,7 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
       email: user.email || "",
       phone: user.phone || "",
       dateOfBirth: formattedDate,
+      isOnline: user.isOnline,
       role: user.role || "Employee",
       hourlyWage: user.hourlyWage ? user.hourlyWage.toString() : "0",
     });
