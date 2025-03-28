@@ -150,53 +150,61 @@ const MySchedule = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredSchedule.map((item, index) => (
                   <React.Fragment key={index}>
-                    <tr className={`${expandedRow === index ? 'bg-blue-50' : 'hover:bg-gray-50'} transition-colors duration-150`}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.shiftId.position}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{item.shiftId.site.name}</div>
-                        <div className="text-sm text-gray-500">ID: {item.shiftId.site.siteId}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(item.date)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <svg className="h-4 w-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span className="text-sm text-gray-900">
-                            {formatTime(item.shiftId.startTime)} - {formatTime(item.shiftId.endTime)}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <button
-                          onClick={() => setExpandedRow(expandedRow === index ? null : index)}
-                          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md ${
-                            expandedRow === index
-                              ? 'text-blue-700 bg-blue-100 hover:bg-blue-200'
-                              : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
-                          } transition-colors duration-150`}
-                        >
-                          {expandedRow === index ? (
-                            <>
-                              <svg className="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" />
-                              </svg>
-                              Hide
-                            </>
-                          ) : (
-                            <>
-                              <svg className="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                              </svg>
-                              View
-                            </>
-                          )}
-                        </button>
-                      </td>
-                    </tr>
+                    {item.shiftId && item.shiftId.position && item.shiftId.site ? (
+                      <tr className={`${expandedRow === index ? 'bg-blue-50' : 'hover:bg-gray-50'} transition-colors duration-150`}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.shiftId.position}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{item.shiftId.site.name}</div>
+                          <div className="text-sm text-gray-500">ID: {item.shiftId.site.siteId}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(item.date)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <svg className="h-4 w-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="text-sm text-gray-900">
+                              {formatTime(item.shiftId.startTime)} - {formatTime(item.shiftId.endTime)}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <button
+                            onClick={() => setExpandedRow(expandedRow === index ? null : index)}
+                            className={`inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md ${
+                              expandedRow === index
+                                ? 'text-blue-700 bg-blue-100 hover:bg-blue-200'
+                                : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
+                            } transition-colors duration-150`}
+                          >
+                            {expandedRow === index ? (
+                              <>
+                                <svg className="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" />
+                                </svg>
+                                Hide
+                              </>
+                            ) : (
+                              <>
+                                <svg className="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                                View
+                              </>
+                            )}
+                          </button>
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr key={index} className="bg-red-50">
+                        <td colSpan="5" className="px-6 py-4 text-sm text-red-600">
+                          Invalid schedule data - missing shift information
+                        </td>
+                      </tr>
+                    )}
 
                     {/* Expanded Details */}
-                    {expandedRow === index && (
+                    {expandedRow === index && item.shiftId && item.shiftId.jobDescription && item.shiftId.site && (
                       <tr>
                         <td colSpan="5" className="px-6 py-4">
                           <div className="bg-white rounded-lg border border-blue-100 p-4">

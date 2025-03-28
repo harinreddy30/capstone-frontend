@@ -9,32 +9,30 @@ const Availability = () => {
   const availability = useSelector((state) => state.availability.availability);
   const { loading, error } = useSelector((state) => state.availability);
 
-  // Default availability structure
-  const [formData, setFormData] = useState({
-    Monday: [],
-    Tuesday: [],
-    Wednesday: [],
-    Thursday: [],
-    Friday: [],
-    Saturday: [],
-    Sunday: [],
-  });
-
-  // Add state for modals
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [showResetConfirmModal, setShowResetConfirmModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-
+  // Define the standard order of days
   const daysOfWeek = [
-    "Sunday",
     "Monday",
     "Tuesday",
     "Wednesday",
     "Thursday",
     "Friday",
     "Saturday",
+    "Sunday"
   ];
+
+  // Default availability structure with days in standard order
+  const defaultFormData = daysOfWeek.reduce((acc, day) => {
+    acc[day] = [];
+    return acc;
+  }, {});
+
+  const [formData, setFormData] = useState(defaultFormData);
+
+  // Add state for modals
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showResetConfirmModal, setShowResetConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Fetch availability data when component mounts
   useEffect(() => {
@@ -45,15 +43,10 @@ const Availability = () => {
   useEffect(() => {
     if (availability) {
       // Convert the availability data format to match the form's format
-      const formattedData = {
-        Monday: [],
-        Tuesday: [],
-        Wednesday: [],
-        Thursday: [],
-        Friday: [],
-        Saturday: [],
-        Sunday: [],
-      };
+      const formattedData = daysOfWeek.reduce((acc, day) => {
+        acc[day] = [];
+        return acc;
+      }, {});
 
       // Check if availability is an array (multiple days) or object (single day)
       if (Array.isArray(availability)) {
@@ -111,33 +104,48 @@ const Availability = () => {
 
   // New function to handle actual submission after confirmation
   const confirmSubmit = async () => {
-    const formattedAvailability = [];
-
-    // Convert the form data to the API's expected format
-    Object.keys(formData).forEach((day) => {
-      if (formData[day].length > 0) {
-        formData[day].forEach((slot) => {
-          if (slot.startTime && slot.endTime) {
-            formattedAvailability.push({
-              day: day,
-              start_time: slot.startTime,
-              end_time: slot.endTime,
-              available: true
-            });
-          }
+    try {
+        // Format the availability data for each day
+        const formattedAvailability = [];
+        
+        // Convert all days' data to the API format
+        Object.entries(formData).forEach(([day, slots]) => {
+            if (slots && Array.isArray(slots)) {
+                slots.forEach(slot => {
+                    if (slot.startTime && slot.endTime) {
+                        formattedAvailability.push({
+                            day: day,
+                            start_time: slot.startTime,
+                            end_time: slot.endTime,
+                            available: true
+                        });
+                    }
+                });
+            }
         });
-      }
-    });
 
-    const response = await dispatch(updateAvailability({ availability: formattedAvailability }));
-    setShowConfirmModal(false);
+        console.log("Submitting availability data:", formattedAvailability);
 
-    if (response) {
-      setSuccessMessage("Your availability has been updated successfully!");
-      setShowSuccessModal(true);
-      
-      // Refresh the availability data
-      dispatch(getAvailability());
+        const result = await dispatch(updateAvailability(formattedAvailability));
+        
+        if (result) {
+            setShowSuccessModal(true);
+            setSuccessMessage("Your availability has been updated successfully!");
+            setShowConfirmModal(false);
+            
+            // Refresh the availability data - this will trigger the useEffect
+            // which will update the form data with the new availability
+            dispatch(getAvailability());
+        } else {
+            setSuccessMessage("Failed to update availability. Please try again.");
+            setShowSuccessModal(true);
+            setShowConfirmModal(false);
+        }
+    } catch (error) {
+        console.error("Error submitting availability:", error);
+        setSuccessMessage("Failed to update availability. Please try again.");
+        setShowSuccessModal(true);
+        setShowConfirmModal(false);
     }
   };
 
@@ -147,20 +155,18 @@ const Availability = () => {
   };
 
   // New function to handle actual reset after confirmation
-  const confirmReset = () => {
-    setFormData({
-      Monday: [],
-      Tuesday: [],
-      Wednesday: [],
-      Thursday: [],
-      Friday: [],
-      Saturday: [],
-      Sunday: [],
-    });
-    dispatch(resetAvailability());
-    setShowResetConfirmModal(false);
-    setSuccessMessage("Availability has been reset.");
-    setShowSuccessModal(true);
+  const confirmReset = async () => {
+    try {
+      await dispatch(resetAvailability());
+      setFormData(defaultFormData);
+      setShowResetConfirmModal(false);
+      setSuccessMessage("Availability has been reset successfully.");
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error("Error resetting availability:", error);
+      setSuccessMessage("Failed to reset availability. Please try again.");
+      setShowSuccessModal(true);
+    }
   };
 
   return (
