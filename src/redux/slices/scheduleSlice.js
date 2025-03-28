@@ -1,14 +1,13 @@
 // src/redux/slices/scheduleSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 
-// Validate localStorage data to ensure it's an array.
-const storedSchedule = JSON.parse(localStorage.getItem("schedule"));
-const initialSchedule = Array.isArray(storedSchedule) ? storedSchedule : [];
-
+const storedSiteSchedules = JSON.parse(localStorage.getItem("siteSchedules"));
+const storedGlobalSchedules = JSON.parse(localStorage.getItem("globalSchedules"));
 const initialState = {
-  schedule: initialSchedule, // Store all schedule data
-  loading: false,            // Loading state for API calls
-  error: null,               // Error messages
+  siteSchedules: Array.isArray(storedSiteSchedules) ? storedSiteSchedules : [],
+  globalSchedules: Array.isArray(storedGlobalSchedules) ? storedGlobalSchedules : [],
+  loading: false,
+  error: null,
 };
 
 const scheduleSlice = createSlice({
@@ -16,47 +15,61 @@ const scheduleSlice = createSlice({
   initialState,
   reducers: {
     schedulePending: (state) => {
-      console.log("Redux: schedulePending triggered");
       state.loading = true;
       state.error = null;
     },
-    scheduleSuccess: (state, action) => {
-      console.log("Redux: scheduleSuccess triggered with data:", action.payload);
+    siteSchedulesSuccess: (state, action) => {
       state.loading = false;
-      // Expecting action.payload to be an array of schedules.
-      state.schedule = action.payload;
+      state.siteSchedules = action.payload;
+      localStorage.setItem("siteSchedules", JSON.stringify(state.siteSchedules));
+    },
+    globalSchedulesSuccess: (state, action) => {
+      state.loading = false;
+      state.globalSchedules = action.payload;
+      localStorage.setItem("globalSchedules", JSON.stringify(state.globalSchedules));
     },
     scheduleFailure: (state, action) => {
-      console.log("Redux: scheduleFailure triggered with error:", action.payload);
       state.loading = false;
       state.error = action.payload;
     },
     scheduleCreateSuccess: (state, action) => {
       state.loading = false;
-      state.schedule = [...state.schedule, action.payload];
-      localStorage.setItem("schedule", JSON.stringify(state.schedule));
+      // Add the newly created schedule to both lists.
+      state.siteSchedules.push(action.payload);
+      state.globalSchedules.push(action.payload);
+      localStorage.setItem("siteSchedules", JSON.stringify(state.siteSchedules));
+      localStorage.setItem("globalSchedules", JSON.stringify(state.globalSchedules));
     },
     scheduleUpdateSuccess: (state, action) => {
       state.loading = false;
-      state.schedule = state.schedule.map((sched) =>
-        sched._id === action.payload._id ? action.payload : sched
+      state.siteSchedules = state.siteSchedules.map((s) =>
+        s._id === action.payload._id ? action.payload : s
       );
-      localStorage.setItem("schedule", JSON.stringify(state.schedule));
+      state.globalSchedules = state.globalSchedules.map((s) =>
+        s._id === action.payload._id ? action.payload : s
+      );
+      localStorage.setItem("siteSchedules", JSON.stringify(state.siteSchedules));
+      localStorage.setItem("globalSchedules", JSON.stringify(state.globalSchedules));
     },
     scheduleDeleteSuccess: (state, action) => {
       state.loading = false;
-      state.schedule = state.schedule.filter(
-        (sched) => sched._id !== action.payload
+      state.siteSchedules = state.siteSchedules.filter(
+        (s) => s._id !== action.payload
       );
-      localStorage.setItem("schedule", JSON.stringify(state.schedule));
+      state.globalSchedules = state.globalSchedules.filter(
+        (s) => s._id !== action.payload
+      );
+      localStorage.setItem("siteSchedules", JSON.stringify(state.siteSchedules));
+      localStorage.setItem("globalSchedules", JSON.stringify(state.globalSchedules));
     },
   },
 });
 
 export const {
   schedulePending,
-  scheduleSuccess,
   scheduleFailure,
+  siteSchedulesSuccess,
+  globalSchedulesSuccess,
   scheduleCreateSuccess,
   scheduleUpdateSuccess,
   scheduleDeleteSuccess,
