@@ -64,8 +64,8 @@ import {
             console.warn("Some schedules were filtered out due to missing data");
         }
 
-        console.log("Dispatching scheduleSuccess with valid schedules...");
-        dispatch(scheduleSuccess(validSchedules));
+        console.log("Dispatching siteSchedulesSuccess with valid schedules...");
+        dispatch(siteSchedulesSuccess(validSchedules));
     } catch (error) {
         console.error("Error in getUserSchedules:", error);
         dispatch(scheduleFailure(error.message));
