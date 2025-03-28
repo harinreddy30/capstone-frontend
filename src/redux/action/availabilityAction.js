@@ -97,30 +97,56 @@ export const updateAvailability = (availability) => async (dispatch) => {
             throw new Error("No authentication token found");
         }
 
-        console.log("Token found:", token);
+        // Format the availability data to match the expected structure
+        const formattedAvailability = {
+            availability: {
+                Monday: [],
+                Tuesday: [],
+                Wednesday: [],
+                Thursday: [],
+                Friday: [],
+                Saturday: [],
+                Sunday: []
+            }
+        };
 
-        const response = await apiClient.put(`/api/v1/availability/check/update`, availability, {
+        // Convert the array of slots into the correct format
+        availability.forEach(slot => {
+            if (slot.day && slot.start_time && slot.end_time) {
+                formattedAvailability.availability[slot.day].push({
+                    start_time: slot.start_time,
+                    end_time: slot.end_time,
+                    available: slot.available !== false
+                });
+            }
+        });
+
+        console.log("Updating availability with data:", formattedAvailability);
+
+        const response = await apiClient.put(`/api/v1/availability/check/update`, formattedAvailability, {
             headers: {
-                Authorization: `Bearer ${token}`, // Send token with request
+                Authorization: `Bearer ${token}`,
             },
         });
 
         console.log("Update Availability Response:", response.data);
 
-        dispatch(availabilityUpdateSuccess(response.data));
-        return response.data;
-
-    } catch (error) {
-        // Log detailed error for better debugging
-        console.error("Error in updateAvailability:", error);
-
-        if (error.response) {
-            // If the error has a response (e.g., 403 Forbidden), log it
-            console.error("Error Response Data:", error.response.data);
-            console.error("Error Response Status:", error.response.status);
+        if (response.data) {
+            dispatch(availabilityUpdateSuccess(response.data));
+            return response.data;
+        } else {
+            throw new Error("No response data received");
         }
 
-        dispatch(availabilityFailure(error.message));
+    } catch (error) {
+        console.error("Error in updateAvailability:", error);
+        if (error.response) {
+            console.error("Error Response Data:", error.response.data);
+            console.error("Error Response Status:", error.response.status);
+            dispatch(availabilityFailure(error.response.data.message || "Failed to update availability"));
+        } else {
+            dispatch(availabilityFailure(error.message));
+        }
         return null;
     }
 };

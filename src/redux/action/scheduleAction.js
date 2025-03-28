@@ -80,16 +80,26 @@ export const fetchSchedule = () => async (dispatch) => {
         const response = await apiClient.get(`/api/v1/schedule/employee/schedule`);
         console.log("Fetched Schedule:", response.data.schedule);
 
-        if (!Array.isArray(response.data.schedule)) {
-            console.error("Error: Expected an array but got", response.data.schedule);
+        if (!response.data || !response.data.schedule) {
+            console.error("Error: Invalid response format", response.data);
+            dispatch(scheduleFailure("Invalid response format from server"));
+            return;
         }
 
-        console.log("Dispatching scheduleSuccess...");
-        dispatch(scheduleSuccess(response.data.schedule)); // Log this before dispatching
+        // Filter out any schedules with invalid shiftId
+        const validSchedules = response.data.schedule.filter(schedule => 
+            schedule && schedule.shiftId && schedule.shiftId.position && schedule.shiftId.site
+        );
+
+        if (validSchedules.length !== response.data.schedule.length) {
+            console.warn("Some schedules were filtered out due to missing data");
+        }
+
+        console.log("Dispatching scheduleSuccess with valid schedules...");
+        dispatch(scheduleSuccess(validSchedules));
     } catch (error) {
         console.error("Error in getUserSchedules:", error);
         dispatch(scheduleFailure(error.message));
-
     }
 };
 
