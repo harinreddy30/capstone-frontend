@@ -4,6 +4,7 @@ import { fetchAllUsers, createUser, updateUser, DeleteUser } from "../../redux/a
 
 
 const roles = ["Employee", "HR", "Manager", "PayrollManager"];
+const userStatuses = ["active", "archived", "inactive"];
 
 const UserManagement = ({ onModalOpen, onModalClose }) => {
   
@@ -12,6 +13,7 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("active");
   const [userForm, setUserForm] = useState({
     fname: "",
     lname: "",
@@ -21,13 +23,21 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
     dateOfBirth: "",
     role: "Employee",
     hourlyWage: "0",
+    status: "active"
   });
 
   // Add new state variables for modals
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [userToDelete, setUserToDelete] = useState(null);
+  const [userToArchive, setUserToArchive] = useState(null);
+  const [archiveReason, setArchiveReason] = useState("");
+  const [showReactivateModal, setShowReactivateModal] = useState(false);
+  const [userToReactivate, setUserToReactivate] = useState(null);
+  const [showInactiveModal, setShowInactiveModal] = useState(false);
+  const [userToInactive, setUserToInactive] = useState(null);
 
   const dispatch = useDispatch(); // Dispatch the action
 
@@ -88,6 +98,7 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
       isOnline: user.isOnline,
       role: user.role || "Employee",
       hourlyWage: user.hourlyWage ? user.hourlyWage.toString() : "0",
+      status: user.status || "active"
     });
     setEditMode(true);
     setShowModal(true);
@@ -106,6 +117,7 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
       dateOfBirth: "",
       role: "Employee",
       hourlyWage: "0",
+      status: "active"
     });
     setShowModal(true);
     onModalOpen();
@@ -130,6 +142,7 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
       dateOfBirth: "",
       role: "Employee",
       hourlyWage: "0",
+      status: "active"
     });
     onModalClose();
   };
@@ -156,6 +169,96 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
     }
   };
 
+  // Handle archive user
+  const handleArchive = (user) => {
+    setUserToArchive(user);
+    setShowArchiveModal(true);
+    // Reset archive reason when opening modal
+    setArchiveReason("");
+  };
+
+  // Confirm archive
+  const confirmArchive = async () => {
+    try {
+      const updatedUser = {
+        ...userToArchive,
+        status: userToArchive.status === "active" ? "archived" : "active",
+        archiveDate: userToArchive.status === "active" ? new Date() : null,
+        archiveReason: userToArchive.status === "active" ? archiveReason : null
+      };
+      await dispatch(updateUser(userToArchive._id, updatedUser));
+      setShowArchiveModal(false);
+      setSuccessMessage(userToArchive.status === "active" ? "User archived successfully!" : "User restored successfully!");
+      setShowSuccessModal(true);
+      await dispatch(fetchAllUsers());
+    } catch (error) {
+      console.error("Error updating user status:", error);
+      setSuccessMessage("Failed to update user status. Please try again.");
+      setShowSuccessModal(true);
+    }
+  };
+
+  // Handle reactivate click
+  const handleReactivateClick = (user) => {
+    setUserToReactivate(user);
+    setShowReactivateModal(true);
+  };
+
+  // Confirm reactivate
+  const confirmReactivate = async () => {
+    try {
+      const updatedUser = {
+        ...userToReactivate,
+        status: "active",
+        lastActiveDate: new Date()
+      };
+      await dispatch(updateUser(userToReactivate._id, updatedUser));
+      setShowReactivateModal(false);
+      setSuccessMessage("User reactivated successfully!");
+      setShowSuccessModal(true);
+      await dispatch(fetchAllUsers());
+    } catch (error) {
+      console.error("Error reactivating user:", error);
+      setSuccessMessage("Failed to reactivate user. Please try again.");
+      setShowSuccessModal(true);
+    }
+  };
+
+  // Handle inactive click
+  const handleInactiveClick = (user) => {
+    setUserToInactive(user);
+    setShowInactiveModal(true);
+  };
+
+  // Confirm inactive status
+  const confirmInactive = async () => {
+    try {
+      const updatedUser = {
+        ...userToInactive,
+        status: "inactive",
+        lastActiveDate: new Date()
+      };
+      await dispatch(updateUser(userToInactive._id, updatedUser));
+      setShowInactiveModal(false);
+      setSuccessMessage("User marked as inactive successfully!");
+      setShowSuccessModal(true);
+      await dispatch(fetchAllUsers());
+    } catch (error) {
+      console.error("Error marking user as inactive:", error);
+      setSuccessMessage("Failed to mark user as inactive. Please try again.");
+      setShowSuccessModal(true);
+    }
+  };
+
+  // Filter users based on status and search term
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch = `${user.fname} ${user.lname} ${user.email}`
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesStatus = user.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="bg-white rounded-lg shadow-lg p-6">
@@ -177,8 +280,8 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
         </div>
 
         {/* Search and Filter Section */}
-        <div className="mb-6">
-          <div className="relative">
+        <div className="mb-6 flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
             <input
               type="text"
               placeholder="Search users by name or email..."
@@ -192,6 +295,15 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
               </svg>
             </div>
           </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="active">Active Users</option>
+            <option value="archived">Archived Users</option>
+            <option value="inactive">Inactive Users</option>
+          </select>
         </div>
 
         {/* Users Table */}
@@ -203,59 +315,108 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hourly Wage</th>
-                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {users
-                .filter((user) =>
-                  `${user.fname} ${user.lname} ${user.email}`
-                    .toLowerCase()
-                    .includes(searchTerm.toLowerCase())
-                )
-                .map((user) => (
-                  <tr key={user._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.employeeId}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                          <span className="text-sm font-medium text-blue-800">
-                            {user.fname[0]}{user.lname[0]}
-                          </span>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{user.fname} {user.lname}</div>
-                        </div>
+              {filteredUsers.map((user) => (
+                <tr key={user._id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.employeeId}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span className="text-sm font-medium text-blue-800">
+                          {user.fname[0]}{user.lname[0]}
+                        </span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                        ${user.role === 'HR' ? 'bg-purple-100 text-purple-800' : 
-                          user.role === 'Manager' ? 'bg-green-100 text-green-800' : 
-                          user.role === 'PayrollManager' ? 'bg-yellow-100 text-yellow-800' : 
-                          'bg-blue-100 text-blue-800'}`}>
-                        {user.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.hourlyWage}/hr</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">{user.fname} {user.lname}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                      ${user.role === 'HR' ? 'bg-purple-100 text-purple-800' : 
+                        user.role === 'Manager' ? 'bg-green-100 text-green-800' : 
+                        user.role === 'PayrollManager' ? 'bg-yellow-100 text-yellow-800' : 
+                        'bg-blue-100 text-blue-800'}`}>
+                      {user.role}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                      ${user.status === 'active' ? 'bg-green-100 text-green-800' : 
+                        user.status === 'archived' ? 'bg-gray-100 text-gray-800' : 
+                        'bg-red-100 text-red-800'}`}>
+                      {user.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.hourlyWage}/hr</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    {user.status === 'active' && (
+                      <>
+                        <button
+                          onClick={() => handleEdit(user)}
+                          className="text-indigo-600 hover:text-indigo-900 mr-4"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleArchive(user)}
+                          className="text-yellow-600 hover:text-yellow-900 mr-4"
+                        >
+                          Archive
+                        </button>
+                        <button
+                          onClick={() => handleInactiveClick(user)}
+                          className="text-orange-600 hover:text-orange-900 mr-4"
+                        >
+                          Mark Inactive
+                        </button>
+                        <button
+                          onClick={() => handleDelete(user._id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                    {user.status === 'archived' && (
                       <button
-                        onClick={() => handleEdit(user)}
-                        className="text-indigo-600 hover:text-indigo-900 mr-4"
+                        onClick={() => handleArchive(user)}
+                        className="text-indigo-600 hover:text-indigo-900"
                       >
-                        Edit
+                        Restore
                       </button>
-                      <button
-                        onClick={() => handleDelete(user._id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                    )}
+                    {user.status === 'inactive' && (
+                      <>
+                        <button
+                          onClick={() => handleEdit(user)}
+                          className="text-indigo-600 hover:text-indigo-900 mr-4"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleArchive(user)}
+                          className="text-yellow-600 hover:text-yellow-900 mr-4"
+                        >
+                          Archive
+                        </button>
+                        <button
+                          onClick={() => handleReactivateClick(user)}
+                          className="text-green-600 hover:text-green-900"
+                        >
+                          Reactivate
+                        </button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -412,6 +573,87 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
         </div>
       )}
 
+      {/* Archive Modal */}
+      {showArchiveModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 mb-4">
+                <svg className="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {userToArchive?.status === "active" ? "Archive User" : "Restore User"}
+              </h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Are you sure you want to {userToArchive?.status === "active" ? "archive" : "restore"} {userToArchive ? `${userToArchive.fname} ${userToArchive.lname}` : 'this user'}?
+              </p>
+              {userToArchive?.status === "active" && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Archive Reason</label>
+                  <textarea
+                    value={archiveReason}
+                    onChange={(e) => setArchiveReason(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    rows="3"
+                    placeholder="Enter reason for archiving..."
+                    required
+                  />
+                </div>
+              )}
+              <div className="flex justify-center space-x-4">
+                <button
+                  onClick={() => setShowArchiveModal(false)}
+                  className="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmArchive}
+                  className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-yellow-500 text-base font-medium text-white hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 sm:text-sm"
+                >
+                  {userToArchive?.status === "active" ? "Archive" : "Restore"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reactivate Confirmation Modal */}
+      {showReactivateModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Reactivate User</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Are you sure you want to reactivate {userToReactivate ? `${userToReactivate.fname} ${userToReactivate.lname}` : 'this user'}?
+              </p>
+              <div className="flex justify-center space-x-4">
+                <button
+                  onClick={() => setShowReactivateModal(false)}
+                  className="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmReactivate}
+                  className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-500 text-base font-medium text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:text-sm"
+                >
+                  Reactivate
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Success Modal */}
       {showSuccessModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -466,6 +708,39 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
                   className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-500 text-base font-medium text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:text-sm"
                 >
                   Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mark Inactive Confirmation Modal */}
+      {showInactiveModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 mb-4">
+                <svg className="h-6 w-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Mark User as Inactive</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Are you sure you want to mark {userToInactive ? `${userToInactive.fname} ${userToInactive.lname}` : 'this user'} as inactive?
+              </p>
+              <div className="flex justify-center space-x-4">
+                <button
+                  onClick={() => setShowInactiveModal(false)}
+                  className="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmInactive}
+                  className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-orange-500 text-base font-medium text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:text-sm"
+                >
+                  Mark Inactive
                 </button>
               </div>
             </div>
