@@ -15,10 +15,17 @@ export const fetchAllSites = () => async (dispatch) => {
     dispatch(sitePending()); 
     try {
         const response = await apiClient.get("/api/v1/sites")
-        console.log("Sites response:", response.data); // Debug log
+        console.log("Sites response:", response.data);
         const sitesData = response.data.Sites || response.data.sites || response.data || [];
-        console.log("Sites data to be dispatched:", sitesData); // Debug log
-        dispatch(siteSuccess(sitesData)) // Dispatch Success action with sites data
+        
+        // Ensure all sites have a status
+        const normalizedSites = sitesData.map(site => ({
+            ...site,
+            status: site.status || 'active'
+        }));
+        
+        console.log("Normalized sites data:", normalizedSites);
+        dispatch(siteSuccess(normalizedSites));
     } catch (error) {
         console.error("Error Fetching sites:", error.response || error);
         dispatch(siteFailure(error.response?.data || 'Error fetching Sites')); 
@@ -50,15 +57,49 @@ export const createSite = (siteData) => async (dispatch) => {
     }
 }
 
-// Update a user
+// Update a site
 export const updateSite = (siteId, updatedData) => async (dispatch) => {
     dispatch(sitePending());
     try {
-        const response = await apiClient.put(`/api/v1/sites/${siteId}`, updatedData);
-        dispatch(siteUpdateSuccess(response.data)); // Dispatch success with the updated user data
+        // Ensure status is included in the update
+        const dataToUpdate = {
+            ...updatedData,
+            status: updatedData.status || 'active',
+            updatedAt: new Date()
+        };
+
+        // If status is being changed to archived, add archive date and reason
+        if (dataToUpdate.status === 'archived') {
+            dataToUpdate.archiveDate = new Date();
+        }
+
+        // If status is being changed to active, clear archive fields
+        if (dataToUpdate.status === 'active') {
+            dataToUpdate.archiveDate = null;
+            dataToUpdate.archiveReason = null;
+            dataToUpdate.lastActiveDate = new Date();
+        }
+
+        // If status is being changed to inactive, update lastActiveDate
+        if (dataToUpdate.status === 'inactive') {
+            dataToUpdate.lastActiveDate = new Date();
+        }
+
+        console.log('Updating site with data:', dataToUpdate);
+        const response = await apiClient.put(`/api/v1/sites/${siteId}`, dataToUpdate);
+        console.log('Update response:', response.data);
+        
+        // Update the site in Redux store
+        dispatch(siteUpdateSuccess(response.data));
+        
+        // Fetch all sites to ensure the list is up to date
+        await dispatch(fetchAllSites());
+        
+        return response.data;
     } catch (error) {
-        dispatch(siteFailure(error.response?.data || 'Error updating sites'));
-        console.log("Error Updating Sites", error.message)
+        console.error("Error updating site:", error.response || error);
+        dispatch(siteFailure(error.response?.data || 'Error updating site'));
+        throw error;
     }
 };
 

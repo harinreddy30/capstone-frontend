@@ -51,9 +51,18 @@ const siteSlice = createSlice({
     },
     siteUpdateSuccess: (state, action) => {
       state.loading = false;
+      // Update the site in the sites array, ensuring all fields are updated
       state.sites = state.sites.map((site) =>
-        site._id === action.payload._id ? action.payload : site
-      ); // Update the site in the sites array
+        site._id === action.payload._id ? {
+          ...site,
+          ...action.payload,
+          status: action.payload.status,
+          archiveDate: action.payload.archiveDate,
+          archiveReason: action.payload.archiveReason,
+          lastActiveDate: action.payload.lastActiveDate,
+          updatedAt: action.payload.updatedAt
+        } : site
+      );
       // Save to localStorage after updating a site
       localStorage.setItem("sites", JSON.stringify(state.sites));
     },
