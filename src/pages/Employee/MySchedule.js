@@ -5,69 +5,57 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchSchedule } from "../../redux/action/scheduleAction";
 import { format, startOfWeek } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
-// 1) Return just the date portion "YYYY-MM-DD" from an ISO string.
+// Returns just the date portion "YYYY-MM-DD" from an ISO string.
 function getISODate(isoStr) {
-  return isoStr.split("T")[0]; // e.g. "2025-03-31"
+  return isoStr.split("T")[0];
 }
 
-// 2) Format the date/time in UTC so that "2025-03-31T00:00:00.000Z" always shows "Mon, Mar 31, 2025".
+// Format the date/time in UTC.
 function formatUTCDate(isoString) {
-  // parse the string as a JavaScript Date
   const dateObj = new Date(isoString);
-  // then force UTC output
   return formatInTimeZone(dateObj, "UTC", "EEEE, MMM d, yyyy");
 }
 
-// 3) Format the shift times in UTC as well (if your shift times are partial strings).
-//    But if your shift times are simple "08:00", we can just show them as is.
+// Format the shift times in UTC.
 function formatShiftTimeUTC(dateStr, timeStr) {
-  // If you store times as "08:00" plus a date of "2025-03-31T00:00:00.000Z", you can combine them:
-  // e.g. "2025-03-31" + "08:00" => "2025-03-31T08:00:00.000Z"
-  const datePart = getISODate(dateStr); // "2025-03-31"
-  const combined = `${datePart}T${timeStr}:00.000Z`; // e.g. "2025-03-31T08:00:00.000Z"
+  const datePart = getISODate(dateStr);
+  const combined = `${datePart}T${timeStr}:00.000Z`;
   const dateObj = new Date(combined);
-  return formatInTimeZone(dateObj, "UTC", "HH:mm"); // e.g. "08:00"
+  return formatInTimeZone(dateObj, "UTC", "HH:mm");
 }
 
 function MySchedule() {
   const dispatch = useDispatch();
+  const navigate = useNavigate(); // Create navigate function
   const { siteSchedules = [], loading, error } = useSelector((state) => state.schedule ?? {});
   const [expandedRow, setExpandedRow] = useState(null);
-
-  // 4) The currentWeek is the local Monday for the DatePicker, but does NOT affect how we display the schedule date/time.
   const [currentWeek, setCurrentWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
 
   useEffect(() => {
     dispatch(fetchSchedule());
   }, [dispatch]);
 
-  useEffect(() => {
-    console.log("Redux Store Site Schedules Data:", siteSchedules);
-  }, [siteSchedules]);
-
-  // 5) Whenever the user picks a date, snap it to Monday in local time.
   const handleDateChange = (selectedDate) => {
     const monday = startOfWeek(selectedDate, { weekStartsOn: 1 });
     setCurrentWeek(monday);
   };
 
-  // 6) Build the local Monday and Sunday, but only for filtering. The display remains in UTC.
   const currentWeekISO = currentWeek.toISOString().split("T")[0];
   const weekEnd = new Date(currentWeek.getTime() + 6 * 24 * 60 * 60 * 1000);
   const weekEndISO = weekEnd.toISOString().split("T")[0];
 
-  // 7) Filter schedule items by comparing only "YYYY-MM-DD" portion of item.date to currentWeekISO..weekEndISO.
+  // Filter and sort schedule items
   const filteredSchedule = Array.isArray(siteSchedules)
-    ? siteSchedules.filter((item) => {
-        if (!item.date) return false;
-        const scheduleDay = getISODate(item.date);
-        console.log("Checking Shift:", scheduleDay, "vs Week Range:", currentWeekISO, "-", weekEndISO);
-        return scheduleDay >= currentWeekISO && scheduleDay <= weekEndISO;
-      })
+    ? siteSchedules
+        .filter((item) => {
+          if (!item.date) return false;
+          const scheduleDay = getISODate(item.date);
+          return scheduleDay >= currentWeekISO && scheduleDay <= weekEndISO;
+        })
+        .sort((a, b) => new Date(a.date) - new Date(b.date))
     : [];
-
-  console.log("Filtered Schedule:", filteredSchedule);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -91,7 +79,6 @@ function MySchedule() {
                 dateFormat="MMMM d, yyyy"
                 className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 showWeekNumbers
-                // Only let the user pick Mondays if desired
                 filterDate={(date) => startOfWeek(date, { weekStartsOn: 1 }).getTime() === date.getTime()}
               />
             </div>
@@ -99,9 +86,7 @@ function MySchedule() {
               <svg className="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <span className="text-gray-700 font-medium">
-                {currentWeekISO} - {weekEndISO}
-              </span>
+              <span className="text-gray-700 font-medium">{currentWeekISO} - {weekEndISO}</span>
             </div>
           </div>
         </div>
@@ -129,7 +114,7 @@ function MySchedule() {
           </div>
         )}
 
-        {/* Empty */}
+        {/* Empty State */}
         {!loading && !error && filteredSchedule.length === 0 && (
           <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
             <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,19 +135,15 @@ function MySchedule() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Site</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredSchedule.map((item, index) => {
                   if (!item.shiftId) return null;
-
-                  // 8) Show date in UTC. For "2025-03-31T00:00:00.000Z", we get "Monday, Mar 31, 2025" in the user’s UI.
                   const displayedDate = formatUTCDate(item.date);
-
-                  // 9) For times, if you want to show them in UTC as well:
                   const displayedStart = formatShiftTimeUTC(item.date, item.shiftId.startTime);
-                  const displayedEnd   = formatShiftTimeUTC(item.date, item.shiftId.endTime);
+                  const displayedEnd = formatShiftTimeUTC(item.date, item.shiftId.endTime);
 
                   return (
                     <React.Fragment key={index}>
@@ -174,9 +155,7 @@ function MySchedule() {
                           <div className="text-sm text-gray-900">{item.shiftId.site.name}</div>
                           <div className="text-sm text-gray-500">ID: {item.shiftId.site.siteId}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {displayedDate}
-                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{displayedDate}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <svg className="h-4 w-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,20 +169,32 @@ function MySchedule() {
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <button
                             onClick={() => setExpandedRow(expandedRow === index ? null : index)}
-                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors duration-150"
+                            className="inline-flex items-center px-3 py-1.5 mr-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors duration-150"
                           >
                             {expandedRow === index ? "Hide" : "View"}
                           </button>
+                          {/* Swap button navigates to the swapshift form with shift id prefilled */}
+                          <button
+                            onClick={() => navigate("/employee/swap-shift", { state: { yourShiftId: item.shiftId._id } })}
+                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-150"
+                          >
+                            Swap
+                          </button>
+
                         </td>
                       </tr>
                       {expandedRow === index && (
                         <tr>
                           <td colSpan="5" className="px-6 py-4">
                             <div className="bg-white rounded-lg border border-blue-100 p-4">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                   <h4 className="text-sm font-medium text-gray-900 mb-2">Job Description</h4>
                                   <p className="text-sm text-gray-600">{item.shiftId.jobDescription}</p>
+                                </div>
+                                <div>
+                                  <h4 className="text-sm font-medium text-gray-900 mb-2">Shift Id</h4>
+                                  <p className="text-sm text-gray-600">{item.shiftId._id}</p>
                                 </div>
                                 <div>
                                   <h4 className="text-sm font-medium text-gray-900 mb-2">Location Details</h4>
