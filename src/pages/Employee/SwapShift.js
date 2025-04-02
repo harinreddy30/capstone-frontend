@@ -1,156 +1,242 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-// Import your swap shift actions here
-// import { createSwapRequest, fetchSwapRequests } from '../../redux/action/swapShiftAction';
+import {
+  fetchUserSwapRequests,
+  createSwapRequest,
+  deleteSwapRequest
+} from '../../redux/action/swapShiftAction';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const SwapShift = () => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
-  // const { swapRequests, loading, error } = useSelector((state) => state.swapShifts);
+  const { swapRequests, loading, error } = useSelector((state) => state.swaps);
 
-  const [swapForm, setSwapForm] = useState({
-    yourShiftId: '',
-    targetShiftId: '',
-    employeeDetails: '',
-    status: 'Pending'
+  // Local state for toggling the request form and for form data.
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    shiftId1: '',
+    shiftId2: '',
+    date: '',
   });
 
+  // Fetch swap requests on component mount
+  useEffect(() => {
+    dispatch(fetchUserSwapRequests());
+  }, [dispatch]);
+
+  // Show toast if there's an error in the Redux store
+  useEffect(() => {
+    if (error) {
+      // If error is an object (with an "error" property), show that; otherwise, show error as is.
+      const errorMessage =
+        typeof error === 'object' && error.error ? error.error : error;
+      toast.error(errorMessage);
+    }
+  }, [error]);
+
+  // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setSwapForm(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Strip out spaces from shift IDs
+    const cleanedData = {
+      shiftId1: formData.shiftId1.replace(/\s+/g, ''),
+      shiftId2: formData.shiftId2.replace(/\s+/g, ''),
+      date: formData.date,
+    };
+
     try {
-      // Dispatch create swap request action
-      // await dispatch(createSwapRequest(swapForm));
-      console.log('Swap request submitted:', swapForm);
-      alert('Swap request submitted successfully!');
-      // Reset form
-      setSwapForm({
-        yourShiftId: '',
-        targetShiftId: '',
-        employeeDetails: '',
-        status: 'Pending'
-      });
-    } catch (error) {
-      console.error('Error submitting swap request:', error);
-      alert('Failed to submit swap request');
+      await dispatch(createSwapRequest(cleanedData)).unwrap();
+      toast.success('Swap request submitted successfully!');
+      setFormData({ shiftId1: '', shiftId2: '', date: '' });
+      setShowForm(false);
+      dispatch(fetchUserSwapRequests());
+    } catch (err) {
+      // We already show an error toast via the useEffect that watches `error`.
+      console.error('Error submitting swap request:', err);
     }
   };
 
-  const handleClear = () => {
-    setSwapForm({
-      yourShiftId: '',
-      targetShiftId: '',
-      employeeDetails: '',
-      status: 'Pending'
-    });
+  // Handle deletion of a swap request
+  const handleDelete = async (requestId) => {
+    if (window.confirm('Are you sure you want to delete this swap request?')) {
+      try {
+        await dispatch(deleteSwapRequest(requestId)).unwrap();
+        toast.success('Swap request deleted successfully!');
+        dispatch(fetchUserSwapRequests());
+      } catch (err) {
+        // We already show an error toast via the useEffect that watches `error`.
+        console.error('Error deleting swap request:', err);
+      }
+    }
   };
 
   return (
-    <div className="max-w-[600px] mx-auto p-5 bg-gray-100 rounded-lg shadow-md">
-      <h2 className="text-3xl font-bold mb-6 text-center">Swap Shifts</h2>
-      
-      <form className="flex flex-col" onSubmit={handleSubmit}>
-        {/* Your Shift ID */}
-        <div className="mb-4">
-          <label className="font-bold mb-2 block" htmlFor="yourShiftId">
-            Your Shift ID:
-          </label>
-          <input
-            type="text"
-            id="yourShiftId"
-            name="yourShiftId"
-            value={swapForm.yourShiftId}
-            onChange={handleInputChange}
-            className="w-full p-3 border border-gray-300 rounded bg-gray-200"
-            placeholder="12345"
-            disabled
-          />
-        </div>
+    <div className="min-h-screen bg-gradient-to-r from-blue-100 to-blue-50 py-10 px-4">
+      <div className="max-w-5xl mx-auto bg-white shadow-lg rounded-lg p-8">
+        <h2 className="text-4xl font-bold mb-6 text-center text-gray-800">
+          Swap Shift Requests
+        </h2>
 
-        {/* Target Shift ID */}
-        <div className="mb-4">
-          <label className="font-bold mb-2 block" htmlFor="targetShiftId">
-            Target Shift ID:
-          </label>
-          <input
-            type="text"
-            id="targetShiftId"
-            name="targetShiftId"
-            value={swapForm.targetShiftId}
-            onChange={handleInputChange}
-            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter target shift ID"
-            required
-          />
-        </div>
+        {loading && swapRequests.length === 0 ? (
+          <p className="text-center text-lg text-gray-600">
+            Loading swap requests...
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            {swapRequests && swapRequests.length > 0 ? (
+              <table className="w-full border-collapse">
+                <thead className="bg-gray-200">
+                  <tr>
+                    <th className="py-3 px-4 border font-semibold text-gray-700">
+                      Your Shift ID
+                    </th>
+                    <th className="py-3 px-4 border font-semibold text-gray-700">
+                      Target Shift ID
+                    </th>
+                    <th className="py-3 px-4 border font-semibold text-gray-700">
+                      Date
+                    </th>
+                    <th className="py-3 px-4 border font-semibold text-gray-700">
+                      Status
+                    </th>
+                    <th className="py-3 px-4 border font-semibold text-gray-700">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {swapRequests.map((req, index) => (
+                    <tr
+                      key={req._id}
+                      className={`${
+                        index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                      } hover:bg-blue-50 transition-colors duration-200`}
+                    >
+                      <td className="py-2 px-4 border">{req.shiftId1}</td>
+                      <td className="py-2 px-4 border">{req.shiftId2}</td>
+                      <td className="py-2 px-4 border">
+                        {new Date(req.date).toLocaleDateString()}
+                      </td>
+                      <td className="py-2 px-4 border capitalize">
+                        {req.status}
+                      </td>
+                      <td className="py-2 px-4 border">
+                        {req.status === 'pending' && (
+                          <button
+                            className="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-3 rounded transition transform hover:scale-105"
+                            onClick={() => handleDelete(req._id)}
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="text-center mt-4 text-gray-600">
+                No swap requests found.
+              </p>
+            )}
+          </div>
+        )}
 
-        {/* Details of Employee B */}
-        <div className="mb-4">
-          <label className="font-bold mb-2 block" htmlFor="employeeDetails">
-            Details of Employee B:
-          </label>
-          <textarea
-            id="employeeDetails"
-            name="employeeDetails"
-            value={swapForm.employeeDetails}
-            onChange={handleInputChange}
-            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 h-32 resize-none"
-            placeholder="Enter details of the employee you want to swap shift with"
-            required
-          />
-        </div>
-
-        {/* Status */}
-        <div className="mb-4">
-          <label className="font-bold mb-2 block" htmlFor="status">
-            Status:
-          </label>
-          <input
-            type="text"
-            id="status"
-            name="status"
-            value={swapForm.status}
-            className="w-full p-3 border border-gray-300 rounded bg-gray-200"
-            disabled
-          />
-        </div>
-
-        {/* Confirm Request Checkbox */}
-        <div className="mb-6">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              required
-              className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            />
-            <span className="font-bold">Confirm Request</span>
-          </label>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-4">
+        {/* Toggle Form Button */}
+        <div className="mt-8 flex justify-center">
           <button
-            type="button"
-            onClick={handleClear}
-            className="flex-1 bg-gray-500 text-white font-bold text-lg py-2 rounded hover:bg-gray-600"
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded transition duration-200"
+            onClick={() => setShowForm((prev) => !prev)}
           >
-            Clear
-          </button>
-          <button
-            type="submit"
-            className="flex-1 bg-blue-500 text-white font-bold text-lg py-2 rounded hover:bg-blue-600"
-          >
-            Submit
+            {showForm ? 'Hide Request Form' : 'New Swap Request'}
           </button>
         </div>
-      </form>
+
+        {/* New Swap Request Form */}
+        {showForm && (
+          <form
+            onSubmit={handleSubmit}
+            className="mt-6 p-6 border rounded-lg bg-gray-50 shadow-sm"
+          >
+            <h3 className="text-2xl font-bold mb-4 text-gray-800">
+              New Swap Request
+            </h3>
+            <div className="mb-5">
+              <label
+                className="block font-semibold text-gray-700 mb-2"
+                htmlFor="shiftId1"
+              >
+                Your Shift ID:
+              </label>
+              <input
+                type="text"
+                id="shiftId1"
+                name="shiftId1"
+                value={formData.shiftId1}
+                onChange={handleInputChange}
+                className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                placeholder="Enter your shift ID"
+                required
+              />
+            </div>
+            <div className="mb-5">
+              <label
+                className="block font-semibold text-gray-700 mb-2"
+                htmlFor="shiftId2"
+              >
+                Target Shift ID:
+              </label>
+              <input
+                type="text"
+                id="shiftId2"
+                name="shiftId2"
+                value={formData.shiftId2}
+                onChange={handleInputChange}
+                className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                placeholder="Enter target shift ID"
+                required
+              />
+            </div>
+            <div className="mb-6">
+              <label
+                className="block font-semibold text-gray-700 mb-2"
+                htmlFor="date"
+              >
+                Date:
+              </label>
+              <input
+                type="date"
+                id="date"
+                name="date"
+                value={formData.date}
+                onChange={handleInputChange}
+                className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                required
+              />
+            </div>
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded transition duration-200"
+              >
+                Submit Request
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
     </div>
   );
 };
