@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  fetchAllReport, createReport, updateReport, DeleteReport, fetchReportsByEmployee
+   createReport, updateReport, DeleteReport, fetchReportsByEmployee
 } from "../../redux/action/reportAction";
 
 const IncidentReport = ({ onModalOpen, onModalClose }) => {
@@ -164,41 +164,46 @@ const IncidentReport = ({ onModalOpen, onModalClose }) => {
 
       {/* Reports list */}
       <div className="space-y-4">
-        {reports.map((report, index) => (
-          <div key={index} className="bg-white rounded-lg shadow-md p-6 border border-gray-100">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                  {formatIncidentType(report.reportName)}
-                </h3>
-                <p className="text-gray-600 whitespace-pre-wrap">{report.reportDescription}</p>
+        {reports.length === 0 && !loading ? (
+          <p className="text-gray-600">No incident reports found.</p>
+        ) : (
+          reports.map((report, index) => (
+            <div key={index} className="bg-white rounded-lg shadow-md p-6 border border-gray-100">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                    {formatIncidentType(report.reportName)}
+                  </h3>
+                  <p className="text-gray-600 whitespace-pre-wrap">{report.reportDescription}</p>
+                </div>
+                <button 
+                  className="text-red-500 hover:text-red-600 px-3 py-1 rounded-md border border-red-500 hover:border-red-600 transition-colors duration-200"
+                  onClick={() => handleDelete(report._id)}
+                >
+                  Delete
+                </button>
               </div>
-              <button 
-                className="text-red-500 hover:text-red-600 px-3 py-1 rounded-md border border-red-500 hover:border-red-600 transition-colors duration-200"
-                onClick={() => handleDelete(report._id)}
-              >
-                Delete
-              </button>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium text-gray-700">Incident Date:</span>
+                  <span className="ml-2 text-gray-600">{new Date(report.incidentDate).toLocaleString()}</span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Status:</span>
+                  <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                    report.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                    report.status === 'Resolved' ? 'bg-green-100 text-green-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {report.status}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="font-medium text-gray-700">Incident Date:</span>
-                <span className="ml-2 text-gray-600">{new Date(report.incidentDate).toLocaleString()}</span>
-              </div>
-              <div>
-                <span className="font-medium text-gray-700">Status:</span>
-                <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
-                  report.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                  report.status === 'Resolved' ? 'bg-green-100 text-green-800' :
-                  'bg-gray-100 text-gray-800'
-                }`}>
-                  {report.status}
-                </span>
-              </div>
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
+
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (

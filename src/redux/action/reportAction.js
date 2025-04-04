@@ -67,7 +67,7 @@ export const updateReport = (reportId, reportData) => async (dispatch) => {
 export const DeleteReport = (reportId) => async (dispatch) => {
     dispatch(reportPending());
     try {
-        const response = await apiClient.delete(`/api/v1/report/${reportId}`)
+        await apiClient.delete(`/api/v1/report/${reportId}`)
         dispatch(reportDeleteSuccess(reportId))
     } catch (error) {
         dispatch(reportFailure(error.response?.data || 'Error Deleting Report')); // Dispatch failure with error message
@@ -87,15 +87,20 @@ export const fetchReportsByEmployee = () => async (dispatch) => {
             return;
         }
         
-        // Sort reports by date, most recent first
         const sortedReports = response.data.reports.sort((a, b) => 
             new Date(b.incidentDate) - new Date(a.incidentDate)
         );
         
         dispatch(reportSuccess(sortedReports));
     } catch (error) {
-        const errorMessage = error.response?.data || 'Error fetching reports';
-        dispatch(reportFailure(errorMessage));
-        console.error("Error Fetching reports:", error.message);
+        if (error.response && error.response.status === 404) {
+            // Treat 404 as no reports found
+            console.warn("No reports found for this employee.");
+            dispatch(reportSuccess([]));
+        } else {
+            const errorMessage = error.response?.data || 'Error fetching reports';
+            dispatch(reportFailure(errorMessage));
+            console.error("Error Fetching reports:", error.message);
+        }
     }
 };
