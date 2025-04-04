@@ -47,12 +47,7 @@ const TopNavBar = ({ toggleSidebar }) => {
 
       {/* Right Section */}
       <div className="flex items-center space-x-4">
-        <button className="text-gray-600 hover:bg-gray-100 p-2 rounded-full">
-          💬
-        </button>
-        <button className="text-gray-600 hover:bg-gray-100 p-2 rounded-full">
-          🔔
-        </button>
+      
         <button 
           onClick={handleSettingsClick}
           className="text-gray-600 hover:bg-gray-100 p-2 rounded-full"

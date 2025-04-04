@@ -102,7 +102,7 @@ const PayrollDashboard = () => {
               />
               
               <Route 
-                index 
+                path="management" 
                 element={
                   <PayrollManagement 
                     onModalOpen={handleModalOpen}

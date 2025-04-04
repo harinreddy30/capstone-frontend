@@ -88,7 +88,7 @@ const Login = () => {
                     navigate('/manager/');
                     break;
                 case 'PayrollManager':
-                    navigate('/payroll/');
+                    navigate('/payroll/management');
                     break;
                 case 'SuperAdmin':
                     navigate('/admin/dashboard');
@@ -195,10 +195,10 @@ const Login = () => {
             <div className="w-1/2 bg-[#4c7eff] flex items-center justify-center p-12">
                 <div className="text-center text-white">
                     <h1 className="text-4xl font-bold mb-6">
-                        Welcome to Security Management System
+                        Welcome to Schedule Management System
                     </h1>
                     <p className="text-xl">
-                        Streamline your security operations and enhance efficiency
+                        Streamline your Schedule operations and enhance efficiency
                     </p>
                 </div>
             </div>
