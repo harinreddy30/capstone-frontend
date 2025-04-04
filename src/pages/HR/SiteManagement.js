@@ -199,11 +199,18 @@ const SiteManagement = ({ onModalOpen, onModalClose }) => {
   // Handle the edit
   const handleEdit = (site) => {
     setSelectedSite(site);
-    setSiteForm(site);
+    setSiteForm({
+      ...site,
+      location: {
+        address: site.location?.address || "",
+        coordinates: site.location?.coordinates || [],
+      },
+    });
     setEditMode(true);
     setShowModal(true);
     onModalOpen();
   };
+  
 
   // Handle Delete User
   const handleDelete = (siteId) => {
@@ -494,20 +501,20 @@ const SiteManagement = ({ onModalOpen, onModalClose }) => {
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex items-center">
-                  {site.userId ? (
-                    <>
-                      <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                        <span className="text-sm font-medium text-green-800">
-                          {site.userId.fname[0]}{site.userId.lname[0]}
-                        </span>
-                      </div>
-                      <div className="ml-4 text-sm text-gray-900">
-                        {site.userId.fname} {site.userId.lname}
-                      </div>
-                    </>
-                  ) : (
-                    <span className="text-sm text-gray-500">Not Assigned</span>
-                  )}
+                {site.userId ? (
+                  <>
+                    <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                      <span className="text-sm font-medium text-green-800">
+                        {site.userId?.fname?.[0] || "?"}{site.userId?.lname?.[0] || "?"}
+                      </span>
+                    </div>
+                    <div className="ml-4 text-sm text-gray-900">
+                      {site.userId.fname || "No First Name"} {site.userId.lname || "No Last Name"}
+                    </div>
+                  </>
+                ) : (
+                  <span className="text-sm text-gray-500">Not Assigned</span>
+                )}
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
@@ -652,7 +659,7 @@ const SiteManagement = ({ onModalOpen, onModalClose }) => {
                     <input
                       type="text"
                       name="coordinates"
-                      value={siteForm.location.coordinates.join(", ")}
+                      value={siteForm.location.coordinates?.join(", ") || ""}
                       onChange={(e) =>
                         setSiteForm({
                           ...siteForm,
@@ -665,6 +672,7 @@ const SiteManagement = ({ onModalOpen, onModalClose }) => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                       required
                     />
+
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">

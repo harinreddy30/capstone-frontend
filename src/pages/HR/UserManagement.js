@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAllUsers, createUser, updateUser, DeleteUser } from "../../redux/action/userAction"; // Make sure actions are in place
-
+import { fetchAllUsers, createUser, updateUser } from "../../redux/action/userAction"; // Removed DeleteUser import
 
 const roles = ["Employee", "HR", "Manager", "PayrollManager"];
 const userStatuses = ["active", "archived", "inactive"];
 
 const UserManagement = ({ onModalOpen, onModalClose }) => {
-  
-  // const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -26,12 +23,8 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
     status: "active"
   });
 
-  // Add new state variables for modals
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  // Modal state for archive, reactivate, and inactive actions
   const [showArchiveModal, setShowArchiveModal] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [userToDelete, setUserToDelete] = useState(null);
   const [userToArchive, setUserToArchive] = useState(null);
   const [archiveReason, setArchiveReason] = useState("");
   const [showReactivateModal, setShowReactivateModal] = useState(false);
@@ -39,12 +32,15 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
   const [showInactiveModal, setShowInactiveModal] = useState(false);
   const [userToInactive, setUserToInactive] = useState(null);
 
-  const dispatch = useDispatch(); // Dispatch the action
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
-    // Fetch Users from Redux store
+  const dispatch = useDispatch();
+
+  // Fetch Users from Redux store
   const { users, loading, error } = useSelector((state) => state.users);
 
-  // Fetch Users from the API when component mounts
+  // Fetch Users when component mounts
   useEffect(() => {
     const fetchUsers = async () => {
       await dispatch(fetchAllUsers());
@@ -56,7 +52,7 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
     setSearchTerm(event.target.value);
   };
 
-  // Handle input changes in form
+  // Handle form input changes
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setUserForm({ ...userForm, [name]: value });
@@ -86,7 +82,6 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
   // Open modal for editing user
   const handleEdit = (user) => {
     setSelectedUser(user);
-    // Format the date to YYYY-MM-DD for the input field
     const formattedDate = user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : "";
     
     setUserForm({
@@ -147,37 +142,13 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
     onModalClose();
   };
 
-  // Update handleDelete to show confirmation modal
-  const handleDelete = async (userId) => {
-    const userToDelete = users.find(user => user._id === userId);
-    setUserToDelete(userToDelete);
-    setShowDeleteConfirmModal(true);
-  };
-
-  // Add confirmDelete function
-  const confirmDelete = async () => {
-    try {
-      await dispatch(DeleteUser(userToDelete._id));
-      setShowDeleteConfirmModal(false);
-      setSuccessMessage("User deleted successfully!");
-      setShowSuccessModal(true);
-      await dispatch(fetchAllUsers());
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      setSuccessMessage("Failed to delete user. Please try again.");
-      setShowSuccessModal(true);
-    }
-  };
-
-  // Handle archive user
+  // Archive user
   const handleArchive = (user) => {
     setUserToArchive(user);
     setShowArchiveModal(true);
-    // Reset archive reason when opening modal
     setArchiveReason("");
   };
 
-  // Confirm archive
   const confirmArchive = async () => {
     try {
       const updatedUser = {
@@ -198,13 +169,12 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
     }
   };
 
-  // Handle reactivate click
+  // Reactivate user
   const handleReactivateClick = (user) => {
     setUserToReactivate(user);
     setShowReactivateModal(true);
   };
 
-  // Confirm reactivate
   const confirmReactivate = async () => {
     try {
       const updatedUser = {
@@ -224,13 +194,12 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
     }
   };
 
-  // Handle inactive click
+  // Mark user as inactive
   const handleInactiveClick = (user) => {
     setUserToInactive(user);
     setShowInactiveModal(true);
   };
 
-  // Confirm inactive status
   const confirmInactive = async () => {
     try {
       const updatedUser = {
@@ -375,12 +344,6 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
                           className="text-orange-600 hover:text-orange-900 mr-4"
                         >
                           Mark Inactive
-                        </button>
-                        <button
-                          onClick={() => handleDelete(user._id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Delete
                         </button>
                       </>
                     )}
@@ -654,67 +617,6 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
         </div>
       )}
 
-      {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
-            <div className="text-center">
-              <div className={`mx-auto flex items-center justify-center h-12 w-12 rounded-full ${successMessage.includes("success") ? "bg-green-100" : "bg-yellow-100"} mb-4`}>
-                {successMessage.includes("success") ? (
-                  <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                ) : (
-                  <svg className="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                )}
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">{successMessage}</h3>
-              <button
-                onClick={() => setShowSuccessModal(false)}
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-500 text-base font-medium text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm"
-              >
-                OK
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirmModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
-            <div className="text-center">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Delete User</h3>
-              <p className="text-sm text-gray-500 mb-4">
-                Are you sure you want to delete {userToDelete ? `${userToDelete.fname} ${userToDelete.lname}` : 'this user'}? This action cannot be undone.
-              </p>
-              <div className="flex justify-center space-x-4">
-                <button
-                  onClick={() => setShowDeleteConfirmModal(false)}
-                  className="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-500 text-base font-medium text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:text-sm"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Mark Inactive Confirmation Modal */}
       {showInactiveModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -743,6 +645,34 @@ const UserManagement = ({ onModalOpen, onModalClose }) => {
                   Mark Inactive
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
+            <div className="text-center">
+              <div className={`mx-auto flex items-center justify-center h-12 w-12 rounded-full ${successMessage.includes("success") ? "bg-green-100" : "bg-yellow-100"} mb-4`}>
+                {successMessage.includes("success") ? (
+                  <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <svg className="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                )}
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">{successMessage}</h3>
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-500 text-base font-medium text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm"
+              >
+                OK
+              </button>
             </div>
           </div>
         </div>

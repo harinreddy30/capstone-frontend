@@ -46,31 +46,21 @@ import {
   // Fetch Global Schedules (for HR/Manager or filtering across sites)
   export const fetchGlobalSchedules = () => async (dispatch) => {
     try {
-        const response = await apiClient.get(`/api/v1/schedule/employee/schedule`);
-        console.log("Fetched Schedule:", response.data.schedule);
-
-        if (!response.data || !response.data.schedule) {
-            console.error("Error: Invalid response format", response.data);
-            dispatch(scheduleFailure("Invalid response format from server"));
-            return;
-        }
-
-        // Filter out any schedules with invalid shiftId
-        const validSchedules = response.data.schedule.filter(schedule => 
-            schedule && schedule.shiftId && schedule.shiftId.position && schedule.shiftId.site
-        );
-
-        if (validSchedules.length !== response.data.schedule.length) {
-            console.warn("Some schedules were filtered out due to missing data");
-        }
-
-        console.log("Dispatching siteSchedulesSuccess with valid schedules...");
-        dispatch(siteSchedulesSuccess(validSchedules));
+      dispatch(schedulePending());
+      const response = await apiClient.get("/api/v1/schedule");
+      console.log("Global schedules API response:", response.data);
+      const schedulesArray = Array.isArray(response.data)
+        ? response.data
+        : response.data.schedule || [];
+      dispatch(globalSchedulesSuccess(schedulesArray));
+      return schedulesArray;
     } catch (error) {
-        console.error("Error in getUserSchedules:", error);
-        dispatch(scheduleFailure(error.message));
+      console.error("Error in fetchGlobalSchedules:", error);
+      dispatch(scheduleFailure(error.message));
+      return null;
     }
   };
+  
   
   export const fetchSchedule = () => async (dispatch) => {
     try {

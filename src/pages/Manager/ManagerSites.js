@@ -39,9 +39,8 @@ const ManagerSites = ({ onModalOpen, onModalClose }) => {
   const { shifts } = useSelector((state) => state.shifts || { shifts: [] });
 
   useEffect(() => {
-    if (sites.length === 0) {
-      dispatch(fetchSitesByManager());
-    }
+    dispatch(fetchSitesByManager());
+
   }, [dispatch, sites.length]);
   
   const handleSearch = (event) => {

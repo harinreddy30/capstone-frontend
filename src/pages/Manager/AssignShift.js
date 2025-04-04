@@ -14,8 +14,10 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { format, addDays, startOfWeek } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-
+// Check if two shifts overlap.
 function doShiftsOverlap(startA, endA, startB, endB) {
   const toMin = (t) => {
     const [h, m] = t.split(":");
@@ -33,7 +35,9 @@ function formatUTC(date) {
 }
 
 const AssignShift = () => {
-  const initialWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  // Default week start is next week.
+  const nextWeek = addDays(new Date(), 7);
+  const initialWeekStart = startOfWeek(nextWeek, { weekStartsOn: 1 });
   const [searchTerm, setSearchTerm] = useState("");
   const [showShiftsModal, setShowShiftsModal] = useState(false);
   const [selectedSite, setSelectedSite] = useState(null);
@@ -131,7 +135,6 @@ const AssignShift = () => {
   useEffect(() => {
     if (showShiftsModal && selectedSite && globalSchedules.length > 0) {
       const weekEndDate = addDays(weekStartDate, 6);
-      // Use globalSchedules for day-level assignment filtering.
       const filtered = globalSchedules.filter((sched) => {
         const rawDate = new Date(sched.date);
         if (isNaN(rawDate.getTime())) return false;
@@ -168,60 +171,61 @@ const AssignShift = () => {
     }));
   };
 
-  // 8) Handler to unassign: attempts to delete the schedule from backend, then update local state.
-  const handleUnassign = (date, shiftId) => {
+  // 8) Handler to unassign: delete the schedule from backend then update local state.
+  const handleUnassign = async (date, shiftId) => {
     const dateKey = formatUTC(date);
     const scheduleForShift = globalSchedules.find(
       (s) => s.shiftId?._id === shiftId && formatUTC(s.date) === dateKey
     );
     if (scheduleForShift) {
-      dispatch(deleteSchedule(scheduleForShift._id))
-        .then(() => {
-          setAssignments((prev) => {
-            const dayAssign = { ...(prev[dateKey] || {}) };
-            delete dayAssign[shiftId];
-            return { ...prev, [dateKey]: dayAssign };
-          });
-        })
-        .catch((err) => {
-          alert("Error clearing assignment.");
+      try {
+        await dispatch(deleteSchedule(scheduleForShift._id));
+        // Refresh global schedules to get updated data
+        dispatch(fetchGlobalSchedules());
+        setAssignments((prev) => {
+          const dayAssign = { ...(prev[dateKey] || {}) };
+          delete dayAssign[shiftId];
+          return { ...prev, [dateKey]: dayAssign };
         });
+        toast.success("Assignment cleared successfully.");
+      } catch (err) {
+        toast.error("Error clearing assignment.");
+      }
     } else {
       setAssignments((prev) => {
         const dayAssign = { ...(prev[dateKey] || {}) };
         delete dayAssign[shiftId];
         return { ...prev, [dateKey]: dayAssign };
       });
+      toast.success("Assignment cleared successfully.");
     }
   };
 
   // 9) Confirm all assignments: post each assignment to the backend.
   const handleConfirmAssignments = async () => {
     const allAssign = [];
+    // Loop over local assignments.
     for (const date in assignments) {
       for (const shiftId in assignments[date]) {
         const empId = assignments[date][shiftId];
         if (empId) {
-          allAssign.push({ userId: empId, shiftId, date });
+          // Check if this assignment already exists in globalSchedules.
+          const alreadyExists = globalSchedules.some(
+            (s) =>
+              s.shiftId?._id === shiftId &&
+              formatUTC(s.date) === date &&
+              s.userId?._id === empId
+          );
+          // Only add if it's new or modified.
+          if (!alreadyExists) {
+            allAssign.push({ userId: empId, shiftId, date });
+          }
         }
       }
     }
     if (allAssign.length === 0) {
-      alert("No employees assigned. Nothing to save.");
+      toast.info("No new assignments to save.");
       return;
-    }
-    // Check for duplicate schedules using globalSchedules.
-    for (const a of allAssign) {
-      const dupe = globalSchedules.find(
-        (s) =>
-          s.shiftId?._id === a.shiftId &&
-          formatUTC(s.date) === a.date &&
-          s.userId?._id === a.userId
-      );
-      if (dupe) {
-        alert("Duplicate schedule exists in backend for one or more shifts.");
-        return;
-      }
     }
     try {
       let count = 0;
@@ -232,18 +236,24 @@ const AssignShift = () => {
         }
         count++;
       }
-      alert(`Employees assigned for ${count} shifts!`);
+      toast.success(`Employees assigned for ${count} shift(s)!`);
       if (selectedSite) {
         await dispatch(fetchSchedulesBySite(selectedSite._id));
+        dispatch(fetchGlobalSchedules());
       }
+      // Optionally clear only the assignments that were just created
+      // For simplicity, here we clear all local assignments.
       setAssignments({});
       localStorage.removeItem("assignments");
     } catch (err) {
+      toast.error("Error confirming assignments.");
     }
   };
+  
 
   return (
     <div className="p-6">
+      <ToastContainer position="top-center" autoClose={3000} />
       {/* Top Bar */}
       <div className="flex flex-col sm:flex-row justify-between mb-4">
         <input
@@ -409,7 +419,6 @@ const AssignShift = () => {
                               <button
                                 onClick={() => handleUnassign(date, shift._id)}
                                 className="mt-2 text-red-500 text-sm"
-                                style={{ pointerEvents: "auto" }}
                               >
                                 Clear Assignment
                               </button>
