@@ -96,5 +96,16 @@ export const removeUserFromGroup = (groupId, userId) => async (dispatch) => {
   }
 };
 
+// Delete Group
+export const deleteGroup = (groupId) => async (dispatch) => {
+  dispatch(groupsPending());
+  try {
+    await apiClient.delete(`/api/v1/chat/groups/${groupId}`);
+    dispatch(fetchGroups()); // Refresh the list after deletion
+  } catch (error) {
+    dispatch(groupsFailure(error.response?.data || "Failed to delete group"));
+  }
+};
+
 
   
