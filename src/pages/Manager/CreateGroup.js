@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { createGroup, fetchGroups } from "../../redux/action/groupAction"; // Assuming action for fetching groups
+import { createGroup, fetchGroups, deleteGroup  } from "../../redux/action/groupAction"; // Assuming action for fetching groups
 import { Link } from "react-router-dom";
 
 const GroupManagement = () => {
@@ -18,6 +18,13 @@ const GroupManagement = () => {
     const groupData = { name: groupName, description: groupDescription };
     dispatch(createGroup(groupData)); // Create the group
   };
+
+  const handleDeleteGroup = (groupId) => {
+    if (window.confirm("Are you sure you want to delete this group?")) {
+      dispatch(deleteGroup(groupId));
+    }
+  };
+  
 
   return (
     <div className="container mx-auto p-6 bg-white rounded-lg shadow-lg">
@@ -61,12 +68,21 @@ const GroupManagement = () => {
               <h4 className="text-xl font-semibold text-gray-800">{group.name}</h4>
               <p className="text-gray-600">{group.description}</p>
             </div>
+            <div className="flex gap-2">
             <Link
               to={`/manager/group-info/${group._id}`}
               className="p-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               GROUP INFO
             </Link>
+            <button
+              onClick={() => handleDeleteGroup(group._id)}
+              className="p-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              DELETE
+            </button>
+          </div>
+
           </div>
         ))}
       </div>
