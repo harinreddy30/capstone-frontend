@@ -17,12 +17,32 @@ import {
 export const generatePayroll = (payrollData) => async (dispatch) => {
     dispatch(payrollPending());
     try {
+        console.log('Attempting to generate payroll with data:', JSON.stringify(payrollData, null, 2));
+        
         const response = await apiClient.post('/api/v1/payroll/generate', payrollData);
-        dispatch(payrollGenerateSuccess(response.data.payroll));
-        return response.data;
+        console.log('Server response:', response.data);
+        
+        if (response.data && response.data.success) {
+            dispatch(payrollGenerateSuccess(response.data.payroll));
+            return {
+                success: true,
+                payroll: response.data.payroll
+            };
+        } else {
+            const errorMsg = response.data?.message || 'Failed to generate payroll';
+            console.error('Server indicated failure:', errorMsg);
+            throw new Error(errorMsg);
+        }
     } catch (error) {
-        dispatch(payrollFailure(error.response?.data?.message || 'Error generating payroll'));
-        console.error('Error generating payroll:', error);
+        console.error('Detailed error information:', {
+            message: error.message,
+            response: error.response?.data,
+            status: error.response?.status,
+            statusText: error.response?.statusText
+        });
+        
+        const errorMessage = error.response?.data?.message || error.message || 'Error generating payroll';
+        dispatch(payrollFailure(errorMessage));
         throw error;
     }
 };
