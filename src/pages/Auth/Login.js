@@ -79,16 +79,16 @@ const Login = () => {
             // Based on the user role, navigate to the appropriate dashboard
             switch (userRole) {
                 case 'Employee':
-                    navigate('/employee/dashboard');
+                    navigate('/employee/');
                     break;
                 case 'HR':
-                    navigate('/hr/dashboard');
+                    navigate('/hr/');
                     break;
                 case 'Manager':
-                    navigate('/manager/dashboard');
+                    navigate('/manager/');
                     break;
                 case 'PayrollManager':
-                    navigate('/payroll/dashboard');
+                    navigate('/payroll/');
                     break;
                 case 'SuperAdmin':
                     navigate('/admin/dashboard');

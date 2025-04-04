@@ -106,6 +106,7 @@ const EmployeeDashboard = () => {
           {/*Suspense provide a fallback, while lazy-loaded components are fetched*/}
           <React.Suspense fallback={<p>Loading...</p>}>
             <Routes>
+              <Route index element={<MySchedule />} />
               <Route path="job-scheduling" element={<MySchedule />} />
               <Route 
                 path="incident-reports" 

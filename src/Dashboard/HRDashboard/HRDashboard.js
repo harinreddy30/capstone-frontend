@@ -94,35 +94,40 @@ const HRDashboard = () => {
 
         {/* Main Content Area */}
         <div className={`main-content ${isModalOpen ? 'modal-open' : ''}`}>
-          <React.Suspense fallback={<p>Loading...</p>}>
-            <Routes>
-              <Route 
-                path="user-management" 
-                element={
-                  <UserManagement 
-                    onModalOpen={handleModalOpen}
-                    onModalClose={handleModalClose}
-                  />
-                } 
-              />
-              <Route 
-                path="site-management" 
-                element={
-                  <SiteManagement 
-                    onModalOpen={handleModalOpen}
-                    onModalClose={handleModalClose}
-                  />
-                } 
-              />
-                            <Route path="chat-group" element={<ChatGroup />} /> 
-                            <Route path="chat-group/:groupId" element={<GroupChatPage />} />
-              {/* <Route path="attendance-tracking" element={<AttendanceTracking />} />
-              <Route path="payroll" element={<Payroll />} />
-              <Route path="reports" element={<Reports />} />
-              <Route path="approvals" element={<Approvals />} />
-              <Route path="settings" element={<Settings />} /> */}
-            </Routes>
-          </React.Suspense>
+        <React.Suspense fallback={<p>Loading...</p>}>
+          <Routes>
+            <Route 
+              index 
+              element={
+                <UserManagement 
+                  onModalOpen={handleModalOpen}
+                  onModalClose={handleModalClose}
+                />
+              } 
+            />
+            <Route 
+              path="user-management" 
+              element={
+                <UserManagement 
+                  onModalOpen={handleModalOpen}
+                  onModalClose={handleModalClose}
+                />
+              } 
+            />
+            <Route 
+              path="site-management" 
+              element={
+                <SiteManagement 
+                  onModalOpen={handleModalOpen}
+                  onModalClose={handleModalClose}
+                />
+              } 
+            />
+            <Route path="chat-group" element={<ChatGroup />} /> 
+            <Route path="chat-group/:groupId" element={<GroupChatPage />} />
+          </Routes>
+        </React.Suspense>
+
         </div>
       </div>
     </div>

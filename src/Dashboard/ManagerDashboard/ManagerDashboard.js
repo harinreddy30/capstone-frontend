@@ -105,6 +105,15 @@ const ManagerDashboard = () => {
           <React.Suspense fallback={<p>Loading...</p>}>
             <Routes>
               <Route 
+                index 
+                element={
+                  <ManagerSites 
+                    onModalOpen={handleModalOpen}
+                    onModalClose={handleModalClose}
+                  />
+                } 
+              />
+              <Route 
                 path="sites" 
                 element={
                   <ManagerSites 
