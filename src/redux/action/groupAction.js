@@ -7,7 +7,8 @@ import {
   currentGroupFailure,
   currentGroupPending,
   groupCreated,
-  userAddedToGroup  
+  userAddedToGroup,
+  groupDeleteSuccess
 } from "../slices/groupSlice";
 
 // Fetch all Groups
@@ -101,8 +102,9 @@ export const deleteGroup = (groupId) => async (dispatch) => {
   dispatch(groupsPending());
   try {
     await apiClient.delete(`/api/v1/chat/groups/${groupId}`);
-    dispatch(fetchGroups()); // Refresh the list after deletion
+    dispatch(groupDeleteSuccess(groupId)); // Use groupDeleteSuccess instead of fetchGroups
   } catch (error) {
+    console.error('Error deleting group:', error);
     dispatch(groupsFailure(error.response?.data || "Failed to delete group"));
   }
 };

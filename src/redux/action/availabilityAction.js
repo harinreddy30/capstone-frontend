@@ -77,12 +77,51 @@ export const getAvailability = () => async (dispatch) => {
 export const getAvailabilityById = (id) => async (dispatch) => {
     try {
         dispatch(availabilityPending());
-        const response = await apiClient.get(`/api/v1/availability/${id}`);
-        dispatch(availabilityByIdSuccess(response.data));
-        return response.data;
+        
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("No authentication token found");
+        }
+
+        console.log('Fetching availability for user:', id);
+        
+        const response = await apiClient.get(`/api/v1/availability/check/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        console.log('Availability by ID response:', response.data);
+        
+        if (response.data) {
+            dispatch(availabilityByIdSuccess(response.data));
+            return response.data;
+        } else {
+            throw new Error("No availability data received");
+        }
     } catch (error) {
         console.error("Error in getAvailabilityById:", error);
-        dispatch(availabilityFailure(error.message));
+        
+        // Handle different error status codes
+        if (error.response?.status === 404) {
+            dispatch(availabilityFailure("No availability found for this employee"));
+        } else if (error.response?.status === 403) {
+            // Extract the error message and role information from the response
+            const errorData = error.response?.data || {};
+            const errorMessage = errorData.message || "Access denied";
+            const userRole = errorData.userRole || "unknown";
+            const expectedRoles = errorData.expectedRoles || [];
+            
+            console.log('Access denied details:', {
+                currentRole: userRole,
+                expectedRoles: expectedRoles
+            });
+            
+            const detailedMessage = `${errorMessage} Current role: ${userRole}. Required roles: ${expectedRoles.join(', ')}`;
+            dispatch(availabilityFailure(detailedMessage));
+        } else {
+            dispatch(availabilityFailure(error.message || "Failed to fetch availability"));
+        }
         return null;
     }
 };
