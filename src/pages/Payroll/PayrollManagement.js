@@ -179,8 +179,12 @@ const PayrollManagement = () => {
                   {new Date(payroll.payPeriod.start).toLocaleDateString()} -{" "}
                   {new Date(payroll.payPeriod.end).toLocaleDateString()}
                 </td>
-                <td className="p-4 text-gray-700">${Number(payroll.grossPay).toFixed(2)}</td>
-                <td className="p-4 text-gray-700">${Number(payroll.netPay).toFixed(2)}</td>
+                <td className="p-4 text-gray-700">
+                  ${(payroll.grossPay || payroll.earnings?.grossPay || 0).toFixed(2)}
+                </td>
+                <td className="p-4 text-gray-700">
+                  ${(payroll.netPay || 0).toFixed(2)}
+                </td>
                 <td className="p-4 text-gray-700">
                   {/* Log deductions to inspect their structure */}
                   {console.log('Payroll Deductions:', payroll.deductions)}

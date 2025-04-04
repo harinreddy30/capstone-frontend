@@ -186,10 +186,10 @@ const DashboardPage = () => {
                     }
                   </TableCell>
                   <TableCell>
-                    ${payroll.grossPay?.toFixed(2)}
+                    ${(payroll.grossPay || payroll.earnings?.grossPay || 0).toFixed(2)}
                   </TableCell>
                   <TableCell>
-                    ${payroll.netPay?.toFixed(2)}
+                    ${(payroll.netPay || 0).toFixed(2)}
                   </TableCell>
                   <TableCell>
                     <Chip 
