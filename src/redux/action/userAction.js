@@ -150,7 +150,7 @@ export const updateUser = (userId, updatedData) => async (dispatch) => {
 export const DeleteUser = (userId) => async (dispatch) => {
     dispatch(usersPending());
     try {
-        const response = await apiClient.delete(`/api/v1/users/${userId}`);
+        await apiClient.delete(`/api/v1/users/${userId}`);
         dispatch(userDeleteSuccess(userId)); // Dispatch success and remove the deleted user from state
     } catch (error) {
         dispatch(usersFailure(error.response?.data || 'Error updating user'));

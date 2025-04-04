@@ -108,7 +108,7 @@ export const updateSite = (siteId, updatedData) => async (dispatch) => {
 export const DeleteSite = (siteId) => async (dispatch) => {
     dispatch(sitePending());
     try {
-        const response = await apiClient.delete(`/api/v1/sites/${siteId}`);
+        await apiClient.delete(`/api/v1/sites/${siteId}`);
         dispatch(siteDeleteSuccess(siteId)); // Dispatch success and remove the deleted user from state
     } catch (error) {
         dispatch(siteFailure(error.response?.data || 'Error updating Site'));
