@@ -69,15 +69,17 @@ const ViewAvailability = () => {
     }
   };
 
-  // Filter users to only show employees and apply search
+  // Filter users to only show employees by excluding managers, payroll managers, and HR
   const filteredUsers = users?.filter(user => {
-    // Check if user has required fields
     if (!user || !user.fname || !user.lname) return false;
 
-    // Check if user is an employee (not a manager or admin)
-    const isEmployee = !user.role || user.role.toLowerCase() !== 'manager';
-    if (!isEmployee) return false;
-    
+    // List of roles to exclude
+    const excludedRoles = ["manager", "payrollmanager", "hr"];
+    // If the user has a role and it matches one of the excluded roles, don't include them
+    if (user.role && excludedRoles.includes(user.role.toLowerCase())) {
+      return false;
+    }
+
     const fullName = `${user.fname} ${user.lname}`.toLowerCase();
     return fullName.includes(searchTerm.toLowerCase());
   }) || [];
@@ -299,4 +301,4 @@ const ViewAvailability = () => {
   );
 };
 
-export default ViewAvailability; 
+export default ViewAvailability;
