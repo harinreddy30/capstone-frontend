@@ -50,8 +50,11 @@ const groupSlice = createSlice({
           state.currentGroup.members.push(userId);
         }
       }
+    },
+    groupDeleteSuccess: (state, action) => {
+      state.loading = false;
+      state.groups = state.groups.filter(group => group._id !== action.payload);
     }
-    
   }
 });
 
@@ -63,7 +66,8 @@ export const {
   currentGroupFailure,
   currentGroupPending,
   groupCreated,
-  userAddedToGroup
+  userAddedToGroup,
+  groupDeleteSuccess
 } = groupSlice.actions;
 
 export default groupSlice.reducer;

@@ -1,30 +1,40 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { createGroup, fetchGroups, deleteGroup  } from "../../redux/action/groupAction"; // Assuming action for fetching groups
+import { createGroup, fetchGroups, deleteGroup } from "../../redux/action/groupAction";
 import { Link } from "react-router-dom";
 
 const GroupManagement = () => {
   const dispatch = useDispatch();
   const [groupName, setGroupName] = useState("");
   const [groupDescription, setGroupDescription] = useState("");
-  const { groups } = useSelector((state) => state.groups); // Assuming groups are stored in the Redux state
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState(null);
+  const { groups } = useSelector((state) => state.groups);
 
   useEffect(() => {
-    dispatch(fetchGroups()); // Fetch all groups on component mount
+    dispatch(fetchGroups());
   }, [dispatch]);
 
   const handleCreateGroup = (e) => {
     e.preventDefault();
     const groupData = { name: groupName, description: groupDescription };
-    dispatch(createGroup(groupData)); // Create the group
+    dispatch(createGroup(groupData));
+    setGroupName("");
+    setGroupDescription("");
   };
 
-  const handleDeleteGroup = (groupId) => {
-    if (window.confirm("Are you sure you want to delete this group?")) {
-      dispatch(deleteGroup(groupId));
-    }
+  const handleDeleteGroup = (group) => {
+    setGroupToDelete(group);
+    setShowConfirmDelete(true);
   };
-  
+
+  const confirmDeleteGroup = () => {
+    if (groupToDelete && groupToDelete._id) {
+      dispatch(deleteGroup(groupToDelete._id));
+    }
+    setShowConfirmDelete(false);
+    setGroupToDelete(null);
+  };
 
   return (
     <div className="container mx-auto p-6 bg-white rounded-lg shadow-lg">
@@ -69,23 +79,54 @@ const GroupManagement = () => {
               <p className="text-gray-600">{group.description}</p>
             </div>
             <div className="flex gap-2">
-            <Link
-              to={`/manager/group-info/${group._id}`}
-              className="p-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              GROUP INFO
-            </Link>
-            <button
-              onClick={() => handleDeleteGroup(group._id)}
-              className="p-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-            >
-              DELETE
-            </button>
-          </div>
-
+              <Link
+                to={`/manager/group-info/${group._id}`}
+                className="p-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                GROUP INFO
+              </Link>
+              <button
+                onClick={() => handleDeleteGroup(group)}
+                className="p-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+              >
+                DELETE
+              </button>
+            </div>
           </div>
         ))}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showConfirmDelete && groupToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Delete Group</h3>
+            <p className="text-gray-600 mb-2">
+              Are you sure you want to delete the group "{groupToDelete.name}"?
+            </p>
+            <p className="text-red-600 text-sm mb-6">
+              This action cannot be undone. All group chats and messages will be permanently deleted.
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => {
+                  setShowConfirmDelete(false);
+                  setGroupToDelete(null);
+                }}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 focus:outline-none"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteGroup}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
