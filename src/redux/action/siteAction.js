@@ -3,7 +3,7 @@ import {
     sitePending,
     siteSuccess,
     siteFailure,
-    siteByIdSucess,
+    siteByIdSuccess,
     siteCreateSuccess,
     siteUpdateSuccess,
     siteDeleteSuccess
@@ -36,8 +36,9 @@ export const fetchAllSites = () => async (dispatch) => {
 export const fetchSiteById = (siteId) => async(dispatch) => {
     dispatch(sitePending()); // Dispatch the 'pending' state before making the request
     try {
-        const response = await apiClient.get(`/api/v1/sites/${siteId}`)
-        dispatch(siteByIdSucess(response.data)); // Dispatch success with the user data
+        const response = await apiClient.get(`/api/v1/sites/site/${siteId}`)
+        console.log("Received Site Data", response.data)
+        dispatch(siteByIdSuccess(response.data)); // Dispatch success with the user data
     } catch (error) {
         dispatch(siteFailure(error.response?.data || 'Error fetching sites')); // Dispatch failure with error message
         console.log("Error Fetching Sites", error.message)

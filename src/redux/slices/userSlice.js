@@ -39,6 +39,17 @@ const userSlice = createSlice({
             state.user = action.payload;
         },
 
+        //for swap
+        userSuccess: (state, action) => {
+            console.log("User payload:", action.payload);
+            state.loading = false;
+            const user = action.payload; // assuming payload is the user object
+            state.data = {
+              ...state.data,
+              [user._id]: user,
+            };
+          },
+
         userCreateSuccess: (state, action) => {
             state.loading = false;
             state.users.push(action.payload);
@@ -66,7 +77,8 @@ export const {
     userByIdSuccess, 
     userCreateSuccess, 
     userUpdateSuccess, 
-    userDeleteSuccess 
+    userDeleteSuccess ,
+    userSuccess
 } = userSlice.actions;
 
 export default userSlice.reducer;

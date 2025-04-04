@@ -32,6 +32,20 @@ const shiftSlice = createSlice({
             state.loading = false;
             state.shifts.push(action.payload);
         },
+        shiftByIdSuccess: (state, action) => {
+            console.log("Shift payload:", action.payload);
+            state.loading = false;
+            const shift = action.payload; // assuming payload is the shift object
+            state.data = {
+              ...state.data,
+              [shift._id]: shift,
+            };
+          },
+
+        shiftFailure: (state, action) => {
+            state.loading = false;
+            state.error = action.payload;
+        },
         // Update Shift     
         updateShiftSuccess: (state, action) => {
             state.loading = false;
@@ -55,7 +69,9 @@ export const {
     addShiftSuccess,
     updateShiftSuccess,
     deleteShiftSuccess,
-    clearShifts
+    clearShifts,
+    shiftByIdSuccess,
+    shiftFailure
 } = shiftSlice.actions;
 
 export default shiftSlice.reducer;

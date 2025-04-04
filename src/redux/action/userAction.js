@@ -7,7 +7,8 @@ import {
     userCreateSuccess, 
     userUpdateSuccess, 
     userDeleteSuccess,
-    availableEmployeesSuccess 
+    availableEmployeesSuccess,
+    userSuccess
 } 
 from '../slices/userSlice';
 
@@ -66,7 +67,21 @@ export const fetchUserById = (userId) => async(dispatch) => {
     dispatch(usersPending()); // Dispatch the 'pending' state before making the request
     try {
         const response = await apiClient.get(`/api/v1/users/${userId}`)
-        dispatch(userByIdSuccess(response.data)); // Dispatch success with the user data
+        console.log("Received User Data", response.data)
+        dispatch(userByIdSuccess(response.data)); 
+    } catch (error) {
+        dispatch(usersFailure(error.response?.data || 'Error fetching users')); // Dispatch failure with error message
+        console.log("Error Fetching Users", error.message)
+    }
+}
+
+//swap
+export const userById = (userId) => async(dispatch) => {
+    dispatch(usersPending()); // Dispatch the 'pending' state before making the request
+    try {
+        const response = await apiClient.get(`/api/v1/users/${userId}`)
+        console.log("Received User Data", response.data)
+        dispatch(userSuccess(response.data)); 
     } catch (error) {
         dispatch(usersFailure(error.response?.data || 'Error fetching users')); // Dispatch failure with error message
         console.log("Error Fetching Users", error.message)

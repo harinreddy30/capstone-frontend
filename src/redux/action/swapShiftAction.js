@@ -35,6 +35,7 @@ export const fetchAllSwapRequests = () => async (dispatch) => {
   dispatch(swapPending());
   try {
     const response = await apiClient.get("/api/v1/swap/all");
+    console.log("Action Data", response)
     dispatch(swapSuccess(response.data));
   } catch (error) {
     const errMsg = error.response?.data || "Error fetching swap requests";
@@ -56,9 +57,7 @@ export const fetchUserSwapRequests = () => async (dispatch) => {
   }
 };
 
-// For employee pages, export fetchSwapRequests as an alias to fetchUserSwapRequests.
-export const fetchSwapRequests = fetchUserSwapRequests;
-
+  
 // Approve a swap request
 export const approveSwapRequest = (requestId) => async (dispatch) => {
   dispatch(swapPending());

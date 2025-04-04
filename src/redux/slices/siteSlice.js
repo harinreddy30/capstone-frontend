@@ -39,10 +39,16 @@ const siteSlice = createSlice({
       state.error = action.payload;
     },
     // Action to handle when fetching a single user
-    siteByIdSucess: (state, action) => {
+    siteByIdSuccess: (state, action) => {
+      console.log("Site payload:", action.payload);
       state.loading = false;
-      state.site = action.payload;
+      const site = action.payload.site || action.payload;
+      state.data = {
+        ...state.data,
+        [site._id]: site,
+      };
     },
+    
     siteCreateSuccess: (state, action) => {
       state.loading = false;
       state.sites.push(action.payload); // Add the new site
@@ -79,7 +85,7 @@ export const {
   sitePending,
   siteSuccess,
   siteFailure,
-  siteByIdSucess,
+  siteByIdSuccess,
   siteCreateSuccess,
   siteUpdateSuccess,
   siteDeleteSuccess,

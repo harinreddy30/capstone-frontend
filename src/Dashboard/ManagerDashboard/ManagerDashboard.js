@@ -8,6 +8,7 @@ const ManagerSites = React.lazy(() => import('../../pages/Manager/ManagerSites')
 const AssignShift = React.lazy(() => import('../../pages/Manager/AssignShift'));
 const ManagerReports = React.lazy(() => import('../../pages/Manager/ManagerReports'));
 const ViewAvailability = React.lazy(() => import('../../pages/Manager/ViewAvailability'));
+const SwapRequests = React.lazy(() => import('../../pages/Manager/SwapRequests'));
 const LeaveRequests = React.lazy(() => import('../../pages/Manager/LeaveRequests'));
 const ChatGroup = React.lazy(() => import('../../components/ChatGroup/ChatGroup'));
 const GroupChatPage = React.lazy(() => import('../../components/ChatGroup/GroupChatPage'));
@@ -26,6 +27,7 @@ const SideBar = ({ isCollapsed, isModalOpen }) => {
     { path: 'assign-shift', label: 'Assign Shift', icon: '📅' },
     { path: 'manager-reports', label: 'Manager Reports', icon: '📊' },
     { path: 'view-availability', label: 'View Availability', icon: '👥' },
+    { path: 'swap-requests', label: 'Swap Requests', icon: '🔀' },
     { path: 'leave-requests', label: 'Leave Requests', icon: '✉️' },
     { path: 'chat-group', label: 'Chat Group', icon: '💬' },
     { path: 'create-group', label: 'Create Group', icon: '💬' },
@@ -120,6 +122,7 @@ const ManagerDashboard = () => {
                   />
                 } 
               />
+              <Route path="swap-requests" element={<SwapRequests />} />
               <Route path="leave-requests" element={<LeaveRequests />} />
               <Route path="create-group" element={<CreateGroup />} />
               <Route path="chat-group" element={<ChatGroup />} /> 

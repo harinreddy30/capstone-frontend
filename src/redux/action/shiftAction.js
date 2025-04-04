@@ -6,6 +6,8 @@ import {
     addShiftSuccess,
     updateShiftSuccess,
     deleteShiftSuccess,
+    shiftByIdSuccess,
+    shiftFailure,
     clearShifts
 } from '../slices/shiftSlice';
 
@@ -22,6 +24,20 @@ export const fetchShifts = (siteId) => async (dispatch) => {
         console.log("Error Fetching Shifts", error.message);
     }
 }
+
+// Fetch a shift by ID
+export const fetchShiftById = (shiftId) => async (dispatch) => {
+    try {
+        dispatch(fetchShiftsStart());
+        const response = await apiClient.get(`/api/v1/shifts/shift/${shiftId}`);
+        console.log(response.data);
+        dispatch(shiftByIdSuccess(response.data || {}));
+
+    } catch (error) {
+        dispatch(shiftFailure(error.response?.data || "Error fetching shift"));
+        console.log("Error Fetching Shift", error.message);
+    }
+};
 
 // Add a new shift
 export const createShift = (shiftData) => async (dispatch) => {
