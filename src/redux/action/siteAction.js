@@ -18,7 +18,6 @@ export const fetchAllSites = () => async (dispatch) => {
         console.log("Sites response:", response.data);
         const sitesData = response.data.Sites || response.data.sites || response.data || [];
         
-        // Ensure all sites have a status
         const normalizedSites = sitesData.map(site => ({
             ...site,
             status: site.status || 'active'
@@ -34,7 +33,7 @@ export const fetchAllSites = () => async (dispatch) => {
 
 // Fetch a Site by ID (HR, SuperAdmin)
 export const fetchSiteById = (siteId) => async(dispatch) => {
-    dispatch(sitePending()); // Dispatch the 'pending' state before making the request
+    dispatch(sitePending());
     try {
         const response = await apiClient.get(`/api/v1/sites/site/${siteId}`)
         console.log("Received Site Data", response.data)

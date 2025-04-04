@@ -4,7 +4,6 @@ import {
   fetchAllSwapRequests,
   approveSwapRequest,
   rejectSwapRequest,
-  deleteSwapRequest,
 } from "../../redux/action/swapShiftAction";
 import { fetchShiftById } from "../../redux/action/shiftAction"; 
 import { fetchSiteById } from "../../redux/action/siteAction";   
@@ -36,10 +35,8 @@ const SwapRequests = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [selectedSwap, setSelectedSwap] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [filterStatus, setFilterStatus] = useState("All");
-  const [deleteId, setDeleteId] = useState(null);
 
   // 1. On mount, fetch all swap requests.
   useEffect(() => {
@@ -122,22 +119,8 @@ const SwapRequests = () => {
     }
   };
 
-  // Delete logic.
-  const handleDelete = async (id) => {
-    try {
-      await dispatch(deleteSwapRequest(id));
-      setShowDeleteModal(false);
-      setSuccessMessage("Swap request successfully deleted");
-      setTimeout(() => setSuccessMessage(""), 3000);
-      dispatch(fetchAllSwapRequests());
-    } catch (error) {
-      console.error("Error deleting swap request:", error);
-    }
-  };
-
   // Render shift details: display the site's name.
-  // Render shift details: display the site name, plus other shift info (start/end time, hours).
-const renderShiftDetails = (shiftId) => {
+  const renderShiftDetails = (shiftId) => {
     if (!shiftId) return "N/A";
     const shift = shiftData[shiftId];
     if (shiftLoading) return "Loading...";
@@ -183,7 +166,6 @@ const renderShiftDetails = (shiftId) => {
     );
   };
   
-
   // Render user details.
   const renderUserName = (userId) => {
     if (!userId) return "Unknown Employee";
@@ -261,7 +243,9 @@ const renderShiftDetails = (shiftId) => {
               </svg>
             </div>
             <div className="ml-3">
-              <p className="text-sm text-red-700">{error}</p>
+              <p className="text-sm text-red-700">
+                {error.message ? error.message : JSON.stringify(error)}
+              </p>
             </div>
           </div>
         </div>
@@ -320,17 +304,6 @@ const renderShiftDetails = (shiftId) => {
                       <option value="Approved">Approved</option>
                       <option value="Rejected">Rejected</option>
                     </select>
-                    <button
-                      onClick={() => {
-                        setDeleteId(swap._id);
-                        setShowDeleteModal(true);
-                      }}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
                   </td>
                 </tr>
               ))
@@ -365,39 +338,6 @@ const renderShiftDetails = (shiftId) => {
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
               >
                 Confirm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-[9999]">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Confirm Delete</h3>
-              <button onClick={() => setShowDeleteModal(false)} className="text-gray-400 hover:text-gray-500">
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <p className="text-sm text-gray-500 mb-4">
-              Are you sure you want to delete this swap request? This action cannot be undone.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDelete(deleteId)}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-              >
-                Delete
               </button>
             </div>
           </div>
