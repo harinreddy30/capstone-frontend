@@ -5,7 +5,7 @@ import { loginUser, forgotPassword } from '../../redux/action/authAction';
 // import logo from '../../assets/logo.png'; // Add your logo
 
 const Login = () => {
-    // Local state for managing form input
+    // Local state for managing form input state
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [keepLoggedIn, setKeepLoggedIn] = useState(false);
